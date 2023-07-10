@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>SST/Omnichannel API example - Operator Playercard</title>
+  </head>
+
+  <body style="background-color: #fff; color: #0d0d0d">
+    <script>
+      const mapCardToPlayerId = track1 => {
+        // Create a player ID by just appending a prefix, and getting rid of whitespace
+        // A real implementation would call into a backend system to do the mapping
+        return "test_" + track1.replace(/\s/g, "_");
+      };
+
+      // Helper method for demo purpose only
+      const setText = text => {
+        document.getElementById("demo-text").innerHTML = text;
+      };
+
+      window.sstApiLoaded = async sstApi => {
+        window.sstApi = sstApi;
+
+        const terminalInfo = await window.sstApi.initialize({
+          initialPosition: "HIDDEN",
+          initialLobbyState: "UNLOCKED",
+        });
+
+        console.log("TerminalInfo", terminalInfo);
+
+        window.sstApi.on("DATALAYER_PUSHED", data => {
+          console.log("Datalayer pushed", data);
+        });
+
+        window.sstApi.on("CARD_READ", cardData => {
+          const playerId = mapCardToPlayerId(cardData.cardData[0]);
+
+          setText(`Card swiped, playerId is ${playerId}`);
+
+          // In this case we will display the window to the left when we
+          // are going to start a session.
+          window.sstApi.setPosition("LEFT");
+
+          // If the card data was matched with a player ID.
+          if (playerId) {
+            window.sstApi
+              .startIdentifiedSession({
+                playerId: playerId,
+              })
+              .then(async () => {
+                // For demo purposes - parse and display a text
+                // from the card, hopefully the card holder's name
+                const parsedData = cardData.cardData[0].replace("^", " ");
+                const playerName = parsedData.split(" ")[0];
+
+                setText(`Welcome, ${playerName}`);
+
+                const rewards = await window.sstApi.getRewards();
+                console.log(rewards);
+
+                window.sstApi.navigateClient(
+                  "#filter/all/all/all/all/starting-soon",
+                );
+              })
+              .catch(errorKey => {
+                console.error("error received to iFrame from SST", errorKey);
+              });
+          } else {
+            console.error("Wasnt't able to find playerId");
+          }
+        });
+
+        window.sstApi.on("RESET", () => {
+          console.log("reset received");
+          window.sstApi.readyToReset();
+        });
+      };
+
+      const validateSstApiUrl = urlString => {
+        const url = new URL(urlString);
+        if (
+          !url.hostname.endsWith("kambicdn.com") &&
+          !url.hostname.endsWith("kambi.com") &&
+          url.hostname !== "localhost"
+        ) {
+          throw new Error(`invalid SST API URL ${urlString}`);
+        }
+      };
+
+      const omnichannelApiUrl = new URL(location).searchParams.get(
+        "omnichannelApiUrl",
+      );
+
+      if (omnichannelApiUrl) {
+        const jsApiUrl = decodeURIComponent(omnichannelApiUrl);
+
+        // Important to be able to trust this URL.
+        validateSstApiUrl(jsApiUrl);
+
+        const scriptElement = document.createElement("script");
+        scriptElement.src = `${jsApiUrl}?cacheBuster=${Date.now()}`;
+        document.head.appendChild(scriptElement);
+      }
+    </script>
+
+    <div
+      style="text-align: center; font-size: 24px; margin-top: 24px;"
+      id="demo-text"
+    ></div>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "apuestapr-registration"
+version = "0.1.0"
+description = ""
+authors = ["Jason Raede <jason.raede@gmail.com>"]
+readme = "README.md"
+packages = [{include = "apuestapr_registration"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+Flask = "^2.3.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
