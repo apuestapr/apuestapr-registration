@@ -107,7 +107,8 @@ def run_verification_request():
 
     payload = {
         'reference': reference,
-        'callback_url': 'https://4650-144-121-19-34.ngrok-free.app/kyc/callback',
+        # 'callback_url': 'https://4650-144-121-19-34.ngrok-free.app/kyc/callback',
+        'callback_url': 'https://apuestapr-registration.onrender.com/kyc/callback',
         # 'country': 'PR',
         'language': 'ES',
         'verification_mode': 'any',
