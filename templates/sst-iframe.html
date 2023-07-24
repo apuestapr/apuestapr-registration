@@ -7,10 +7,18 @@
 
   <body style="background-color: #fff; color: #0d0d0d">
     <script>
-      const mapCardToPlayerId = track1 => {
+      const mapCardToPlayerInfo = async (track1) => {
         // Create a player ID by just appending a prefix, and getting rid of whitespace
         // A real implementation would call into a backend system to do the mapping
-        return "test_" + track1.replace(/\s/g, "_");
+        const response = await fetch('/kambi/exchange/' + track1);
+        const result = await response.json();
+
+        if (result.status === 'error') {
+          throw new Error(result.message);
+        } else if (result.status === 'success') {
+          return result.payload;
+        }
+        throw new Error('Unknown error');
       };
 
       // Helper method for demo purpose only
@@ -32,10 +40,10 @@
           console.log("Datalayer pushed", data);
         });
 
-        window.sstApi.on("CARD_READ", cardData => {
-          const playerId = mapCardToPlayerId(cardData.cardData[0]);
+        window.sstApi.on("CARD_READ", async (cardData) => {
+          const playerInfo = mapCardToPlayerInfo(cardData.cardData[0]);
 
-          setText(`Card swiped, playerId is ${playerId}`);
+          setText(`Card swiped, playerId is ${playerInfo}`);
 
           // In this case we will display the window to the left when we
           // are going to start a session.
@@ -45,13 +53,12 @@
           if (playerId) {
             window.sstApi
               .startIdentifiedSession({
-                playerId: playerId,
+                playerId: playerInfo.account_id,
               })
               .then(async () => {
                 // For demo purposes - parse and display a text
                 // from the card, hopefully the card holder's name
-                const parsedData = cardData.cardData[0].replace("^", " ");
-                const playerName = parsedData.split(" ")[0];
+                const playerName = playerInfo.first_name;
 
                 setText(`Welcome, ${playerName}`);
 

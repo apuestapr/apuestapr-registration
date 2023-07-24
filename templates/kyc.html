@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script
+  src="https://code.jquery.com/jquery-3.7.0.min.js"
+  integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+  crossorigin="anonymous"></script>
+
+        <style type="text/css">
+            #kyc-content {
+                width: 100%;
+                height: 500px;
+            }
+
+            .navbar-brand img {
+                height: 50px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="#">
+                    <img src="/assets/logo_blue.png"/>
+                </a>
+                
+              
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                  <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                      <a class="nav-link" href="/register">New Registration</a>
+                    </li>
+                    
+                </div>
+            </nav>
+            <div class="row pt-3">
+                <div class="col-12">
+                    <h1>Instructions</h1>
+                    <ol>
+                        <li>Click on "Begin KYC" when the customer has presented you with identification.</li>
+                        <li>Follow the instructions below until you get a message saying that the KYC process was successful.</li>
+                        <li>If the KYC process fails, you can override it by clicking on "Continue to Registration". Note that in this case, you must review alternate identification and provide details in the box on the next screen.</li>
+                        <li>If KYC is successful, you can click on "Continue to Registration" to fill in the customer's details.</li>
+                    </ol>
+                    <button id="run-kyc" class="btn btn-lg btn-primary d-block">
+                        Begin KYC
+                    </button>
+                    <button id="continue" class="btn btn-lg btn-success d-none">Continue to Registration</button>
+                </div>
+            </div>
+            <div class="row pt-3">
+                <div class="col-12">
+                    <iframe id="kyc-content" camera="true"></iframe>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            let registrationId = '';
+
+            function checkIfComplete(registrationId) {
+                $.ajax({
+                    url: '/registration/' + registrationId,
+                    dataType:'json',
+                    success: (data) => {
+                        console.log(data.status);
+                        if (data.status === 'verification.accepted') {
+                            window.location.href = '/register/' + registrationId;
+                        }
+                    }
+                })
+            }
+
+            function runKYC() {
+                $('#run-kyc').attr('disabled', 'disabled').html('Loading...');
+                $.ajax({
+                    url: '/kyc/init',
+                    success: (data) => {
+                        $('#run-kyc').removeClass('d-block').addClass('d-none');
+                        $('#continue').removeClass('d-none').addClass('d-block');
+                        $('#kyc-content').attr('src', data.callbacks[0].body.verification_url);
+                        registrationId = data.id;
+                        
+
+                    },
+                    dataType: 'json'
+                });
+            }
+            $(document).ready(() => {
+                $('#run-kyc').click((e) => {
+                    e.preventDefault();
+                    console.log('clicked');
+                    runKYC();
+                });
+
+                $('#continue').click((e) => {
+                    e.preventDefault();
+                    if (!registrationId) {
+                        window.alert('Cannot continue without starting KYC');
+                        return;
+                    }
+                    window.location.href = '/register/' + registrationId;
+                })
+            });
+        </script>
+    </body>
+</html>
+

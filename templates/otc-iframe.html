@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>OTC/Omnichannel API example - Operator Playercard</title>
-  </head>
+    
 
   <body style="background-color: #fff; color: #0d0d0d; margin:0; height: 65px;">
     <div
@@ -20,13 +20,21 @@
     </div>
 
     <script>
-      const mapCardToPlayerId = track1 => {
+      const mapCardToPlayerInfo = async (track1) => {
         // Create a player ID by just appending a prefix, and getting rid of whitespace
         // A real implementation would call into a backend system to do the mapping
-        return "test_" + track1.replace(/\s/g, "_");
+        const response = await fetch('/kambi/exchange/' + track1);
+        const result = await response.json();
+
+        if (result.status === 'error') {
+          throw new Error(result.message);
+        } else if (result.status === 'success') {
+          return result.payload;
+        }
+        throw new Error('Unknown error');
       };
 
-      let playerId;
+      let playerInfo;
       let betsCounter;
       let isSessionActive = false;
       let lastPathname = null;
@@ -59,9 +67,9 @@
           console.log("Datalayer pushed", data);
         });
 
-        window.otcApi.on("CARD_READ", cardData => {
+        window.otcApi.on("CARD_READ", async (cardData) => {
           if (isSessionActive) return;
-          playerId = mapCardToPlayerId(cardData.cardData[0]);
+          playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
 
           resetIframe();
 
@@ -73,13 +81,12 @@
           if (playerId) {
             window.otcApi
               .startIdentifiedSession({
-                playerId: playerId,
+                playerId: playerInfo.account_id,
               })
               .then(() => {
                 // For demo purpose - we are parsing and displaying a text
                 // from the playercard, that we can identify as a player name.
-                const parsedData = cardData.cardData[0].replace("^", " ");
-                const playerName = parsedData.split(" ")[0];
+                const playerName = playerInfo.first_name;
 
                 setText(`Welcome, ${playerName}`);
                 setBetPlacedCount("Bets: 0");
