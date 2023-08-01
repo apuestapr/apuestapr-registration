@@ -41,7 +41,13 @@
         });
 
         window.sstApi.on("CARD_READ", async (cardData) => {
-          const playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
+          try {
+            const playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
+
+          } catch (err) {
+            setText('Error: ' + err.toString());
+            return;
+          }
 
           setText(`Welcome, ${playerInfo.first_name} (Account ID ${playerInfo.account_id})`);
 
