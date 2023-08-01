@@ -71,6 +71,8 @@
           if (isSessionActive) return;
           playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
 
+          setText(`Welcome, ${playerInfo.first_name} (Account ID ${playerInfo.account_id})`);
+
           resetIframe();
 
           // In this case we will display the window to the left when we

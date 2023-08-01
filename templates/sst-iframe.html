@@ -41,9 +41,9 @@
         });
 
         window.sstApi.on("CARD_READ", async (cardData) => {
-          const playerInfo = mapCardToPlayerInfo(cardData.cardData[0]);
+          const playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
 
-          setText(`Card swiped, playerId is ${playerInfo}`);
+          setText(`Welcome, ${playerInfo.first_name} (Account ID ${playerInfo.account_id})`);
 
           // In this case we will display the window to the left when we
           // are going to start a session.
