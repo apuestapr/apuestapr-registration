@@ -41,8 +41,9 @@
         });
 
         window.sstApi.on("CARD_READ", async (cardData) => {
+          let playerInfo;
           try {
-            const playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
+            playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
 
           } catch (err) {
             setText('Error: ' + err.toString());
@@ -56,7 +57,7 @@
           window.sstApi.setPosition("LEFT");
 
           // If the card data was matched with a player ID.
-          if (playerId) {
+          if (playerInfo.account_id) {
             window.sstApi
               .startIdentifiedSession({
                 playerId: playerInfo.account_id,
