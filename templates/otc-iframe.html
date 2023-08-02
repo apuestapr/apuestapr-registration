@@ -86,7 +86,7 @@
           window.otcApi.setPosition("TOP");
 
           // If the card data was matched with a player ID.
-          if (playerId) {
+          if (playerInfo.account_id) {
             window.otcApi
               .startIdentifiedSession({
                 playerId: playerInfo.account_id,

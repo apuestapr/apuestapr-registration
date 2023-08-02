@@ -26,6 +26,59 @@
         document.getElementById("demo-text").innerHTML = text;
       };
 
+      const handleCardData = async (cardData) => {
+        let playerInfo;
+        try {
+          playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
+
+        } catch (err) {
+          setText('Error: ' + err.toString());
+          return;
+        }
+
+        setText(`Welcome, ${playerInfo.first_name} (Account ID ${playerInfo.account_id})`);
+
+        // In this case we will display the window to the left when we
+        // are going to start a session.
+        
+        if (!!window.sstApi) {
+          window.sstApi.setPosition("LEFT");
+        }
+        
+
+        // If the card data was matched with a player ID.
+        if (playerInfo.account_id) {
+
+          if (!!window.sstApi) {
+            window.sstApi
+              .startIdentifiedSession({
+                playerId: playerInfo.account_id,
+              })
+              .then(async () => {
+                // For demo purposes - parse and display a text
+                // from the card, hopefully the card holder's name
+                const playerName = playerInfo.first_name;
+
+                setText(`Welcome, ${playerName}`);
+
+                const rewards = await window.sstApi.getRewards();
+
+                window.sstApi.navigateClient(
+                  "#filter/all/all/all/all/starting-soon",
+                );
+              })
+              .catch(errorKey => {
+                console.error("error received to iFrame from SST", errorKey);
+              });
+          } else {
+            alert('No SST API available. Player account ID is ' + playerInfo.account_id);
+          }
+          
+        } else {
+          console.error("Wasnt't able to find playerId");
+        }
+      }
+
       window.sstApiLoaded = async sstApi => {
         window.sstApi = sstApi;
 
@@ -41,47 +94,7 @@
         });
 
         window.sstApi.on("CARD_READ", async (cardData) => {
-          let playerInfo;
-          try {
-            playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
-
-          } catch (err) {
-            setText('Error: ' + err.toString());
-            return;
-          }
-
-          setText(`Welcome, ${playerInfo.first_name} (Account ID ${playerInfo.account_id})`);
-
-          // In this case we will display the window to the left when we
-          // are going to start a session.
-          window.sstApi.setPosition("LEFT");
-
-          // If the card data was matched with a player ID.
-          if (playerInfo.account_id) {
-            window.sstApi
-              .startIdentifiedSession({
-                playerId: playerInfo.account_id,
-              })
-              .then(async () => {
-                // For demo purposes - parse and display a text
-                // from the card, hopefully the card holder's name
-                const playerName = playerInfo.first_name;
-
-                setText(`Welcome, ${playerName}`);
-
-                const rewards = await window.sstApi.getRewards();
-                console.log(rewards);
-
-                window.sstApi.navigateClient(
-                  "#filter/all/all/all/all/starting-soon",
-                );
-              })
-              .catch(errorKey => {
-                console.error("error received to iFrame from SST", errorKey);
-              });
-          } else {
-            console.error("Wasnt't able to find playerId");
-          }
+          handleCardData(cardData);
         });
 
         window.sstApi.on("RESET", () => {
