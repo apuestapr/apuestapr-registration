@@ -12,7 +12,7 @@ class Callback(BaseModel):
 class Registration(MongoModel):
     started_at: datetime.datetime
     callbacks: typing.List[Callback] = []
-    kyc_status: str = ''
+    kyc_status: str = 'PENDING'
     first_name: str = ''
     last_name: str = ''
     birthday: typing.Optional[str] = ''
@@ -22,6 +22,16 @@ class Registration(MongoModel):
     loyalty_card_number: str = ''
     complete: bool = False
     kyc_override: str = ''
+    preferred_language: str = 'es'
+    referral_code: str = ''
+
+    onfido_applicant_id: str = ''
+
+    onfido_check_response: typing.Any = None
+    onfido_document_ids: typing.Optional[typing.List[str]] = None
+    onfido_reports: typing.Any = None
 
 
 
+# XXX todo: login, populate referral code from the user.
+# XXX todo: update users with diff card number?

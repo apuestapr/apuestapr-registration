@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, render_template, request, abort
 from src.shufti import run_verification_request, handle_callback
+from src.onfido import run_verification_request as onfido_run_verification_request, update_check_status, generate_sdk_token, run_check
+
 import json
 from src.models.registration import Registration
 import pymongo.errors
@@ -10,20 +12,37 @@ app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 def register():
    return render_template('kyc.html')
 
+
 @app.route('/register/<string:registration_id>', methods=['GET', 'POST'])
 def finish_registration(registration_id):
    registration = Registration.find_by_id(registration_id)
 
    if not registration:
       return 'Registration not found'
+
+
+
    
 
    success = False
    errors = []
 
+   onfido_sdk_token = ''
+
+   print(json.dumps(registration.onfido_reports))
+
+   if registration.kyc_status == 'PENDING':
+      onfido_sdk_token = generate_sdk_token(registration.onfido_applicant_id)
+
+   elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE':
+      registration = update_check_status(registration)
+
+      print(registration.onfido_check_response)
 
    if request.method == 'POST':
       print(request.form)
+
+
       # Process the incoming data
       registration.first_name = request.form['first_name']
       registration.last_name = request.form['last_name']
@@ -33,7 +52,7 @@ def finish_registration(registration_id):
       registration.birthday = request.form['birthday']
       registration.kyc_override = request.form.get('kyc_override', '')
 
-      if registration.kyc_status != 'verification.accepted' and not registration.kyc_override:
+      if registration.kyc_status != 'COMPLETE' and not registration.kyc_override:
          errors.append('You must provide a reason for bypassing KYC')
       if not registration.first_name:
          errors.append('First name is required')
@@ -50,11 +69,9 @@ def finish_registration(registration_id):
          # Look for duplicate loyal card numbers
          dupe = Registration.find_one({
             '_id': {
-               '$neq': registration.id,
+               '$ne': registration.id,
             },
-            'loyal_card_number': {
-               '$neq': '',
-            }
+            'loyal_card_number': registration.loyalty_card_number
          })
 
          if dupe:
@@ -64,7 +81,7 @@ def finish_registration(registration_id):
             registration.save()
             success = True
    
-   return render_template('register.html', registration=registration, errors=errors, success=success)
+   return render_template('register.html', onfido_sdk_token=onfido_sdk_token, registration=registration, errors=errors, success=success)
 
 
 
@@ -76,9 +93,13 @@ def kyc_callback():
       'status': 'ok'
    })
 
-@app.route('/kyc/init')
+@app.route('/kyc/init', methods=['POST'])
 def init_kyc():
-   registration = run_verification_request()
+   # registration = run_verification_request()
+   preferred_language = request.json.get('preferred_language', '')
+   registration = onfido_run_verification_request()
+   registration.preferred_language = preferred_language
+   registration.save()
    return json.dumps(registration.dict(), default=str)
 
 @app.route('/registration/<string:registration_id>')
@@ -88,6 +109,31 @@ def get_registration(registration_id):
    if not registration:
       abort(404)
    return json.dumps(registration.dict(), default=str)
+
+@app.route('/registration/<string:registration_id>/run-check', methods=['POST'])
+def run_onfido_check(registration_id):
+   registration = Registration.find_by_id(registration_id)
+   if not registration:
+      abort(404)
+   document_ids = request.json['document_ids']
+
+   registration.onfido_document_ids = document_ids
+   
+   registration_with_check = run_check(registration)
+   return json.dumps(registration_with_check.dict(), default=str) 
+
+
+@app.route('/registration/<string:registration_id>/check-status', methods=['GET'])
+def check_onfido_status(registration_id):
+   registration = Registration.find_by_id(registration_id)
+   if not registration:
+      abort(404)
+   
+   updated = update_check_status(registration)
+   return json.dumps(updated.dict(), default=str)  
+
+
+   
 
 
 @app.route('/kambi/otc', methods=['GET'])

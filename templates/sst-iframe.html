@@ -48,34 +48,28 @@
 
         // If the card data was matched with a player ID.
         if (playerInfo.account_id) {
-
+    
           if (!!window.sstApi) {
-            window.sstApi
-              .startIdentifiedSession({
+            try {
+              await window.sstApi.startIdentifiedSession({
                 playerId: playerInfo.account_id,
-              })
-              .then(async () => {
-                // For demo purposes - parse and display a text
-                // from the card, hopefully the card holder's name
-                const playerName = playerInfo.first_name;
-
-                setText(`Welcome, ${playerName}`);
-
-                const rewards = await window.sstApi.getRewards();
-
-                window.sstApi.navigateClient(
-                  "#filter/all/all/all/all/starting-soon",
-                );
-              })
-              .catch(errorKey => {
-                console.error("error received to iFrame from SST", errorKey);
               });
+
+              const rewards = await window.sstApi.getRewards();
+
+              window.sstApi.navigateClient(
+                "#filter/all/all/all/all/starting-soon",
+              );
+            } catch(err) {
+              setText('Error: ' + err.toString());
+            }
+            
           } else {
             alert('No SST API available. Player account ID is ' + playerInfo.account_id);
           }
           
         } else {
-          console.error("Wasnt't able to find playerId");
+          setText("Unable to find player.");
         }
       }
 
