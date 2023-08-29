@@ -1,19 +1,85 @@
-from flask import Flask, jsonify, render_template, request, abort
+from flask import Flask, jsonify, render_template, request, abort, url_for, session, redirect
 from src.shufti import run_verification_request, handle_callback
 from src.onfido import run_verification_request as onfido_run_verification_request, update_check_status, generate_sdk_token, run_check
+from authlib.integrations.flask_client import OAuth
+from urllib.parse import quote_plus, urlencode
 
 import json
 from src.models.registration import Registration
 import pymongo.errors
+import os
+from functools import wraps
+
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
+
+app.secret_key = os.getenv('APP_SECRET_KEY')
+
+oauth = OAuth(app)
+
+oauth.register(
+    "auth0",
+    client_id=os.getenv("AUTH0_CLIENT_ID"),
+    client_secret=os.getenv("AUTH0_CLIENT_SECRET"),
+    client_kwargs={
+        "scope": "openid profile email",
+    },
+    server_metadata_url=f'https://{os.getenv("AUTH0_DOMAIN")}/.well-known/openid-configuration'
+)
+
+def require_auth(f):
+   @wraps(f)
+   def decorated_function(*args, **kwargs):
+      user = session.get('user')
+      if not user:
+         return redirect('/login')
+      return f(*args, **kwargs)
+   return decorated_function
+
+
+@app.route('/login')
+def login():
+   return oauth.auth0.authorize_redirect(
+      redirect_uri=url_for('auth0_callback', _external=True)
+   )
+
+@app.route("/auth0/callback", methods=["GET", "POST"])
+def auth0_callback():
+    token = oauth.auth0.authorize_access_token()
+    session["user"] = token
+    return redirect("/")
+
+@app.route("/logout")
+@require_auth
+def logout():
+    session.clear()
+    return redirect(
+        "https://" + os.getenv("AUTH0_DOMAIN")
+        + "/v2/logout?"
+        + urlencode(
+            {
+                "returnTo": url_for("home", _external=True),
+                "client_id": os.getenv("AUTH0_CLIENT_ID"),
+            },
+            quote_via=quote_plus,
+        )
+    )
+
+@app.route('/')
+@require_auth
+def home():
+   return render_template('home.html', user=session.get('user'))
+
+
 
 
 @app.route('/register')
+@require_auth
 def register():
-   return render_template('kyc.html')
+   return render_template('kyc.html', user=session.get('user'))
 
 
 @app.route('/register/<string:registration_id>', methods=['GET', 'POST'])
+@require_auth
 def finish_registration(registration_id):
    registration = Registration.find_by_id(registration_id)
 
@@ -81,12 +147,13 @@ def finish_registration(registration_id):
             registration.save()
             success = True
    
-   return render_template('register.html', onfido_sdk_token=onfido_sdk_token, registration=registration, errors=errors, success=success)
+   return render_template('register.html', user=session.get('user'), onfido_sdk_token=onfido_sdk_token, registration=registration, errors=errors, success=success)
 
 
 
 
 @app.route('/kyc/callback', methods=['POST'])
+@require_auth
 def kyc_callback():
    handle_callback(request.json)
    return jsonify({
@@ -94,6 +161,7 @@ def kyc_callback():
    })
 
 @app.route('/kyc/init', methods=['POST'])
+@require_auth
 def init_kyc():
    # registration = run_verification_request()
    preferred_language = request.json.get('preferred_language', '')
@@ -103,6 +171,7 @@ def init_kyc():
    return json.dumps(registration.dict(), default=str)
 
 @app.route('/registration/<string:registration_id>')
+@require_auth
 def get_registration(registration_id):
    """ Returns the registration as JSON """
    registration = Registration.find_by_id(registration_id)
@@ -111,6 +180,7 @@ def get_registration(registration_id):
    return json.dumps(registration.dict(), default=str)
 
 @app.route('/registration/<string:registration_id>/run-check', methods=['POST'])
+@require_auth
 def run_onfido_check(registration_id):
    registration = Registration.find_by_id(registration_id)
    if not registration:
@@ -124,6 +194,7 @@ def run_onfido_check(registration_id):
 
 
 @app.route('/registration/<string:registration_id>/check-status', methods=['GET'])
+@require_auth
 def check_onfido_status(registration_id):
    registration = Registration.find_by_id(registration_id)
    if not registration:

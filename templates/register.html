@@ -18,34 +18,21 @@
     </head>
     <body>
         <div class="container">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <a class="navbar-brand" href="#">
-                    <img src="/assets/logo_blue.png"/>
-                </a>
-                
-              
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                  <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                      <a class="nav-link" href="/register">New Registration</a>
-                    </li>
-                    
-                </div>
-              </nav>
+            {% include 'nav.html' %}
             <div class="row">
                 <div class="col-12 pt-3">
-                    <h1>Customer Registration</h1>
+                    <h1>Registro de Cliente</h1>
                     
                     {% if success %}
                         <div class="alert alert-success">
-                            <h4>Registration Complete!</h4>
-                            <p>You can change any details below if you need to.</p>
-                            <a class="btn btn-primary" href="/register">Register new customer</a>
+                            <h4>Registro completo!</h4>
+                            <p>Puede cambiar cualquier detalle a continuación si es necesario.</p>
+                            <a class="btn btn-primary" href="/register">Registrar Nuevo Cliente</a>
                     
                         </div>
                     {% elif errors %}
                         <div class="alert alert-danger">
-                            <h4>Error(s)</h4>
+                            <h4>Error(es)</h4>
                             <ul>
                                 {% for error in errors %}
                                     <li>{{error}}</li>
@@ -55,6 +42,8 @@
 
                     {% endif %}
                     {% if registration.kyc_status == 'PENDING' %}
+                        <p>
+                        Por favor fotografíe la identificación del cliente.</p>
                         <div id="onfido-mount">
 
                         </div>
@@ -95,10 +84,10 @@
                         </script>
                     {% elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE' %}
                         <div class="alert alert-info">
-                            KYC check is running. Please remain on this page. Refreshing in <span id="seconds-remaining">30</span> second(s).
+                            La verificación KYC se está ejecutando. Por favor permanezca en esta página. La página se actualizará en <span id="seconds-remaining">15</span>.
                         </div>
                         <script type="text/javascript">
-                            let secondsRemaining = 30;
+                            let secondsRemaining = 15;
                             setInterval(function() {
                                 secondsRemaining--;
 
@@ -114,36 +103,37 @@
                        
                         
                             {% if registration.kyc_status == 'COMPLETE' %}
-                                <p class="alert alert-info">KYC has been run successfully on this customer.</p>
+                                <p class="alert alert-success">KYC se ejecutó exitosamente en este cliente. Haga que el cliente complete el resto de su información personal.</p>
                             {% elif registration.kyc_status == 'FAILED' %}
                                 <div class="alert alert-warning">
                                     <p>
-                                        <b>Warning!</b> KYC has not been run successfully for this customer. If you have manually reviewed the customer's identification, please write a note here explaining what you reviewed.
+                                        <b>Advertencia!</b> KYC no se ejecutó exitosamente para este cliente. Si revisó manualmente la identificación del cliente, escriba una nota aquí explicando lo que revisó.
                                     </p>
                                     <textarea name="kyc_override">{{registration.kyc_override}}</textarea>
                                     
                                 </div>
                             {% endif %}
                             <div class="form-group">
-                                <label>Loyalty Card Number</label>
+                                <label>Número de tarjeta de fidelidad</label>
                                 <input type="text" class="form-control" name="loyalty_card_number" value="{{registration.loyalty_card_number}}" required/>
-                                <small class="form-text text-muted">Choose an available loyalty card and enter the number here.</small>
+                                <small class="form-text text-muted">
+                                    Elija una tarjeta de fidelidad disponible e ingrese el número aquí.</small>
 
                             </div>
                                 
                             
                             <div class="form-group">
-                                <label>First Name</label>
+                                <label>Nombre de pila</label>
                                 <input class="form-control" type="text" name="first_name" value="{{registration.first_name}}" required/>
                             </div>
 
                             <div class="form-group">
-                                <label>Last Name</label>
+                                <label>Apellido</label>
                                 <input class="form-control" type="text" name="last_name" value="{{registration.last_name}}" required/>
                             </div>
 
                             <div class="form-group">
-                                <label>Birthday</label>
+                                <label>Fecha de nacimiento</label>
                                 <input class="form-control" type="date" name="birthday" value="{{registration.birthday}}" required/>
                             </div>
 
@@ -153,10 +143,11 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Phone</label>
+                                <label>
+                                    Número de teléfono</label>
                                 <input class="form-control" type="text" name="phone_number" value="{{registration.phone_number}}" required/>
                             </div>
-                            <input type="submit" class="btn btn-lg btn-success"/>
+                            <input type="submit" class="btn btn-lg btn-success" value="Entregar"/>
                         </form>
                     {% endif %}
                         

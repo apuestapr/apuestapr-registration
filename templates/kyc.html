@@ -19,35 +19,22 @@
     </head>
     <body>
         <div class="container">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <a class="navbar-brand" href="#">
-                    <img src="/assets/logo_blue.png"/>
-                </a>
-                
-              
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                  <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                      <a class="nav-link" href="/register">New Registration</a>
-                    </li>
-                    
-                </div>
-            </nav>
+            {% include 'nav.html' %}
             <div class="row pt-3">
                 <div class="col-12">
-                    <h1>Instructions</h1>
+                    <h1>Instrucciones</h1>
                     <ol>
-                        <li>Select the customer's preferred language.</li>
-                        <li>Click on "Begin KYC" when the customer has presented you with identification.</li>
-                        <li>Follow the instructions on the next page.</li>
+                        <li>Seleccione el idioma preferido del cliente</li>
+                        <li>Haga clic en "Comenzar KYC" cuando el cliente haya presentado una identificación válida</li>
+                        <li>Siga las instrucciones en la página siguiente</li>
                     </ol>
-                    <label>Preferred Language / Idioma Preferido</label>
+                    <label>Idioma Preferido</label>
                     <select id="preferred-language">
                         <option value="es">Español</option>
                         <option value="en">English</option>
                     </select>
                     <button id="run-kyc" class="btn btn-lg btn-primary d-block">
-                        Begin KYC
+                        Comenzar KYC
                     </button>
                 </div>
             </div>
@@ -59,7 +46,7 @@
 
 
             function runKYC() {
-                $('#run-kyc').attr('disabled', 'disabled').html('Loading...');
+                $('#run-kyc').attr('disabled', 'disabled').html('Cargando...');
                 $.ajax({
                     url: '/kyc/init',
                     method: 'POST',
