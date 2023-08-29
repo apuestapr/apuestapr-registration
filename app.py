@@ -167,7 +167,7 @@ def init_kyc():
    preferred_language = request.json.get('preferred_language', '')
    registration = onfido_run_verification_request()
    registration.preferred_language = preferred_language
-   registration.registered_by = session.get('user').userinfo.email
+   registration.registered_by = session.get('user')['userinfo']['email']
    registration.save()
    return json.dumps(registration.dict(), default=str)
 
