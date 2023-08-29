@@ -24,6 +24,7 @@ class Registration(MongoModel):
     kyc_override: str = ''
     preferred_language: str = 'es'
     referral_code: str = ''
+    registered_by: str = ''
 
     onfido_applicant_id: str = ''
 
