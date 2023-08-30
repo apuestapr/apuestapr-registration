@@ -117,6 +117,11 @@ def finish_registration(registration_id):
       registration.phone_number = request.form['phone_number']
       registration.birthday = request.form['birthday']
       registration.kyc_override = request.form.get('kyc_override', '')
+      registration.address_1 = request.form.get('address_1', '')
+      registration.address_2 = request.form.get('address_2', '')
+      registration.city = request.form.get('city', '')
+      registration.state_province = request.form.get('state_province', '')
+      registration.country = request.form.get('country', '')
 
       if registration.kyc_status != 'COMPLETE' and not registration.kyc_override:
          errors.append('You must provide a reason for bypassing KYC')
@@ -130,6 +135,9 @@ def finish_registration(registration_id):
          errors.append('Email is required')
       if not registration.phone_number:
          errors.append('Phone is required')
+
+      if not registration.address_1 or not registration.city or not registration.state_province or not registration.country or not registration.postal_code:
+         errors.append('Address is required')
       
       if len(errors) == 0:
          # Look for duplicate loyal card numbers

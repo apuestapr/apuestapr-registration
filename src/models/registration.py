@@ -26,6 +26,13 @@ class Registration(MongoModel):
     referral_code: str = ''
     registered_by: str = ''
 
+    address_1: str = ''
+    address_2: str = ''
+    city: str = ''
+    state_province: str = ''
+    postal_code: str = ''
+    country: str = ''
+
     onfido_applicant_id: str = ''
 
     onfido_check_response: typing.Any = None
