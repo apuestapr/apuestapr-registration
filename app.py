@@ -121,6 +121,7 @@ def finish_registration(registration_id):
       registration.address_2 = request.form.get('address_2', '')
       registration.city = request.form.get('city', '')
       registration.state_province = request.form.get('state_province', '')
+      registration.postal_code = request.form.get('postal_code', '')
       registration.country = request.form.get('country', '')
 
       if registration.kyc_status != 'COMPLETE' and not registration.kyc_override:
@@ -137,6 +138,7 @@ def finish_registration(registration_id):
          errors.append('Phone is required')
 
       if not registration.address_1 or not registration.city or not registration.state_province or not registration.country or not registration.postal_code:
+         print(registration)
          errors.append('Address is required')
       
       if len(errors) == 0:
