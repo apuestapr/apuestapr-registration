@@ -1,0 +1,200 @@
+<div class="header">
+    <div class="logo">
+        <img src="/assets/logo_blue.png"/>
+    </div>
+    <div class="welcome-text" id="welcome-text">
+        Please swipe your player card or enter your card number.
+    </div>
+    
+    <div class="spacer"></div>
+    <div class="right-side">
+        <div class="form-entry show" id="logged-out-form">
+            <input type="text" id="player-card-manual-entry" placeholder="Enter player number"/>
+            <button id="submit-manual-player-card">Go</button>
+        
+        </div>
+        <div class="form-entry hide" id="logged-in-form">
+            <button
+                id="logout-btn"
+            >
+                Logout
+            </button>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    // Keep track of navigational events
+    let lastPathName = null;
+    const setText = text => {
+      document.getElementById("welcome-text").innerHTML = text;
+    };
+    
+    /**
+     * Account ID here needs to be the Apuesta internal player identifier, and then later the White hat player ID once we connect it
+     */
+    const startKambiSession = async (accountId) => {
+      if (!window.kambiApi) {
+        alert('Kambi API not detected.');
+        return;
+      }
+
+      window.kambiApi.setPosition("TOP");
+
+      await window.kambiApi.startIdentifiedSession({
+        playerId: accountId,
+      });
+    }
+
+
+
+    const logout = () => {
+      if (!!window.kambiApi) {
+        window.kambiApi.setPosition('HIDDEN');
+
+      }
+
+      setText('Please swipe your player card or enter your card number.');
+
+      document.getElementById('logged-in-form').classList.remove('show');
+      document.getElementById('logged-in-form').classList.add('hide');
+
+      document.getElementById('logged-out-form').classList.remove('hide');
+      document.getElementById('logged-out-form').classList.add('show');
+    }
+
+    const initOmniChannelJS = () => {
+      const validateApiUrl = (urlString) => {
+        const url = new URL(urlString);
+        if (
+          !url.hostname.endsWith("kambicdn.com") &&
+          !url.hostname.endsWith("kambi.com") &&
+          url.hostname !== "localhost"
+        ) {
+          throw new Error(`invalid API URL ${urlString}`);
+        }
+      };
+
+      const omnichannelApiUrl = new URL(location).searchParams.get(
+        "omnichannelApiUrl",
+      );
+
+      if (omnichannelApiUrl) {
+        console.log("API found");
+        const jsApiUrl = decodeURIComponent(omnichannelApiUrl);
+
+        // Important to be able to trust this URL.
+        validateApiUrl(jsApiUrl);
+
+        const scriptElement = document.createElement("script");
+        scriptElement.src = `${jsApiUrl}?cacheBlocker=${Date.now()}`;
+        document.head.appendChild(scriptElement);
+      }
+    }
+
+    
+
+    const initKambiUI = async (kambiApi, isSST = false) => {
+      window.kambiApi = kambiApi;
+      initOmniChannelJS();
+
+      const initializeArgs = {
+        initialPosition: 'HIDDEN'
+      };
+
+      if (isSST) {
+        initializeArgs.initialLobbyState = 'UNLOCKED';
+      }
+      const terminalInfo = await kambiApi.initialize(initializeArgs);
+
+      console.log('Terminal Info:', terminalInfo);
+
+      window.kambiApi.on('CARD_READ', async (cardData) => {
+        const cardNumber = cardData.cardData[0];
+        await logInUserWithCardNumber(cardNumber);
+      });
+
+      // Log out of our UI if the user logs out from the Kambi console
+      window.kambiApi.on("LOGOUT", () => {
+        logout();
+      });
+      
+      // Unclear exactly what this is for but it's from the example code.
+      window.kambiApi.on("LOCATION_CHANGE", payload => {
+        const { pathname } = payload;
+        if (pathname && lastPathname) {
+          if (pathname.startsWith("/sportsbook") && !lastPathname.startsWith("/sportsbook")) {
+            window.kambiApi.setPosition('TOP');
+          } else if (
+            (!pathname.startsWith("/sportsbook") &&
+              lastPathname.startsWith("/sportsbook")) ||
+            pathname.startsWith("/sportsbook/bethistory") // This is the path used when viewing bethistory for SST and OTC bets
+          ) {
+            window.kambiApi.setPosition("HIDDEN");
+          }
+        }
+        lastPathname = pathname;
+      });
+    }
+
+    const logInUserWithCardNumber = async (cardNumber) => {
+      // Create a player ID by just appending a prefix, and getting rid of whitespace
+      // A real implementation would call into a backend system to do the mapping
+      setText('Loading...');
+      document.getElementById('logged-out-form').classList.remove('show');
+      document.getElementById('logged-out-form').classList.add('hide');
+      document.getElementById('player-card-manual-entry').value = '';
+      try {
+        const response = await fetch('/kambi/exchange/' + cardNumber);
+        const playerInfo = await response.json();
+
+        if (playerInfo.status === 'error') {
+          throw new Error(playerInfo.message);
+        }
+        setText(`Bienvenidos, ${playerInfo.payload.first_name} (Player #${playerInfo.payload.loyalty_card_number})`);
+
+        startKambiSession(playerInfo.payload.account_id);
+
+        document.getElementById('logged-in-form').classList.remove('hide');
+        document.getElementById('logged-in-form').classList.add('show');
+
+        
+      }
+      catch (err) {
+
+        document.getElementById('logged-out-form').classList.remove('hide');
+        document.getElementById('logged-out-form').classList.add('show');
+        console.log(err);
+        setText(err.toString());
+      } 
+    };
+
+    
+
+    
+
+    document
+      .getElementById("logout-btn")
+      .addEventListener("click", async () => {
+        try {
+          if (!!window.kambiApi) {
+            await window.kambiApi.logout({ playerId });
+
+          }
+          logout();
+        } catch (err) {
+          setText("Failed to Logout, try again!");
+        }
+      });
+
+    document.getElementById('submit-manual-player-card').addEventListener('click', async () => {
+      const cardNumber = document.getElementById('player-card-manual-entry').value;
+      if (!cardNumber) {
+        alert('Please enter a valid card number');
+        return;
+      }
+
+      logInUserWithCardNumber(cardNumber);
+    });
+  </script>

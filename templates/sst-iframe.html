@@ -2,131 +2,16 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>SST/Omnichannel API example - Operator Playercard</title>
+    <title>Apuesta PR</title>
+    <link rel="stylesheet" href="/assets/styles-kambi.css">
   </head>
 
-  <body style="background-color: #fff; color: #0d0d0d">
+  <body>
+    {% include 'kambi.html' %}
     <script>
-      const mapCardToPlayerInfo = async (track1) => {
-        // Create a player ID by just appending a prefix, and getting rid of whitespace
-        // A real implementation would call into a backend system to do the mapping
-        const response = await fetch('/kambi/exchange/' + track1);
-        const result = await response.json();
-
-        if (result.status === 'error') {
-          throw new Error(result.message);
-        } else if (result.status === 'success') {
-          return result.payload;
-        }
-        throw new Error('Unknown error');
-      };
-
-      // Helper method for demo purpose only
-      const setText = text => {
-        document.getElementById("demo-text").innerHTML = text;
-      };
-
-      const handleCardData = async (cardData) => {
-        let playerInfo;
-        try {
-          playerInfo = await mapCardToPlayerInfo(cardData.cardData[0]);
-
-        } catch (err) {
-          setText('Error: ' + err.toString());
-          return;
-        }
-
-        setText(`Welcome, ${playerInfo.first_name} (Account ID ${playerInfo.account_id})`);
-
-        // In this case we will display the window to the left when we
-        // are going to start a session.
-        
-        if (!!window.sstApi) {
-          window.sstApi.setPosition("LEFT");
-        }
-        
-
-        // If the card data was matched with a player ID.
-        if (playerInfo.account_id) {
-    
-          if (!!window.sstApi) {
-            try {
-              await window.sstApi.startIdentifiedSession({
-                playerId: playerInfo.account_id,
-              });
-
-              const rewards = await window.sstApi.getRewards();
-
-              window.sstApi.navigateClient(
-                "#filter/all/all/all/all/starting-soon",
-              );
-            } catch(err) {
-              setText('Error: ' + err.toString());
-            }
-            
-          } else {
-            alert('No SST API available. Player account ID is ' + playerInfo.account_id);
-          }
-          
-        } else {
-          setText("Unable to find player.");
-        }
-      }
-
       window.sstApiLoaded = async sstApi => {
-        window.sstApi = sstApi;
-
-        const terminalInfo = await window.sstApi.initialize({
-          initialPosition: "HIDDEN",
-          initialLobbyState: "UNLOCKED",
-        });
-
-        console.log("TerminalInfo", terminalInfo);
-
-        window.sstApi.on("DATALAYER_PUSHED", data => {
-          console.log("Datalayer pushed", data);
-        });
-
-        window.sstApi.on("CARD_READ", async (cardData) => {
-          handleCardData(cardData);
-        });
-
-        window.sstApi.on("RESET", () => {
-          console.log("reset received");
-          window.sstApi.readyToReset();
-        });
-      };
-
-      const validateSstApiUrl = urlString => {
-        const url = new URL(urlString);
-        if (
-          !url.hostname.endsWith("kambicdn.com") &&
-          !url.hostname.endsWith("kambi.com") &&
-          url.hostname !== "localhost"
-        ) {
-          throw new Error(`invalid SST API URL ${urlString}`);
-        }
-      };
-
-      const omnichannelApiUrl = new URL(location).searchParams.get(
-        "omnichannelApiUrl",
-      );
-
-      if (omnichannelApiUrl) {
-        const jsApiUrl = decodeURIComponent(omnichannelApiUrl);
-
-        // Important to be able to trust this URL.
-        validateSstApiUrl(jsApiUrl);
-
-        const scriptElement = document.createElement("script");
-        scriptElement.src = `${jsApiUrl}?cacheBuster=${Date.now()}`;
-        document.head.appendChild(scriptElement);
+        initKambiUI(sstApi, true);
       }
     </script>
-
-    <div
-      style="text-align: center; font-size: 24px; margin-top: 24px;"
-      id="demo-text"
-    ></div>
   </body>
 </html>

@@ -1,0 +1,68 @@
+body {
+    padding: 0px;
+    margin: 0px;
+}
+div.header {
+    padding: 5px 30px;    
+    height: 65px;
+    max-height: 65px;
+    background-color: #f1f1f1;
+    border-bottom: solid 1px #ccc;
+    display: flex;
+    font-family: "Verdana", sans-serif;
+}
+
+div.logo img {
+    max-height: 55px;
+}
+
+div.welcome-text {
+    line-height: 55px;
+    margin-left: 50px;
+    font-size: 18px;
+}
+
+div.form-entry {
+    margin-left: 50px;
+    line-height: 55px;
+
+}
+
+div.form-entry input[type="text"] {
+    border-radius: 5px;
+    height: 30px;
+    line-height: 30px;
+    border: solid 1px #222;
+    width: 200px;
+    padding: 5px 10px;
+}
+
+div.form-entry button {
+    line-height: 30px;
+    border: solid 1px #222;
+    border-radius: 5px;
+    margin-left: 10px;
+    padding: 5px 20px;
+}
+
+div.form-entry button:hover {
+    background-color: #7c9cb4;
+    color: white;
+    cursor: pointer;
+}
+
+div.spacer {
+    flex: 1
+}
+
+div.right-side {
+    line-height: 55px;
+}
+
+.hide {
+    display: none;
+}
+
+.show {
+    display: block;
+}

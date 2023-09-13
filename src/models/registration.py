@@ -39,6 +39,17 @@ class Registration(MongoModel):
     onfido_document_ids: typing.Optional[typing.List[str]] = None
     onfido_reports: typing.Any = None
 
+    def safe_serialize(self):
+        return {
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'preferred_language': self.preferred_language,
+            'birthday': self.birthday,
+            'account_id': str(self.id),
+            'loyalty_card_number': self.loyalty_card_number,
+
+        }
+
 
 
 # XXX todo: login, populate referral code from the user.

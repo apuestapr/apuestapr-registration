@@ -238,21 +238,18 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
    if not registration:
       return jsonify({
          'status': 'error',
-         'message': 'No account found',
+         'message': 'No account found. Please try again.',
       })
    if not registration.complete:
       return jsonify({
          'status': 'error',
-         'message': 'Incomplete registration',
+         'message': 'Registration incomplete. Please see an associate to complete your registration.',
       })
    
    # XXX todo: bounce this off of the PAM to get the actual up-to-date information
    return jsonify({
       'status': 'success',
-      'payload': {
-         'account_id': str(registration.id),
-         'first_name': registration.first_name,
-      }
+      'payload': registration.safe_serialize()
    })
 
 
