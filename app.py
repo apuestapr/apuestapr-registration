@@ -124,6 +124,11 @@ def finish_registration(registration_id):
       registration.postal_code = request.form.get('postal_code', '')
       registration.country = request.form.get('country', '')
 
+      if request.form.get('agree_to_terms', None):
+         registration.agree_to_terms = True
+      else:
+         registration.agree_to_terms = False
+
       if registration.kyc_status != 'COMPLETE' and not registration.kyc_override:
          errors.append('You must provide a reason for bypassing KYC')
       if not registration.first_name:
@@ -137,21 +142,33 @@ def finish_registration(registration_id):
       if not registration.phone_number:
          errors.append('Phone is required')
 
+      if not registration.agree_to_terms:
+         errors.append('You must agree to the terms and conditions')
+
       if not registration.address_1 or not registration.city or not registration.state_province or not registration.country or not registration.postal_code:
          print(registration)
          errors.append('Address is required')
       
       if len(errors) == 0:
          # Look for duplicate loyal card numbers
-         dupe = Registration.find_one({
+         dupe_card_number = Registration.find_one({
             '_id': {
                '$ne': registration.id,
             },
             'loyal_card_number': registration.loyalty_card_number
          })
 
-         if dupe:
+         dupe_email = Registration.find_one({
+            '_id': {
+               '$ne': registration.id,
+            },
+            'email': registration.email
+         })
+
+         if dupe_card_number:
             errors.append('Someone has already been registered with this loyalty card number.')
+         elif dupe_email:
+            errors.append('Someone has already been registered with this email address.')
          else:
             registration.complete = True
             registration.save()

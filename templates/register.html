@@ -187,6 +187,17 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="agree_to_terms" {% if registration.agree_to_terms %}checked{% endif %}>
+                                        <label class="form-check-label" for="flexCheckDefault">
+                                            Aceptar términos y condiciones
+                                        </label>
+                                        <div class="form-text">
+                                            <a target="_blank" href="#">Leer términos y condiciones</a>
+                                        </div>
+                                      </div>
+                                </div>
                                 
 
                                 
@@ -197,7 +208,7 @@
                             </fieldset>
 
                             
-                            <input type="submit" class="btn btn-lg btn-success" value="Entregar"/>
+                            <input type="submit" class="btn btn-lg btn-success" value="Registrar"/>
                         </form>
                     {% endif %}
                         

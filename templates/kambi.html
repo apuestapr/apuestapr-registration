@@ -97,7 +97,6 @@
 
     const initKambiUI = async (kambiApi, isSST = false) => {
       window.kambiApi = kambiApi;
-      initOmniChannelJS();
 
       const initializeArgs = {
         initialPosition: 'HIDDEN'
@@ -170,10 +169,7 @@
       } 
     };
 
-    
-
-    
-
+    initOmniChannelJS();
     document
       .getElementById("logout-btn")
       .addEventListener("click", async () => {

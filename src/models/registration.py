@@ -26,6 +26,8 @@ class Registration(MongoModel):
     referral_code: str = ''
     registered_by: str = ''
 
+    agree_to_terms: bool = False
+
     address_1: str = ''
     address_2: str = ''
     city: str = ''
@@ -38,6 +40,8 @@ class Registration(MongoModel):
     onfido_check_response: typing.Any = None
     onfido_document_ids: typing.Optional[typing.List[str]] = None
     onfido_reports: typing.Any = None
+
+    whitehat_user_id: str = ''
 
     def safe_serialize(self):
         return {
