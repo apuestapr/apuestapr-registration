@@ -40,7 +40,7 @@
         return;
       }
 
-      window.kambiApi.setPosition("TOP");
+      window.kambiApi.setPosition(window.kambiIframePosition);
 
       await window.kambiApi.startIdentifiedSession({
         playerId: accountId,
@@ -124,7 +124,7 @@
         const { pathname } = payload;
         if (pathname && lastPathname) {
           if (pathname.startsWith("/sportsbook") && !lastPathname.startsWith("/sportsbook")) {
-            window.kambiApi.setPosition('TOP');
+            window.kambiApi.setPosition(window.kambiIframePosition);
           } else if (
             (!pathname.startsWith("/sportsbook") &&
               lastPathname.startsWith("/sportsbook")) ||
