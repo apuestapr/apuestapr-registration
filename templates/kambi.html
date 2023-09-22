@@ -35,12 +35,14 @@
      * Account ID here needs to be the Apuesta internal player identifier, and then later the White hat player ID once we connect it
      */
     const startKambiSession = async (accountId) => {
+      console.log('Starting Kambi session witih account ID ', accountId);
       if (!window.kambiApi) {
         alert('Kambi API not detected.');
         return;
       }
 
-      window.kambiApi.setPosition(window.kambiIframePosition);
+      console.log('Setting Kambi position to ', window.kambiIframePositionLoggedIn);
+      window.kambiApi.setPosition(window.kambiIframePositionLoggedIn);
 
       await window.kambiApi.startIdentifiedSession({
         playerId: accountId,
@@ -51,7 +53,7 @@
 
     const logout = () => {
       if (!!window.kambiApi) {
-        window.kambiApi.setPosition(window.kambiIframePosition);
+        window.kambiApi.setPosition(window.kambiIframePositionLoggedOut);
 
       }
 
@@ -99,7 +101,7 @@
       window.kambiApi = kambiApi;
 
       const initializeArgs = {
-        initialPosition: window.kambiIframePosition,
+        initialPosition: window.kambiIframePositionLoggedOut,
       };
 
       if (isSST) {
@@ -124,7 +126,7 @@
         const { pathname } = payload;
         if (pathname && lastPathName) {
           if (pathname.startsWith("/sportsbook") && !lastPathName.startsWith("/sportsbook")) {
-            window.kambiApi.setPosition(window.kambiIframePosition);
+            window.kambiApi.setPosition(window.kambiIframePositionLoggedIn);
           } else if (
             (!pathname.startsWith("/sportsbook") &&
               lastPathName.startsWith("/sportsbook")) ||
