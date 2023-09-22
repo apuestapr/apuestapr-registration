@@ -87,7 +87,7 @@ def create_account(registration: Registration):
 
     body = {
         'userId': int(registration.whitehat_user_id),
-        'adminUser': '',
+        # 'adminUser': '',
         'kycApproved': True,
         'reason': 'Successful KYC check by Onfido',
         'brand': 'liberman'

@@ -122,18 +122,18 @@
       // Unclear exactly what this is for but it's from the example code.
       window.kambiApi.on("LOCATION_CHANGE", payload => {
         const { pathname } = payload;
-        if (pathname && lastPathname) {
-          if (pathname.startsWith("/sportsbook") && !lastPathname.startsWith("/sportsbook")) {
+        if (pathname && lastPathName) {
+          if (pathname.startsWith("/sportsbook") && !lastPathName.startsWith("/sportsbook")) {
             window.kambiApi.setPosition(window.kambiIframePosition);
           } else if (
             (!pathname.startsWith("/sportsbook") &&
-              lastPathname.startsWith("/sportsbook")) ||
+              lastPathName.startsWith("/sportsbook")) ||
             pathname.startsWith("/sportsbook/bethistory") // This is the path used when viewing bethistory for SST and OTC bets
           ) {
             window.kambiApi.setPosition("HIDDEN");
           }
         }
-        lastPathname = pathname;
+        lastPathName = pathname;
       });
     }
 
