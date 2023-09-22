@@ -51,7 +51,7 @@
 
     const logout = () => {
       if (!!window.kambiApi) {
-        window.kambiApi.setPosition('HIDDEN');
+        window.kambiApi.setPosition(window.kambiIframePosition);
 
       }
 
