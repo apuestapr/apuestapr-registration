@@ -23,195 +23,199 @@
                 <div class="col-12 pt-3">
                     <h1>Registro de Cliente</h1>
                     
-                    {% if success %}
+                    {% if success or registration.complete %}
                         <div class="alert alert-success">
                             <h4>Registro completo!</h4>
-                            <p>Puede cambiar cualquier detalle a continuación si es necesario.</p>
+                            <p>Para cambiar datos personales puede utilizar el sistema back office de White Hat.</p>
+                            <small>User ID: {{registration.whitehat_user_id}}</small><br />
+                            <small>Email: {{registration.email}}</small>
+                            <br /><br/>
                             <a class="btn btn-primary" href="/register">Registrar Nuevo Cliente</a>
                     
                         </div>
-                    {% elif errors %}
-                        <div class="alert alert-danger">
-                            <h4>Error(es)</h4>
-                            <ul>
-                                {% for error in errors %}
-                                    <li>{{error}}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
+                    {% else %}
+                        {% if errors %}
+                            <div class="alert alert-danger">
+                                <h4>Error(es)</h4>
+                                <ul>
+                                    {% for error in errors %}
+                                        <li>{{error}}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
 
-                    {% endif %}
-                    {% if registration.kyc_status == 'PENDING' %}
-                        <p>
-                        Por favor fotografíe la identificación del cliente.</p>
-                        <div id="onfido-mount">
+                        {% endif %}
+                        {% if registration.kyc_status == 'PENDING' %}
+                            <p>
+                            Por favor fotografíe la identificación del cliente.</p>
+                            <div id="onfido-mount">
 
-                        </div>
-                        <script type="text/javascript">
-                            console.log('SDK token is {{onfido_sdk_token}}');
-                            let preferredLanguage = 'en_US';
+                            </div>
+                            <script type="text/javascript">
+                                console.log('SDK token is {{onfido_sdk_token}}');
+                                let preferredLanguage = 'en_US';
 
-                            {% if registration.preferred_language == 'es' %}
-                                preferredLanguage = 'es_419';
-                            {% endif %}
+                                {% if registration.preferred_language == 'es' %}
+                                    preferredLanguage = 'es_419';
+                                {% endif %}
 
-                            Onfido.init({
-                                token: '{{onfido_sdk_token}}',
-                                containerId: 'onfido-mount',
-                                steps: ['welcome', 'document', 'complete'],
-                                language: preferredLanguage,
-                                
-                                onComplete: function (data) {
-                                    console.log('Completed with data:', data);
-                                    const documentIds = Object.keys(data).map(k => {
-                                        return data[k].id;
-                                    });
-
-                                    $.ajax({
-                                        dataType: 'json',
-                                        contentType: 'application/json',
-                                        method: 'POST',
-                                        data: JSON.stringify({
-                                            'document_ids': documentIds,
-                                        }),
-                                        url: '/registration/{{registration.id}}/run-check',
-                                        success: (data) => {
-                                            window.location.reload()
-                                        }
-                                    })
-                                }
-                            });
-                        </script>
-                    {% elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE' %}
-                        <div class="alert alert-info">
-                            La verificación KYC se está ejecutando. Por favor permanezca en esta página. La página se actualizará en <span id="seconds-remaining">15</span>.
-                        </div>
-                        <script type="text/javascript">
-                            let secondsRemaining = 15;
-                            setInterval(function() {
-                                secondsRemaining--;
-
-                                if (secondsRemaining == 0) {
-                                    window.location.reload();
-                                }
-                                $('#seconds-remaining').html(secondsRemaining.toString());
-                            }, 1000);
-                        </script>
-                    {% elif registration.kyc_status in ['COMPLETE', 'FAILED'] %}
-                        <form method="POST">
-
-                       
-                        
-                            {% if registration.kyc_status == 'COMPLETE' %}
-                                <p class="alert alert-success">KYC se ejecutó exitosamente en este cliente. Haga que el cliente complete el resto de su información personal.</p>
-                            {% elif registration.kyc_status == 'FAILED' %}
-                                <div class="alert alert-warning">
-                                    <p>
-                                        <b>Advertencia!</b> KYC no se ejecutó exitosamente para este cliente. Si revisó manualmente la identificación del cliente, escriba una nota aquí explicando lo que revisó.
-                                    </p>
-                                    <textarea name="kyc_override">{{registration.kyc_override}}</textarea>
+                                Onfido.init({
+                                    token: '{{onfido_sdk_token}}',
+                                    containerId: 'onfido-mount',
+                                    steps: ['welcome', 'document', 'complete'],
+                                    language: preferredLanguage,
                                     
-                                </div>
-                            {% endif %}
-                            <div class="form-group">
-                                <label>Número de tarjeta de fidelidad</label>
-                                <input type="text" class="form-control" name="loyalty_card_number" value="{{registration.loyalty_card_number}}" required/>
-                                <small class="form-text text-muted">
-                                    Elija una tarjeta de fidelidad disponible e ingrese el número aquí.</small>
+                                    onComplete: function (data) {
+                                        console.log('Completed with data:', data);
+                                        const documentIds = Object.keys(data).map(k => {
+                                            return data[k].id;
+                                        });
 
+                                        $.ajax({
+                                            dataType: 'json',
+                                            contentType: 'application/json',
+                                            method: 'POST',
+                                            data: JSON.stringify({
+                                                'document_ids': documentIds,
+                                            }),
+                                            url: '/registration/{{registration.id}}/run-check',
+                                            success: (data) => {
+                                                window.location.reload()
+                                            }
+                                        })
+                                    }
+                                });
+                            </script>
+                        {% elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE' %}
+                            <div class="alert alert-info">
+                                La verificación KYC se está ejecutando. Por favor permanezca en esta página. La página se actualizará en <span id="seconds-remaining">15</span>.
                             </div>
-                                
-                            
-                            <div class="form-group">
-                                <label>Nombre de pila</label>
-                                <input class="form-control" type="text" name="first_name" value="{{registration.first_name}}" required/>
-                            </div>
+                            <script type="text/javascript">
+                                let secondsRemaining = 15;
+                                setInterval(function() {
+                                    secondsRemaining--;
 
-                            <div class="form-group">
-                                <label>Apellido</label>
-                                <input class="form-control" type="text" name="last_name" value="{{registration.last_name}}" required/>
-                            </div>
+                                    if (secondsRemaining == 0) {
+                                        window.location.reload();
+                                    }
+                                    $('#seconds-remaining').html(secondsRemaining.toString());
+                                }, 1000);
+                            </script>
+                        {% elif registration.kyc_status in ['COMPLETE', 'FAILED'] %}
+                            <form method="POST">
 
-                            <div class="form-group">
-                                <label>Fecha de nacimiento</label>
-                                <input class="form-control" type="date" name="birthday" value="{{registration.birthday}}" required/>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input class="form-control" type="email" name="email" value="{{registration.email}}" required/>
-                            </div>
-
-                            <div class="form-group">
-                                <label>
-                                    Número de teléfono</label>
-                                <input class="form-control" type="text" name="phone_number" value="{{registration.phone_number}}" required/>
-                            </div>
-                            <fieldset>
-                                <legend>Direccion de Casa</legend>
-                                <div class="form-group">
-                                    <label>Línea 1</label>
-                                    <input class="form-control" type="text" name="address_1" value="{{registration.address_1}}" required/>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Línea 2</label>
-                                    <input class="form-control" type="text" name="address_2" value="{{registration.address_2}}"/>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="form-group">
-                                            <label>Ciudad</label>
-                                            <input class="form-control" type="text" name="city" value="{{registration.city}}" required/>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="form-group">
-                                            <label>Estado o Provincia</label>
-                                            <input class="form-control" type="text" name="state_province" value="{{registration.state_province}}" required/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <div class="form-group">
-                                            <label>Código Postal</label>
-                                            <input class="form-control" type="text" name="postal_code" value="{{registration.postal_code}}" required/>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="form-group">
-                                            <label>País</label>
-                                            <input class="form-control" type="text" name="country" value="{{registration.country}}" required/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="agree_to_terms" {% if registration.agree_to_terms %}checked{% endif %}>
-                                        <label class="form-check-label" for="flexCheckDefault">
-                                            Aceptar términos y condiciones
-                                        </label>
-                                        <div class="form-text">
-                                            <a target="_blank" href="#">Leer términos y condiciones</a>
-                                        </div>
-                                      </div>
-                                </div>
-                                
-
-                                
-                                
-                                
-
-                                
-                            </fieldset>
-
-                            
-                            <input type="submit" class="btn btn-lg btn-success" value="Registrar"/>
-                        </form>
-                    {% endif %}
                         
+                            
+                                {% if registration.kyc_status == 'COMPLETE' %}
+                                    <p class="alert alert-success">KYC se ejecutó exitosamente en este cliente. Haga que el cliente complete el resto de su información personal.</p>
+                                {% elif registration.kyc_status == 'FAILED' %}
+                                    <div class="alert alert-warning">
+                                        <p>
+                                            <b>Advertencia!</b> KYC no se ejecutó exitosamente para este cliente. Si revisó manualmente la identificación del cliente, escriba una nota aquí explicando lo que revisó.
+                                        </p>
+                                        <textarea name="kyc_override">{{registration.kyc_override}}</textarea>
+                                        
+                                    </div>
+                                {% endif %}
+                                <div class="form-group">
+                                    <label>Número de tarjeta de fidelidad</label>
+                                    <input type="text" class="form-control" name="loyalty_card_number" value="{{registration.loyalty_card_number}}" required/>
+                                    <small class="form-text text-muted">
+                                        Elija una tarjeta de fidelidad disponible e ingrese el número aquí.</small>
+
+                                </div>
+                                    
+                                
+                                <div class="form-group">
+                                    <label>Nombre de pila</label>
+                                    <input class="form-control" type="text" name="first_name" value="{{registration.first_name}}" required/>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Apellido</label>
+                                    <input class="form-control" type="text" name="last_name" value="{{registration.last_name}}" required/>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Fecha de nacimiento</label>
+                                    <input class="form-control" type="date" name="birthday" value="{{registration.birthday}}" required/>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input class="form-control" type="email" name="email" value="{{registration.email}}" required/>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        Número de teléfono</label>
+                                    <input class="form-control" type="text" name="phone_number" value="{{registration.phone_number}}" required/>
+                                </div>
+                                <fieldset>
+                                    <legend>Direccion de Casa</legend>
+                                    <div class="form-group">
+                                        <label>Línea 1</label>
+                                        <input class="form-control" type="text" name="address_1" value="{{registration.address_1}}" required/>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Línea 2</label>
+                                        <input class="form-control" type="text" name="address_2" value="{{registration.address_2}}"/>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <div class="form-group">
+                                                <label>Ciudad</label>
+                                                <input class="form-control" type="text" name="city" value="{{registration.city}}" required/>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group">
+                                                <label>Estado o Provincia</label>
+                                                <input class="form-control" type="text" name="state_province" value="{{registration.state_province}}" required/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label>Código Postal</label>
+                                                <input class="form-control" type="text" name="postal_code" value="{{registration.postal_code}}" required/>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label>País</label>
+                                                <input class="form-control" type="text" name="country" value="{{registration.country}}" required/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="agree_to_terms" {% if registration.agree_to_terms %}checked{% endif %}>
+                                            <label class="form-check-label" for="flexCheckDefault">
+                                                Aceptar términos y condiciones
+                                            </label>
+                                            <div class="form-text">
+                                                <a target="_blank" href="#">Leer términos y condiciones</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+
+                                    
+                                    
+                                    
+
+                                    
+                                </fieldset>
+
+                                
+                                <input type="submit" class="btn btn-lg btn-success" value="Registrar"/>
+                            </form>
+                        {% endif %}
+                    {% endif %} 
                         
                    
                 </div>

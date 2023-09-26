@@ -1,28 +1,71 @@
 body {
     padding: 0px;
     margin: 0px;
+    height: 100vh;
 }
-div.header {
+
+#iframe-container {
+    background-color: #f1f1f1;
+    font-family: "Verdana", sans-serif;
+    display: flex;
+    box-sizing: border-box;
+}
+#iframe-container.top {
     padding: 5px 30px;    
     height: 65px;
     max-height: 65px;
-    background-color: #f1f1f1;
     border-bottom: solid 1px #ccc;
-    display: flex;
-    font-family: "Verdana", sans-serif;
 }
 
-div.logo img {
+#iframe-container.left {
+    width: 16rem;
+    max-width: 16rem;
+    padding: 30px 5px;
+    flex-direction: column;
+    height: 100%;
+    border-right: solid 1px #ccc;
+}
+
+#iframe-container.full {
+    width: 100%;
+    height: 100%;
+    padding: 30px;
+    display: block;
+    text-align: center;
+}
+
+#iframe-container.top div.logo img {
     max-height: 55px;
 }
 
-div.welcome-text {
+#iframe-container.left div.logo {
+    text-align: center;
+}
+#iframe-container.left div.logo img {
+    max-height:200px;
+}
+
+#iframe-container.full div.logo {
+    margin-bottom: 50px;
+}
+
+
+#iframe-container.full div.logo img {
+    max-height: 300px;
+}
+
+#iframe-container.top div.welcome-text {
     line-height: 55px;
     margin-left: 50px;
     font-size: 18px;
 }
 
-div.form-entry {
+#iframe-container.left div.welcome-text {
+    font-size: 18px;
+    margin-top: 50px;
+}
+
+#iframe-container.top div.form-entry {
     margin-left: 50px;
     line-height: 55px;
 
@@ -41,8 +84,18 @@ div.form-entry button {
     line-height: 30px;
     border: solid 1px #222;
     border-radius: 5px;
-    margin-left: 10px;
     padding: 5px 20px;
+
+}
+
+
+#iframe-container.top div.form-entry button {
+    
+    margin-left: 10px;
+}
+
+#iframe-container.left div.form-entry button {
+    width: 100%;
 }
 
 div.form-entry button:hover {

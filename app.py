@@ -9,7 +9,7 @@ from src.models.registration import Registration
 import pymongo.errors
 import os
 from functools import wraps
-
+from src.whitehat import create_account
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 
 app.secret_key = os.getenv('APP_SECRET_KEY')
@@ -165,14 +165,22 @@ def finish_registration(registration_id):
             'email': registration.email
          })
 
+         # Register with white hat
+         
          if dupe_card_number:
             errors.append('Someone has already been registered with this loyalty card number.')
          elif dupe_email:
             errors.append('Someone has already been registered with this email address.')
          else:
-            registration.complete = True
-            registration.save()
-            success = True
+            if registration.whitehat_user_id == '':
+               try:
+                  create_account(registration)
+               except Exception as e:
+                  errors.append(str(e))
+            if len(errors) == 0:
+               registration.complete = True
+               registration.save()
+               success = True
    
    return render_template('register.html', user=session.get('user'), onfido_sdk_token=onfido_sdk_token, registration=registration, errors=errors, success=success)
 

@@ -4,6 +4,7 @@ os.environ['MONGO_CONNECTION_STRING'] = 'mongodb+srv://mongo:oJkEEckjc0uO0R2Y@cl
 from src.models.registration import Registration
 import requests
 import uuid
+import json
 
 """
 
@@ -52,8 +53,8 @@ CALL: registeruser
 
 """
 
-# API_URL = os.getenv('WHITEHAT_API_URL')
-API_URL='https://platform.lmg.dev.whg.tech'
+API_URL = os.getenv('WHITEHAT_API_URL')
+# API_URL='https://platform.lmg.dev.whg.tech'
 
 def create_account(registration: Registration):
     if not registration.whitehat_user_id:
@@ -78,7 +79,7 @@ def create_account(registration: Registration):
 
         body = response.json()
         if body.get('type', '') == 'error':
-            raise Exception('Error code %s: %s (request ID %s)' % (body['code'], body['message'], body['requestid']))
+            raise Exception('PAM Error: ' + json.dumps(body))
 
         registration.whitehat_user_id = str(body['userid'])
         registration.save()

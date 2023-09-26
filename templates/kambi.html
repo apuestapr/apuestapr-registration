@@ -1,9 +1,9 @@
-<div class="header">
+<div id="iframe-container" class="full">
     <div class="logo">
         <img src="/assets/logo_blue.png"/>
     </div>
     <div class="welcome-text" id="welcome-text">
-        Please swipe your player card or enter your card number.
+      Deslice su tarjeta de jugador o ingrese su número de tarjeta.
     </div>
     
     <div class="spacer"></div>
@@ -26,6 +26,14 @@
 <script src="https://cdn.ingest-lr.com/LogRocket.min.js" crossorigin="anonymous"></script>
 
 <script>
+
+  const changeIframePosition = (position) => {
+    document.getElementById('iframe-container').className = position.toLowerCase();
+    !!window.kambiApi && window.kambiApi.setPosition(position);
+    console.log('Setting Kambi position to ', position);
+
+  };
+
   window.LogRocket && window.LogRocket.init('f4lb2w/apuesta-pr');
     // Keep track of navigational events
     let lastPathName = null;
@@ -38,13 +46,13 @@
      */
     const startKambiSession = async (accountId) => {
       console.log('Starting Kambi session witih account ID ', accountId);
+      changeIframePosition(window.kambiIframePositionLoggedIn);
       if (!window.kambiApi) {
         alert('Kambi API not detected.');
         return;
       }
 
-      console.log('Setting Kambi position to ', window.kambiIframePositionLoggedIn);
-      window.kambiApi.setPosition(window.kambiIframePositionLoggedIn);
+      
 
       await window.kambiApi.startIdentifiedSession({
         playerId: accountId,
@@ -54,12 +62,9 @@
 
 
     const logout = () => {
-      if (!!window.kambiApi) {
-        window.kambiApi.setPosition(window.kambiIframePositionLoggedOut);
+      changeIframePosition(window.kambiIframePositionLoggedOut);
 
-      }
-
-      setText('Please swipe your player card or enter your card number.');
+      setText('Deslice su tarjeta de jugador o ingrese su número de tarjeta.');
 
       document.getElementById('logged-in-form').classList.remove('show');
       document.getElementById('logged-in-form').classList.add('hide');
@@ -106,6 +111,8 @@
         initialPosition: window.kambiIframePositionLoggedOut,
       };
 
+      changeIframePosition(window.kambiIframePositionLoggedOut)
+
       if (isSST) {
         initializeArgs.initialLobbyState = 'UNLOCKED';
       }
@@ -128,13 +135,13 @@
         const { pathname } = payload;
         if (pathname && lastPathName) {
           if (pathname.startsWith("/sportsbook") && !lastPathName.startsWith("/sportsbook")) {
-            window.kambiApi.setPosition(window.kambiIframePositionLoggedIn);
+            changeIframePosition(window.kambiIframePositionLoggedIn);
           } else if (
             (!pathname.startsWith("/sportsbook") &&
               lastPathName.startsWith("/sportsbook")) ||
             pathname.startsWith("/sportsbook/bethistory") // This is the path used when viewing bethistory for SST and OTC bets
           ) {
-            window.kambiApi.setPosition("HIDDEN");
+            changeIframePosition("HIDDEN");
           }
         }
         lastPathName = pathname;
@@ -197,4 +204,6 @@
 
       logInUserWithCardNumber(cardNumber);
     });
+
+    changeIframePosition(window.kambiIframePositionLoggedOut);
   </script>

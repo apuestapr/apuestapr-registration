@@ -17,4 +17,4 @@ MONGO_CONNECTION_STRING=mongodb+srv://mongo:oJkEEckjc0uO0R2Y@cluster0.nqnmk0a.mo
 ONFIDO_API_KEY=api_sandbox_us.2cuDp2NA5E-.GJnWsABbW8pTaNzR5LiCnOZPJ_Bc0zCz
 
 
-WHITEHAT_API_URL=https://platform.lmg.dev.whg.tech
+WHITEHAT_API_URL=https://platform.lmg.gli.whg.tech
