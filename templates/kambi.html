@@ -53,7 +53,8 @@
       }
 
       
-
+      
+      window.playerId = accountId;
       await window.kambiApi.startIdentifiedSession({
         playerId: accountId,
       });
@@ -65,6 +66,7 @@
       changeIframePosition(window.kambiIframePositionLoggedOut);
 
       setText('Deslice su tarjeta de jugador o ingrese su número de tarjeta.');
+      window.playerId = undefined;
 
       document.getElementById('logged-in-form').classList.remove('show');
       document.getElementById('logged-in-form').classList.add('hide');
@@ -186,7 +188,7 @@
       .addEventListener("click", async () => {
         try {
           if (!!window.kambiApi) {
-            await window.kambiApi.logout({ playerId });
+            await window.kambiApi.logout({ playerId: window.playerId });
 
           }
           logout();
