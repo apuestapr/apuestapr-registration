@@ -106,7 +106,6 @@ def create_account(registration: Registration):
             'brand': 'liberman'
         }
         response = requests.post(API_URL + '/platform/usergateway/set-kyc-approved', proxies=whitehat_proxy, json=body)
-        response.raise_for_status()
 
         body = response.json()
 
@@ -115,6 +114,9 @@ def create_account(registration: Registration):
         print('-------------')
         print('RESPONSE:')
         print(response.text)
+
+        response.raise_for_status()
+
         if body.get('type', '') == 'error':
             raise Exception('PAM Error for SetKYCStatus call: ' + json.dumps(body))
         
