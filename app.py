@@ -175,7 +175,7 @@ def finish_registration(registration_id):
          elif dupe_email:
             errors.append('Someone has already been registered with this email address.')
          else:
-            if registration.whitehat_user_id == '':
+            if registration.whitehat_user_id == '' or not registration.whitehat_kyc_approved:
                try:
                   create_account(registration)
                except Exception as e:

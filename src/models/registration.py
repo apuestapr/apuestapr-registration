@@ -42,6 +42,7 @@ class Registration(MongoModel):
     onfido_reports: typing.Any = None
 
     whitehat_user_id: str = ''
+    whitehat_kyc_approved: bool = False
 
     def safe_serialize(self):
         return {
@@ -51,6 +52,7 @@ class Registration(MongoModel):
             'birthday': self.birthday,
             'account_id': str(self.id),
             'loyalty_card_number': self.loyalty_card_number,
+            'referral_code': self.referral_code,
 
         }
 

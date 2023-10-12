@@ -81,7 +81,8 @@ def create_account(registration: Registration):
             'enabled': True,
             'country': 'US',
             'state': registration.state_province,
-            'email': registration.email
+            'email': registration.email,
+            'referral': registration.referral_code,
         })
 
         print(response.text)
@@ -96,29 +97,32 @@ def create_account(registration: Registration):
         registration.save()
 
     # Now set KYC approved
+    if not registration.whitehat_kyc_approved:
+        body = {
+            'userId': int(registration.whitehat_user_id),
+            'adminUser': -1,
+            'kycApproved': True,
+            'reason': 'Successful KYC check by Onfido',
+            'brand': 'liberman'
+        }
+        response = requests.post(API_URL + '/platform/usergateway/set-kyc-approved', proxies=whitehat_proxy, json=body)
+        response.raise_for_status()
 
-    body = {
-        'userId': int(registration.whitehat_user_id),
-        'adminUser': -1,
-        'kycApproved': True,
-        'reason': 'Successful KYC check by Onfido',
-        'brand': 'liberman'
-    }
-    response = requests.post(API_URL + '/platform/usergateway/set-kyc-approved', proxies=whitehat_proxy, json=body)
-    response.raise_for_status()
+        body = response.json()
+        if body.get('type', '') == 'error':
+            raise Exception('PAM Error for SetKYCStatus call: ' + json.dumps(body))
+        
+        registration.whitehat_kyc_approved = True
+        registration.save()
+        print('BODY:')
+        print(body)
+        print('-------------')
+        print('RESPONSE:')
+        print(response.text)
+        # account_id = create_account_in_whg(registration)
+        # manually_approve_kyc(account_id)
 
-    body = response.json()
-    if body.get('type', '') == 'error':
-        raise Exception('PAM Error for SetKYCStatus call: ' + json.dumps(body))
-    print('BODY:')
-    print(body)
-    print('-------------')
-    print('RESPONSE:')
-    print(response.text)
-    # account_id = create_account_in_whg(registration)
-    # manually_approve_kyc(account_id)
-
-    # Send loyalty card number as the username
+        # Send loyalty card number as the username
     pass
     # Hit the API to create the account
     # Then hit the API again to "manually approve" the KYC.
