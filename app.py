@@ -123,6 +123,7 @@ def finish_registration(registration_id):
       registration.state_province = request.form.get('state_province', '')
       registration.postal_code = request.form.get('postal_code', '')
       registration.country = request.form.get('country', '')
+      registration.referral_code = request.form.get('referral_code', '')
 
       if request.form.get('agree_to_terms', None):
          registration.agree_to_terms = True
@@ -131,6 +132,8 @@ def finish_registration(registration_id):
 
       if registration.kyc_status != 'COMPLETE' and not registration.kyc_override:
          errors.append('You must provide a reason for bypassing KYC')
+      if not registration.loyalty_card_number:
+         errors.append('Loyalty card number is required')
       if not registration.first_name:
          errors.append('First name is required')
       if not registration.last_name:

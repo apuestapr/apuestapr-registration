@@ -56,9 +56,20 @@ CALL: registeruser
 API_URL = os.getenv('WHITEHAT_API_URL')
 # API_URL='https://platform.lmg.dev.whg.tech'
 
+whitehat_proxy_username = os.getenv('WHITEHAT_PROXY_USERNAME')
+whitehat_proxy_password = os.getenv('WHITEHAT_PROXY_PASSWORD')
+whitehat_proxy_ip = os.getenv('WHITEHAT_PROXY_IP')
+whitehat_proxy_url = f'http://{whitehat_proxy_username}:{whitehat_proxy_password}@{whitehat_proxy_ip}'
+whitehat_proxy = {
+    'http': whitehat_proxy_url,
+    'https': whitehat_proxy_url
+}
+
+print('PROXY:', whitehat_proxy)
+
 def create_account(registration: Registration):
     if not registration.whitehat_user_id:
-        response = requests.post(API_URL + '/platform/usergateway/registeruser', json={
+        response = requests.post(API_URL + '/platform/usergateway/registeruser', proxies=whitehat_proxy, json={
             'brand': 'liberman',
             'currency': 'USD',
             'username': str(registration.id),
@@ -79,7 +90,7 @@ def create_account(registration: Registration):
 
         body = response.json()
         if body.get('type', '') == 'error':
-            raise Exception('PAM Error: ' + json.dumps(body))
+            raise Exception('PAM Error for RegisterUser call: ' + json.dumps(body))
 
         registration.whitehat_user_id = str(body['userid'])
         registration.save()
@@ -93,8 +104,12 @@ def create_account(registration: Registration):
         'reason': 'Successful KYC check by Onfido',
         'brand': 'liberman'
     }
-    response = requests.post(API_URL + '/platform/usergateway/set-kyc-approved', json=body)
+    response = requests.post(API_URL + '/platform/usergateway/set-kyc-approved', proxies=whitehat_proxy, json=body)
     response.raise_for_status()
+
+    body = response.json()
+    if body.get('type', '') == 'error':
+        raise Exception('PAM Error for SetKYCStatus call: ' + json.dumps(body))
     print('BODY:')
     print(body)
     print('-------------')
