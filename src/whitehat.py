@@ -109,16 +109,18 @@ def create_account(registration: Registration):
         response.raise_for_status()
 
         body = response.json()
-        if body.get('type', '') == 'error':
-            raise Exception('PAM Error for SetKYCStatus call: ' + json.dumps(body))
-        
-        registration.whitehat_kyc_approved = True
-        registration.save()
+
         print('BODY:')
         print(body)
         print('-------------')
         print('RESPONSE:')
         print(response.text)
+        if body.get('type', '') == 'error':
+            raise Exception('PAM Error for SetKYCStatus call: ' + json.dumps(body))
+        
+        registration.whitehat_kyc_approved = True
+        registration.save()
+       
         # account_id = create_account_in_whg(registration)
         # manually_approve_kyc(account_id)
 
