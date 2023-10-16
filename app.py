@@ -3,7 +3,8 @@ from src.shufti import run_verification_request, handle_callback
 from src.onfido import run_verification_request as onfido_run_verification_request, update_check_status, generate_sdk_token, run_check
 from authlib.integrations.flask_client import OAuth
 from urllib.parse import quote_plus, urlencode
-
+from datetime import date
+import dateutil.parser as dparser
 import json
 from src.models.registration import Registration
 import pymongo.errors
@@ -78,6 +79,22 @@ def register():
    return render_template('kyc.html', user=session.get('user'))
 
 
+def calculateAge(born):
+    today = date.today()
+    try: 
+        birthday = born.replace(year = today.year)
+ 
+    # raised when birth date is February 29
+    # and the current year is not a leap year
+    except ValueError: 
+        birthday = born.replace(year = today.year,
+                  month = born.month + 1, day = 1)
+ 
+    if birthday > today:
+        return today.year - born.year - 1
+    else:
+        return today.year - born.year
+
 @app.route('/register/<string:registration_id>', methods=['GET', 'POST'])
 @require_auth
 def finish_registration(registration_id):
@@ -144,6 +161,14 @@ def finish_registration(registration_id):
          errors.append('Email is required')
       if not registration.phone_number:
          errors.append('Phone is required')
+
+      if not registration.birthday:
+         errors.append('Birthday is required')
+      
+      bday = dparser.parse(registration.birthday).date()
+
+      if calculateAge(bday) < 18:
+         errors.append('You must be at least 18 years of age to bet in Puerto Rico.')
 
       if not registration.agree_to_terms:
          errors.append('You must agree to the terms and conditions')
