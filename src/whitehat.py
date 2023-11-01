@@ -81,6 +81,10 @@ def create_account(registration: Registration):
             'enabled': True,
             'country': 'US',
             'state': registration.state_province,
+            'phone': registration.phone_number,
+            'address1': registration.address_1,
+            'town': registration.city,
+            'postalcode': registration.postal_code,
             'email': registration.email,
             'referral': registration.referral_code,
         })
