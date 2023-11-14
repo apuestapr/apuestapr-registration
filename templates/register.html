@@ -126,7 +126,24 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Código de Referencia</label>
-                                    <input type="text" class="form-control" name="referral_code" value="{{registration.referral_code}}" />
+                                    <select name="referral_code" class="form-control">
+                                        <option value="">None</option>
+                                        <option value="ApuestaPR"
+                                        {% if registration.referral_code == 'ApuestaPR' %}
+                                            selected="selected"
+                                        {% endif %}
+                                        >ApuestaPR</option>
+                                        <option value="UBS"
+                                        {% if registration.referral_code == 'UBS' %}
+                                            selected="selected"
+                                        {% endif %}
+                                        >UBS</option>
+                                        <option value="Paseo Caribe"
+                                        {% if registration.referral_code == 'Paseo Caribe' %}
+                                            selected="selected"
+                                        {% endif %}
+                                        >Paseo Caribe</option>
+                                    </select>
                                     <small class="form-text form-muted">
                                         Ingrese el código de la ubicación de registro, si corresponde
                                     </small>
