@@ -4,10 +4,10 @@ import datetime
 import typing
 
 
-
 class Callback(BaseModel):
     timestamp: datetime.datetime
     body: typing.Any
+
 
 class Registration(MongoModel):
     started_at: datetime.datetime
@@ -50,13 +50,11 @@ class Registration(MongoModel):
             'last_name': self.last_name,
             'preferred_language': self.preferred_language,
             'birthday': self.birthday,
-            'account_id': str(self.id),
+            'account_id': self.whitehat_user_id,
             'loyalty_card_number': self.loyalty_card_number,
             'referral_code': self.referral_code,
 
         }
-
-
 
 # XXX todo: login, populate referral code from the user.
 # XXX todo: update users with diff card number?

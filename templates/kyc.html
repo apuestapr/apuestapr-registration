@@ -20,7 +20,7 @@
     <body>
         <div class="container">
             {% include 'nav.html' %}
-            <div class="row pt-3">
+            <div class="row">
                 <div class="col-12">
                     <h1>Instrucciones</h1>
                     <ol>
@@ -28,14 +28,18 @@
                         <li>Haga clic en "Comenzar KYC" cuando el cliente haya presentado una identificación válida</li>
                         <li>Siga las instrucciones en la página siguiente</li>
                     </ol>
-                    <label>Idioma Preferido</label>
-                    <select id="preferred-language">
+                    <div class="form-group">
+                        <label>Idioma Preferido</label>
+                    <select id="preferred-language" class="form-control">
                         <option value="es">Español</option>
                         <option value="en">English</option>
                     </select>
-                    <button id="run-kyc" class="btn btn-lg btn-primary d-block">
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button id="run-kyc" type="button" class="btn btn-lg btn-primary d-block">
                         Comenzar KYC
                     </button>
+                    </div>
                 </div>
             </div>
            
