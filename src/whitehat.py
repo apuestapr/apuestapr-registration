@@ -69,10 +69,7 @@ print('PROXY:', whitehat_proxy)
 
 def create_account(registration: Registration):
     if not registration.whitehat_user_id:
-        response = requests.post(
-            API_URL + '/platform/usergateway/registeruser', 
-            # proxies=whitehat_proxy, 
-            json={
+        response = requests.post(API_URL + '/platform/usergateway/registeruser', json={
             'brand': 'liberman',
             'currency': 'USD',
             'username': str(registration.id),
@@ -112,10 +109,7 @@ def create_account(registration: Registration):
             'reason': 'Successful KYC check by Onfido',
             'brand': 'liberman'
         }
-        response = requests.post(
-            API_URL + '/platform/usergateway/set-kyc-approved', 
-            # proxies=whitehat_proxy, 
-            json=body)
+        response = requests.post(API_URL + '/platform/usergateway/set-kyc-approved', json=body)
 
         body = response.json()
 
