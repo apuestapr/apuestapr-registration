@@ -1,1 +1,6 @@
-gunicorn==19.7.1
+pymongo~=4.6.0
+pydantic~=2.5.0
+requests~=2.31.0
+python-dateutil~=2.8.2
+Flask~=3.0.0
+Authlib~=1.2.1

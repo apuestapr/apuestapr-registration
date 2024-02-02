@@ -43,6 +43,7 @@ class Registration(MongoModel):
 
     whitehat_user_id: str = ''
     whitehat_kyc_approved: bool = False
+    whitehat_playerid: str = ''
 
     def safe_serialize(self):
         return {
@@ -50,7 +51,7 @@ class Registration(MongoModel):
             'last_name': self.last_name,
             'preferred_language': self.preferred_language,
             'birthday': self.birthday,
-            'account_id': self.whitehat_user_id,
+            'account_id': self.whitehat_playerid,
             'loyalty_card_number': self.loyalty_card_number,
             'referral_code': self.referral_code,
 
