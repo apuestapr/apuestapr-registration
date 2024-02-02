@@ -300,9 +300,15 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
       })
    
    # XXX todo: bounce this off of the PAM to get the actual up-to-date information
-   if not registration.whitehat_playerid:
-      registration.whitehat_playerid = str(get_player_id(registration))
-      registration.save()
+   try:
+      if not registration.whitehat_playerid:
+         registration.whitehat_playerid = str(get_player_id(registration))
+         registration.save()
+   except Exception as e:
+      return jsonify({
+         'status': 'error',
+         'message': str(e)
+      })
    return jsonify({
       'status': 'success',
       'payload': registration.safe_serialize()

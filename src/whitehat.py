@@ -74,7 +74,6 @@ def get_player_id(registration: Registration):
         'brand': 'liberman',
         'userId': int(registration.whitehat_user_id)
     }).json()
-
     if response['type'] == 'error':
         raise Exception(response['message'])
 
