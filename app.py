@@ -10,7 +10,7 @@ from src.models.registration import Registration
 import pymongo.errors
 import os
 from functools import wraps
-from src.whitehat import create_account
+from src.whitehat import create_account, get_player_id
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 
 app.secret_key = os.getenv('APP_SECRET_KEY')
@@ -300,6 +300,15 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
       })
    
    # XXX todo: bounce this off of the PAM to get the actual up-to-date information
+   try:
+      if not registration.whitehat_playerid:
+         registration.whitehat_playerid = str(get_player_id(registration))
+         registration.save()
+   except Exception as e:
+      return jsonify({
+         'status': 'error',
+         'message': str(e)
+      })
    return jsonify({
       'status': 'success',
       'payload': registration.safe_serialize()
