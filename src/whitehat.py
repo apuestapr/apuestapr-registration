@@ -67,6 +67,18 @@ whitehat_proxy = {
 
 print('PROXY:', whitehat_proxy)
 
+
+def get_player_id(registration: Registration):
+    response = requests.post(API_URL + '/platform/usergateway/getuserdetails', json={
+        'type': 'getuserdetails',
+        'brand': 'liberman',
+        'userId': int(registration.whitehat_user_id)
+    }).json()
+    if response['type'] == 'error':
+        raise Exception(response['message'])
+
+    return response['playerid']
+
 def create_account(registration: Registration):
     if not registration.whitehat_user_id:
         response = requests.post(API_URL + '/platform/usergateway/registeruser', json={
