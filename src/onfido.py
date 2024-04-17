@@ -102,10 +102,18 @@ def update_check_status(registration):
                 print(r)
 
                 if r['name'] == 'document':
-
-                    registration.first_name = r['properties'].get('first_name', '')
-                    registration.last_name = r['properties'].get('last_name', '')
-                    registration.birthday = r['properties'].get('date_of_birth', '')
+                    new_first_name = r['properties'].get('first_name')
+                    if new_first_name:
+                        registration.first_name = new_first_name
+                    
+                    new_last_name = r['properties'].get('last_name')
+                    if new_last_name:
+                        registration.last_name = new_last_name
+                    
+                    new_bday = r['properties'].get('date_of_birth')
+                    if new_bday:
+                        registration.birthday = new_bday
+                    
         
 
         registration.save()
