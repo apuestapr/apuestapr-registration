@@ -1,5 +1,5 @@
 import os
-os.environ['MONGO_CONNECTION_STRING'] = 'mongodb+srv://mongo:oJkEEckjc0uO0R2Y@cluster0.nqnmk0a.mongodb.net/?retryWrites=true&w=majority'
+os.environ['MONGO_CONNECTION_STRING'] = 'mongodb+srv://mongo:oJkEEckjc0uO0R2Y@cluster1.qipqs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1'
 
 from src.models.registration import Registration
 import requests

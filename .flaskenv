@@ -12,7 +12,7 @@ APP_SECRET_KEY=asdf1234
 
 APP_URL=https://localhost:5502
 
-MONGO_CONNECTION_STRING=mongodb+srv://mongo:oJkEEckjc0uO0R2Y@cluster0.nqnmk0a.mongodb.net/?retryWrites=true&w=majority
+MONGO_CONNECTION_STRING=mongodb+srv://mongo:oJkEEckjc0uO0R2Y@cluster1.qipqs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1
 
 ONFIDO_API_KEY=api_sandbox_us.2cuDp2NA5E-.GJnWsABbW8pTaNzR5LiCnOZPJ_Bc0zCz
 
