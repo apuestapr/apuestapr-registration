@@ -92,6 +92,7 @@ def create_account(registration: Registration):
             'geolocation': 'US',
             'enabled': True,
             'country': 'US',
+            'language':'en',
             'state': registration.state_province,
             'phone': registration.phone_number,
             'address1': registration.address_1,
