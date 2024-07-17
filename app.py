@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from flask import Flask, jsonify, render_template, request, abort, url_for, session, redirect
 from src.shufti import run_verification_request, handle_callback
 from src.onfido import run_verification_request as onfido_run_verification_request, update_check_status, generate_sdk_token, run_check
@@ -9,9 +13,12 @@ import json
 from src.models.registration import Registration
 import pymongo.errors
 import os
+import sys 
 from functools import wraps
 from src.whitehat import create_account, get_player_id
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
+
+print(f"APP_SECRET_KEY: {os.getenv('AUTH0_CLIENT_ID')}")
 
 app.secret_key = os.getenv('APP_SECRET_KEY')
 
@@ -70,6 +77,12 @@ def logout():
 def home():
    return render_template('home.html', user=session.get('user'))
 
+
+
+@app.route('/list')
+@require_auth
+def list():
+   return render_template('list.html', user=session.get('user'))
 
 
 
@@ -314,6 +327,25 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
       'payload': registration.safe_serialize()
    })
 
+users = [
+    {'id': 1, 'date': '1/1/2024', 'name': 'John Doe', 'email': 'john@example.com', 'phone': '11111', "address": '2 Main Street'},
+    {'id': 2, 'date': '1/1/2024', 'name': 'Jane Smith', 'email': 'jane@example.com', 'phone': '11111', 'address': '2 Main Street'},
+    {'id': 3, 'date': '1/1/2024', 'name': 'Michael Johnson', 'email': 'michael@example.com', 'phone': '11111', 'address': '2 Main Street'},
+]
+
+@app.route('/list/all', methods=['GET'])
+def list_all_users():
+    return jsonify(users), 200
+    
+@app.route('/list/delete/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    global users
+    user_to_delete = next((user for user in users if user['id'] == id), None)
+    if user_to_delete:
+        users = [user for user in users if user['id'] != id]
+        return jsonify({'message': f'User with id {id} deleted successfully'}), 200
+    else:
+        return jsonify({'message': f'User with id {id} not found'}), 404
 
 
 if __name__ == '__main__':
