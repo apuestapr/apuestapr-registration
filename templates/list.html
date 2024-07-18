@@ -8,6 +8,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.1/underscore-min.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style type="text/css">
         #kyc-content {
             width: 100%;
@@ -44,6 +46,7 @@
         <br>
         <div class="row">
             <div class="col-12">
+                <small id="data-stats"></small>
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -52,7 +55,7 @@
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Address</th>
-                            <th width="20%">&nbsp;</th>
+                            <th width="25%">&nbsp;</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
@@ -60,34 +63,87 @@
             </div>
         </div>
 
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+            Launch demo modal
+        </button>
+    
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Review the User Pre-Registration</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                This is the content of the modal.
+                <form>
+                    <div class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input type="text" class="form-control" id="first_name" placeholder="Enter your first name">
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" class="form-control" id="last_name" placeholder="Enter your last name">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
 
     <script type="text/template" id="rowTemplate">
             <% _.each(data, function(item) { %>
                 <tr>
-                    <td><%= item.date %></td>
-                    <td><%= item.name %></td>
-                    <td><%= item.email %></td>
-                    <td><%= item.phone %></td>
-                    <td><%= item.address %></td>
+                    <td><%= item._id %></td>
+                    <td><%= item.first_name %> <%= item.last_name %></td>
+                    <td><%= item.email || 'NA' %></td>
+                    <td><%= item.phone || 'NA' %></td>
+                    <td><%= item.address || 'NA' %></td>
                     <td align="right">
-                        <button type="button" class="btn btn-sm btn-primary" onclick="deleteRegistration(<%= item.id %>)">
-                            Remove
+                        <button type="button" class="btn btn-sm btn-outline" onclick="deleteRegistration('<%= item._id %>')">
+                            <i class="fa fa-trash"></i>
                         </button>
                         &nbsp;
-                        <button id="run-kyc" type="button" class="btn btn-sm btn-primary" onclick="startKYC(<%= item.id %>)">
-                            KYC &rarr;
+                        <button id="run-kyc" type="button" class="btn btn-sm btn-primary" onclick="startKYC('<%= item._id %>')">
+                            Comenzar KYC? &rarr;
                         </button>
                     </td>
                 </tr>
             <% }); %>
         </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
         let registrationId = '';
+        let registrationData = [];
 
-        let registrationDate = [];
-
+        function startKYC(id) {
+            const data = _.find(registrationData, { _id: id });
+            if (!data) return alert("Sorry, unable to find and remove.");
+            let result = confirm(`Do you want to process this pre-registration? (${data.first_name} ${data.last_name})\nThis will use this users information to setup the KYC process for document collection.`);
+            if (result) {
+                // $.ajax({
+                //     url: `/list/delete/${data._id}`,
+                //     method: 'DELETE',
+                //     contentType: 'application/json',
+                //     dataType: 'json',
+                //     success: async (data) => {
+                //         await loadAll();
+                //     },
+                //     dataType: 'json'
+                // });
+            };
+        }
         /*
         function runKYC() {
             $('#run-kyc').attr('disabled', 'disabled').html('Cargando...');
@@ -110,28 +166,29 @@
         */
 
         function deleteRegistration(id) {
-            const data = _.find(registrationDate, { id });
+            const data = _.find(registrationData, { _id: id });
             if (!data) return alert("Sorry, unable to find and remove.");
-
-            let result = confirm(`Are you sure you want to delete the pre-registration? (${data.name})`);
+            let result = confirm(`¿Está seguro de que desea eliminar la preinscripción? (${data.name})\n\nEsto eliminará el registro y no se puede deshacer.`);
             if (result) {
-
                 $.ajax({
-                    url: `/list/delete/${data.id}`,
+                    url: `/list/delete/${data._id}`,
                     method: 'DELETE',
                     contentType: 'application/json',
                     dataType: 'json',
-                    success: (data) => {
-                        alert("Its done")
-                        window.location.href = '/list/';
+                    success: async (data) => {
+                        await loadAll();
                     },
                     dataType: 'json'
                 });
-
-            }
+            };
         }
 
         function renderTable(data) {
+            const stats = document.getElementById('data-stats');
+            if (stats) {
+                stats.innerHTML =`Found ${data.length} pre-registrations.`;
+            }
+
             const template = document.getElementById('rowTemplate').innerHTML;
             const compiledTemplate = _.template(template);
             const tableBody = document.getElementById('tableBody');
@@ -139,13 +196,14 @@
         }
 
         const loadData = async () => {
+            console.log('Get data');
             await $.ajax({
                 url: `/list/all`,
                 method: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
                 success: (data) => {
-                    registrationDate = data;
+                    registrationData = data;
                 },
                 dataType: 'json'
             });
@@ -153,7 +211,7 @@
 
         const loadAll = async () => {
             await loadData();
-            renderTable(registrationDate);
+            renderTable(registrationData);
         }
 
         $(document).ready(() => {

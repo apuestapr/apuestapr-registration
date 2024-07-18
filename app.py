@@ -11,11 +11,16 @@ from datetime import date
 import dateutil.parser as dparser
 import json
 from src.models.registration import Registration
+from src.models.pre_registration import PreRegistration
 import pymongo.errors
 import os
 import sys 
 from functools import wraps
 from src.whitehat import create_account, get_player_id
+from bson import json_util
+from bson.objectid import ObjectId
+from datetime import datetime
+
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 
 print(f"APP_SECRET_KEY: {os.getenv('AUTH0_CLIENT_ID')}")
@@ -84,7 +89,9 @@ def home():
 def list():
    return render_template('list.html', user=session.get('user'))
 
-
+@app.route('/start-pre-registration')
+def start_pre_registration():
+   return render_template('start-pre-registration.html')
 
 @app.route('/register')
 @require_auth
@@ -280,10 +287,6 @@ def check_onfido_status(registration_id):
    updated = update_check_status(registration)
    return json.dumps(updated.dict(), default=str)  
 
-
-   
-
-
 @app.route('/kambi/otc', methods=['GET'])
 def kambi_otc_iframe():
    """ Renders the iframe for the Kambi kiosk """
@@ -327,26 +330,54 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
       'payload': registration.safe_serialize()
    })
 
-users = [
-    {'id': 1, 'date': '1/1/2024', 'name': 'John Doe', 'email': 'john@example.com', 'phone': '11111', "address": '2 Main Street'},
-    {'id': 2, 'date': '1/1/2024', 'name': 'Jane Smith', 'email': 'jane@example.com', 'phone': '11111', 'address': '2 Main Street'},
-    {'id': 3, 'date': '1/1/2024', 'name': 'Michael Johnson', 'email': 'michael@example.com', 'phone': '11111', 'address': '2 Main Street'},
-]
-
+def json_encoder(obj):
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError("Type not serializable")
+ 
 @app.route('/list/all', methods=['GET'])
 def list_all_users():
-    return jsonify(users), 200
-    
-@app.route('/list/delete/<int:id>', methods=['DELETE'])
+   try:
+        documents = PreRegistration.find()
+        document_list = [doc.model_dump(by_alias=True) for doc in documents]
+        return json.dumps(document_list, default=json_encoder), 200
+   except Exception as e:
+        return jsonify({"error": str(e)}), 500
+   
+@app.route('/list/delete/<string:id>', methods=['DELETE'])
 def delete_user(id):
-    global users
-    user_to_delete = next((user for user in users if user['id'] == id), None)
-    if user_to_delete:
-        users = [user for user in users if user['id'] != id]
-        return jsonify({'message': f'User with id {id} deleted successfully'}), 200
-    else:
-        return jsonify({'message': f'User with id {id} not found'}), 404
+    try:
+        # Validate ObjectId
+        if not ObjectId.is_valid(id):
+            return jsonify({"error": "Invalid ObjectId"}), 400
+        
+        object_id = ObjectId(id)
+        result = PreRegistration.collection().delete_one({"_id": object_id})
+        
+        if result.deleted_count == 0:
+            return jsonify({"error": "Document not found"}), 404
+        
+        return jsonify({"message": "Document deleted"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+# @app.route('/list/all', methods=['GET'])
+# def list_all_users():
+#     return jsonify(users), 200
+
+@app.route('/preregistration/create', methods=['GET'])
+def create_pre_registration():
+   data = { 
+      "first_name": "Stephan",
+      "last_name": "Smith",
+   }
+   pre_reg = PreRegistration(**data)
+   
+   pre_reg.save()
+   return jsonify({ 'msg': 'New User Created'}), 200
 
 if __name__ == '__main__':
    app.run()
+   
