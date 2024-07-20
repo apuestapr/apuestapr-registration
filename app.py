@@ -1,5 +1,4 @@
 from dotenv import load_dotenv
-
 load_dotenv()
 
 from flask import Flask, jsonify, render_template, request, abort, url_for, session, redirect
@@ -11,7 +10,7 @@ from datetime import date
 import dateutil.parser as dparser
 import json
 from src.models.registration import Registration
-from src.models.pre_registration import PreRegistration
+from src.models.pre_registration import PreRegistration, serialize_documents
 import pymongo.errors
 import os
 import sys 
@@ -20,14 +19,16 @@ from src.whitehat import create_account, get_player_id
 from bson import json_util
 from bson.objectid import ObjectId
 from datetime import datetime
+from src.blueprints.pre_registration import pre_registration_bp
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
-
-print(f"APP_SECRET_KEY: {os.getenv('AUTH0_CLIENT_ID')}")
 
 app.secret_key = os.getenv('APP_SECRET_KEY')
 
 oauth = OAuth(app)
+
+# ---------------------------------------------------------------
+# Setup the OAuth Registry with the Information needed.
 
 oauth.register(
     "auth0",
@@ -39,6 +40,10 @@ oauth.register(
     server_metadata_url=f'https://{os.getenv("AUTH0_DOMAIN")}/.well-known/openid-configuration'
 )
 
+# ---------------------------------------------------------------
+# Define a function to require an endpoint to have an OAuth
+# User. This ensures that we know who the person is.
+
 def require_auth(f):
    @wraps(f)
    def decorated_function(*args, **kwargs):
@@ -48,6 +53,8 @@ def require_auth(f):
       return f(*args, **kwargs)
    return decorated_function
 
+# ---------------------------------------------------------------
+# Setup the Login Route.
 
 @app.route('/login')
 def login():
@@ -55,11 +62,17 @@ def login():
       redirect_uri=url_for('auth0_callback', _external=True)
    )
 
+# ---------------------------------------------------------------
+# Setup the OAuth callback.
+
 @app.route("/auth0/callback", methods=["GET", "POST"])
 def auth0_callback():
     token = oauth.auth0.authorize_access_token()
     session["user"] = token
     return redirect("/")
+
+# ---------------------------------------------------------------
+# Setup the Logout.
 
 @app.route("/logout")
 @require_auth
@@ -77,27 +90,46 @@ def logout():
         )
     )
 
+# ---------------------------------------------------------------
+# Set up the default home route.
 @app.route('/')
 @require_auth
 def home():
    return render_template('home.html', user=session.get('user'))
 
 
+# ---------------------------------------------------------------
+# Setup the List Page that contains all the pre-registration 
+# records. This page is designed to be used by the staff 
+# to find and convert a Pre-Registration User for the KYC 
+# process.
 
 @app.route('/list')
 @require_auth
 def list():
    return render_template('list.html', user=session.get('user'))
 
+# ---------------------------------------------------------------
+# This is the route for the pre-registration form that a 
+# public (non-authenticated) user will need to get started.
+
 @app.route('/start-pre-registration')
 def start_pre_registration():
    return render_template('start-pre-registration.html')
+
+# ---------------------------------------------------------------
+# This is the route that starts the standard KYC process. This 
+# is the legacy process and have been replaced by the /list that 
+# lets staff find and start with more of the uses data 
+# predefined.
 
 @app.route('/register')
 @require_auth
 def register():
    return render_template('kyc.html', user=session.get('user'))
 
+# ---------------------------------------------------------------
+# Helper function to calculate a user age.
 
 def calculateAge(born):
     today = date.today()
@@ -115,6 +147,10 @@ def calculateAge(born):
     else:
         return today.year - born.year
 
+# ---------------------------------------------------------------
+# This is a GET/POST route that find by a Registration Id and 
+# then starts the KYC process.
+
 @app.route('/register/<string:registration_id>', methods=['GET', 'POST'])
 @require_auth
 def finish_registration(registration_id):
@@ -123,13 +159,8 @@ def finish_registration(registration_id):
    if not registration:
       return 'Registration not found'
 
-
-
-   
-
    success = False
    errors = []
-
    onfido_sdk_token = ''
 
    print(json.dumps(registration.onfido_reports))
@@ -232,9 +263,8 @@ def finish_registration(registration_id):
    
    return render_template('register.html', user=session.get('user'), onfido_sdk_token=onfido_sdk_token, registration=registration, errors=errors, success=success)
 
-
-
-
+# ---------------------------------------------------------------
+# This is the KYC callback once the process is done.
 @app.route('/kyc/callback', methods=['POST'])
 @require_auth
 def kyc_callback():
@@ -242,6 +272,10 @@ def kyc_callback():
    return jsonify({
       'status': 'ok'
    })
+
+# ---------------------------------------------------------------
+# This is the init process for the KYC process. This 
+# is called by the [KYC.html] page.
 
 @app.route('/kyc/init', methods=['POST'])
 @require_auth
@@ -254,6 +288,10 @@ def init_kyc():
    registration.save()
    return json.dumps(registration.dict(), default=str)
 
+# ---------------------------------------------------------------
+# This is a route that returns a single registration.
+# It is called by the register.html page.
+
 @app.route('/registration/<string:registration_id>')
 @require_auth
 def get_registration(registration_id):
@@ -262,6 +300,10 @@ def get_registration(registration_id):
    if not registration:
       abort(404)
    return json.dumps(registration.dict(), default=str)
+
+# ---------------------------------------------------------------
+# This function is called via a POST from the /register.html file
+# Need more info.
 
 @app.route('/registration/<string:registration_id>/run-check', methods=['POST'])
 @require_auth
@@ -276,6 +318,9 @@ def run_onfido_check(registration_id):
    registration_with_check = run_check(registration)
    return json.dumps(registration_with_check.dict(), default=str) 
 
+# ---------------------------------------------------------------
+# This route GET the registration status. No visible use 
+# in the current route pages. Might be used by Kambi?
 
 @app.route('/registration/<string:registration_id>/check-status', methods=['GET'])
 @require_auth
@@ -287,15 +332,28 @@ def check_onfido_status(registration_id):
    updated = update_check_status(registration)
    return json.dumps(updated.dict(), default=str)  
 
+# ---------------------------------------------------------------
+# This route get the Kambi OTC. Need more information.
+# No visible use in the HTML templates. Might be used by 
+# Kambi for OTC uses?
+
 @app.route('/kambi/otc', methods=['GET'])
 def kambi_otc_iframe():
    """ Renders the iframe for the Kambi kiosk """
    return render_template('otc-iframe.html')
 
+# ---------------------------------------------------------------
+# This route GET the Kambi SSL. Need more information on 
+# how this fits into the process.
+
 @app.route('/kambi/sst', methods=['GET'])
 def kambi_sst_iframe():
    """ Renders the iframe for the Kambi kiosk """
    return render_template('sst-iframe.html')
+
+# ---------------------------------------------------------------
+# This has something to do with exchanging a users kami loyalty_card_number
+# for something else.
 
 @app.route('/kambi/exchange/<string:loyalty_card_number>', methods=['GET'])
 def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
@@ -330,53 +388,12 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
       'payload': registration.safe_serialize()
    })
 
-def json_encoder(obj):
-    if isinstance(obj, ObjectId):
-        return str(obj)
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    raise TypeError("Type not serializable")
- 
-@app.route('/list/all', methods=['GET'])
-def list_all_users():
-   try:
-        documents = PreRegistration.find()
-        document_list = [doc.model_dump(by_alias=True) for doc in documents]
-        return json.dumps(document_list, default=json_encoder), 200
-   except Exception as e:
-        return jsonify({"error": str(e)}), 500
-   
-@app.route('/list/delete/<string:id>', methods=['DELETE'])
-def delete_user(id):
-    try:
-        # Validate ObjectId
-        if not ObjectId.is_valid(id):
-            return jsonify({"error": "Invalid ObjectId"}), 400
-        
-        object_id = ObjectId(id)
-        result = PreRegistration.collection().delete_one({"_id": object_id})
-        
-        if result.deleted_count == 0:
-            return jsonify({"error": "Document not found"}), 404
-        
-        return jsonify({"message": "Document deleted"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# ---------------------------------------------------------------
+# Register the Pre-Registration Routes that are going to be 
+# used to drive the list.html page that allows staff to manage
+# users who have setup their account information ahead of time.
 
-# @app.route('/list/all', methods=['GET'])
-# def list_all_users():
-#     return jsonify(users), 200
-
-@app.route('/preregistration/create', methods=['GET'])
-def create_pre_registration():
-   data = { 
-      "first_name": "Stephan",
-      "last_name": "Smith",
-   }
-   pre_reg = PreRegistration(**data)
-   
-   pre_reg.save()
-   return jsonify({ 'msg': 'New User Created'}), 200
+app.register_blueprint(pre_registration_bp, url_prefix='/pre_registration')
 
 if __name__ == '__main__':
    app.run()

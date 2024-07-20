@@ -47,20 +47,17 @@
     const startKambiSession = async (accountId) => {
       console.log('Starting Kambi session witih account ID ', accountId);
       changeIframePosition(window.kambiIframePositionLoggedIn);
+
       if (!window.kambiApi) {
         alert('Kambi API not detected.');
         return;
       }
 
-      
-      
       window.playerId = accountId;
       await window.kambiApi.startIdentifiedSession({
         playerId: accountId,
       });
     }
-
-
 
     const logout = () => {
       changeIframePosition(window.kambiIframePositionLoggedOut);
@@ -103,8 +100,6 @@
         document.head.appendChild(scriptElement);
       }
     }
-
-    
 
     const initKambiUI = async (kambiApi, isSST = false) => {
       window.kambiApi = kambiApi;
@@ -152,11 +147,13 @@
 
     const logInUserWithCardNumber = async (cardNumber) => {
       // Create a player ID by just appending a prefix, and getting rid of whitespace
-      // A real implementation would call into a backend system to do the mapping
+      // A real implementation would call into a backend system to do the mapping.
+
       setText('Loading...');
       document.getElementById('logged-out-form').classList.remove('show');
       document.getElementById('logged-out-form').classList.add('hide');
       document.getElementById('player-card-manual-entry').value = '';
+
       try {
         const response = await fetch('/kambi/exchange/' + cardNumber);
         const playerInfo = await response.json();
@@ -170,11 +167,8 @@
 
         document.getElementById('logged-in-form').classList.remove('hide');
         document.getElementById('logged-in-form').classList.add('show');
-
-        
       }
       catch (err) {
-
         document.getElementById('logged-out-form').classList.remove('hide');
         document.getElementById('logged-out-form').classList.add('show');
         console.log(err);

@@ -20,6 +20,11 @@
             height: 50px;
         }
     </style>
+    <style>
+        .is-invalid {
+            border-color: #dc3545;
+        }
+    </style>
 </head>
 
 <body>
@@ -42,7 +47,7 @@
 
         <br>
 
-        <form>
+        <form id="PreRegistrationForm">
             <div class="form-row">
                 <div class="form-group col-md-6 col-12">
                     <label>Nombre de pila</label>
@@ -136,12 +141,10 @@
 
             <br>
 
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" id="submitFormBtn" class="btn btn-primary">Submit</button>
         </form>
 
     </div>
-
-
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
@@ -150,14 +153,57 @@
         let registrationData = [];
 
         $(document).ready(() => {
-            // $('#continue').click((e) => {
-            //     e.preventDefault();
-            //     if (!registrationId) {
-            //         window.alert('Cannot continue without starting KYC');
-            //         return;
-            //     }
-            //     window.location.href = '/register/' + registrationId;
-            // })
+            // Add input event listeners to remove is-invalid class when user types
+            document.querySelectorAll('input').forEach(function (input) {
+                input.addEventListener('input', function () {
+                    if (input.classList.contains('is-invalid')) {
+                        input.classList.remove('is-invalid');
+                    }
+                });
+            });
+
+            $('#submitFormBtn').click((e) => {
+                e.preventDefault();
+
+                var form = document.getElementById('PreRegistrationForm');
+                var inputs = form.querySelectorAll('input');
+
+                // Remove previous validation styles
+                inputs.forEach(function (input) {
+                    input.classList.remove('is-invalid');
+                });
+
+                if (form.checkValidity()) {
+                    var formData = new FormData(form);
+                    var formObject = {};
+                    formData.forEach((value, key) => {
+                        formObject[key] = value;
+                    });
+                    var json = JSON.stringify(formObject);
+
+                    $.ajax({
+                        url: `/pre_registration`,
+                        method: 'POST',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        data: json,
+                        success: async (data) => {
+                            console.log(data);
+                            alert("All Done. Thanks.")
+                        },
+                        dataType: 'json'
+                    });
+                    console.log(json);
+                } else {
+                    inputs.forEach(function (input) {
+                        if (!input.checkValidity()) {
+                            input.classList.add('is-invalid');
+                        }
+                    });
+                    // Form is not valid, show validation errors
+                    form.reportValidity();
+                }
+            })
         });
     </script>
 </body>

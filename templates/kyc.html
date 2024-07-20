@@ -1,11 +1,7 @@
 <html>
     <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <script
-  src="https://code.jquery.com/jquery-3.7.0.min.js"
-  integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
-  crossorigin="anonymous"></script>
-
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script> 
         <style type="text/css">
             #kyc-content {
                 width: 100%;
@@ -47,8 +43,6 @@
         <script type="text/javascript">
             let registrationId = '';
 
-
-
             function runKYC() {
                 $('#run-kyc').attr('disabled', 'disabled').html('Cargando...');
                 $.ajax({
@@ -61,8 +55,6 @@
                     }),
                     success: (data) => {
                         window.location.href = '/register/' + data.id;
-                        
-
                     },
                     dataType: 'json'
                 });

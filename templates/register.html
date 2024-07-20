@@ -1,15 +1,9 @@
 <html>
     <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-
-        <script
-  src="https://code.jquery.com/jquery-3.7.0.min.js"
-  integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
-  crossorigin="anonymous"></script>
-
-  <script src="https://sdk.onfido.com/v12.3"></script>
-    <link href="https://sdk.onfido.com/v12.3/style.css" rel="stylesheet" />
-
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+        <script src="https://sdk.onfido.com/v12.3"></script>
+        <link href="https://sdk.onfido.com/v12.3/style.css" rel="stylesheet" />
         <style type="text/css">
             .navbar-brand img {
                 height: 50px;
@@ -104,8 +98,6 @@
                         {% elif registration.kyc_status in ['COMPLETE', 'FAILED'] %}
                             <form method="POST">
 
-                        
-                            
                                 {% if registration.kyc_status == 'COMPLETE' %}
                                     <p class="alert alert-success">KYC se ejecutó exitosamente en este cliente. Haga que el cliente complete el resto de su información personal.</p>
                                 {% elif registration.kyc_status == 'FAILED' %}
@@ -271,27 +263,16 @@
                                                 <a target="_blank" href="#">Leer términos y condiciones</a>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-
-                                    
-                                    
-                                    
-
-                                    
+                                    </div>    
                                 </fieldset>
-
-                                
+ 
                                 <input type="submit" class="btn btn-lg btn-success" value="Registrar"/>
                             </form>
                         {% endif %}
-                    {% endif %} 
-                        
-                   
+                    {% endif %}
                 </div>
             </div>
         </div>
-        
     </body>
 </html>
 
