@@ -123,8 +123,10 @@
                         <br>
                         <small>(id: <%= item._id %>)</small>
                     </td>
-                    <td><%= item.email || 'NA' %>   
-                        (<%= item.phone_number || 'NA' %>)
+                    <td>
+                        <%= item.email || 'NA' %>
+                        <br>
+                        (Phone:<%= item.phone_number || 'NA' %>)
                     </td>
                     <td><%= item.address_1 || 'NA' %><br>
                         <%= item.address_2 || 'NA' %>,<br>
