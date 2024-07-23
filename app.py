@@ -20,6 +20,7 @@ from bson import json_util
 from bson.objectid import ObjectId
 from datetime import datetime
 from src.blueprints.pre_registration import pre_registration_bp
+from src.blueprints.registration import registration_bp
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 
@@ -97,6 +98,13 @@ def logout():
 def home():
    return render_template('home.html', user=session.get('user'))
 
+# ---------------------------------------------------------------
+# Admin features for Registrations.
+
+@app.route('/admin')
+@require_auth
+def list_registrations():
+   return render_template('admin.html', user=session.get('user'))
 
 # ---------------------------------------------------------------
 # Setup the List Page that contains all the pre-registration 
@@ -394,6 +402,7 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
 # users who have setup their account information ahead of time.
 
 app.register_blueprint(pre_registration_bp, url_prefix='/pre_registration')
+app.register_blueprint(registration_bp, url_prefix='/registrations')
 
 if __name__ == '__main__':
    app.run()

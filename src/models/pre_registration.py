@@ -25,6 +25,11 @@ class PreRegistration(MongoModel):
     phone_number: str = ''
     email: str = ''
 
+    # def find(skip=0, limit=10):
+    #     # Assuming you have a collection attribute in your Registration class
+    #     cursor = registrations_collection.find().skip(skip).limit(limit)
+    #     return [doc for doc in cursor]
+    
     def safe_serialize(self):
         return {
             '_id': str(self.id),

@@ -59,3 +59,10 @@ class Registration(MongoModel):
 
 # XXX todo: login, populate referral code from the user.
 # XXX todo: update users with diff card number?
+
+def serialize_documents(documents):
+    serialized_docs = []
+    for document in documents:
+        registration = Registration(**document)
+        serialized_docs.append(registration.safe_serialize())
+    return serialized_docs
