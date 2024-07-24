@@ -1,0 +1,124 @@
+
+<div class="alert alert-info">
+  <div class="row">
+      <div class="col-12">
+          <p>
+            Si este usuario se ha preinscrito, selecciónelo de la lista para actualizar el formulario.
+          </p>
+          <div class="form-group">
+            <select class="form-control" id="preRegistrationId">
+              <option>Loading...</option>
+            </select>
+            <button type="buton" class="btn btn-primary mt-2" id="applySelectedPreRegistration">
+              Usar información del usuario seleccionado
+            </button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(() => {
+
+      const preRegistrationId = $('#preRegistrationId');
+      const applySelectedPreRegistration = $('#applySelectedPreRegistration')
+      
+      // Apply the value.
+      applySelectedPreRegistration.prop('disabled', true);
+
+      // Setup the data for the holder.
+      var PreRegistrationData = [];
+
+      // Add input event listeners to remove is-invalid class when user types
+      document.querySelectorAll('input').forEach(function (input) {
+          input.addEventListener('input', function () {
+              if (input.classList.contains('is-invalid')) {
+                  input.classList.remove('is-invalid');
+              }
+          });
+      });
+
+      $('#applySelectedPreRegistration').click((e) => {
+        e.preventDefault();
+
+        const conf = confirm("Do you want to use this pre-registration?");
+        if (conf) {
+          var selectedId = preRegistrationId.val();
+          const record = _.find(PreRegistrationData, { _id: selectedId });
+
+          $('input[name="first_name"]').val(record.first_name, '');
+          $('input[name="last_name"]').val(record.last_name || '');
+          $('input[name="email"]').val(record.email || '');
+          $('input[name="birthday"]').val(record.birthday || '');
+          $('input[name="address_1"]').val(record.address_1 || '');
+          $('input[name="address_2"]').val(record.address_2 || '');
+          $('input[name="city"]').val(record.city || '');
+          $('input[name="state_province"]').val(record.state_province || '');
+          $('input[name="postal_code"]').val(record.postal_code || '');
+          $('input[name="phone_number"]').val(record.phone_number || '');
+          $('input[name="country"]').val(record.country || '');
+
+          // Store the reg Id for removal later.
+          $('input[name="preRegistrationId"]').val(record._id);
+        }
+
+        // Force the form to validate.
+        validateForm();
+      });
+
+      $('#preRegistrationId').change(function() {
+        var selectedValue = $(this).val();
+        if (selectedValue) {
+          applySelectedPreRegistration.prop('disabled', false);
+        } else {
+          applySelectedPreRegistration.prop('disabled', true);
+        }
+      });
+
+      function validateForm() {
+          var form = document.getElementById('RegistrationForm');
+          console.log(form);
+          var inputs = form.querySelectorAll('input');
+          console.log(inputs);
+
+          inputs.forEach(function (input) {
+              if (!input.checkValidity()) {
+                  input.classList.add('is-invalid');
+              }
+          });
+
+          form.reportValidity();
+      }
+
+      const loadData = async () => {
+          await $.ajax({
+              url: `/pre_registration`,
+              method: 'GET',
+              contentType: 'application/json',
+              dataType: 'json',
+              success: (data) => {
+                  PreRegistrationData = data;
+
+                  var select = $('#preRegistrationId');
+                  select.empty();
+                  select.append($('<option>', {
+                      value: '',
+                      text: `Select one...`
+                    }));
+
+                  $.each(data, function(index, option) {
+                    console.log(option);
+                      select.append($('<option>', {
+                      value: option._id,
+                      text: `${option.first_name} ${option.last_name} (${option.email || 'NA'}, started: ${option.started_at || 'No Idea When'})`
+                      }));
+                  });
+              },
+              dataType: 'json'
+          });
+      }
+
+      loadData()
+
+  });
+</script>

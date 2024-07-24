@@ -172,7 +172,8 @@ def finish_registration(registration_id):
    onfido_sdk_token = ''
 
    print(json.dumps(registration.onfido_reports))
-
+   print(registration.kyc_status)
+   
    if registration.kyc_status == 'PENDING':
       onfido_sdk_token = generate_sdk_token(registration.onfido_applicant_id)
 
@@ -183,7 +184,6 @@ def finish_registration(registration_id):
 
    if request.method == 'POST':
       print(request.form)
-
 
       # Process the incoming data
       registration.first_name = request.form['first_name']

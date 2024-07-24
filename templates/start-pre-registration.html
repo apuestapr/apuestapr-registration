@@ -47,11 +47,24 @@
 
         <br>
 
+        <div id="successPanel" class="alert alert-success" style="display: none;">
+            <h1>
+                Registro Exitoso
+            </h1>
+            <p>
+                El registro de este usuario está completo. Cuando llegue a presentar 
+                su documento, por favor informe al personal de Apuesta.
+            </p>
+            <button class="btn btn-success" id="showFormBtn">
+                Agregar otro
+            </button>
+        </div>
+
         <form id="PreRegistrationForm">
             <div class="form-row">
                 <div class="form-group col-md-6 col-12">
                     <label>Nombre de pila</label>
-                    <input class="form-control" type="text" placeholder="Ingrese su nombre de pila..." name="first_name"
+                    <input class="form-control" type="text" placeholder="Ingrese su nombre..." name="first_name"
                         value="" required />
                 </div>
                 <div class="form-group col-md-6 col-12">
@@ -63,7 +76,7 @@
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>Fecha de nacimiento</label>
-                    <input class="form-control" placeholder="" type="date" name="birthday" value="" required />
+                    <input class="form-control" id="birthday" placeholder="" type="date" name="birthday" value="" required />
                 </div>
                 <div class="form-group col-md-6">
                     <label>Email</label>
@@ -76,12 +89,12 @@
                     <label>
                         Número de teléfono (incluido el código de país, "+1")
                     </label>
-                    <input class="form-control" placeholder="Ingrese su fecha de nacimiento..." type="text"
+                    <input class="form-control" placeholder="Ingrese su teléfono..." type="text"
                         name="phone_number" value="" required />
                 </div>
             </div>
             <fieldset>
-                <legend>Direccion de Casa</legend>
+                <legend>Direccíon</legend>
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Línea 1</label>
@@ -127,21 +140,22 @@
                     <div kclass="form-check"
                         style="border-radius: 10px; background-color: #EFEFEF; padding: 10px; border:1px solid #DFDFDF;">
                         <div class="form-group">
-                            <input type="checkbox" name="agree_to_terms">
+                            <input type="checkbox" id="agree_to_terms" name="agree_to_terms" required>
                             <label class="form-check-label" for="flexCheckDefault">
                                 Aceptar términos y condiciones
                             </label>
                             <div class="form-text">
-                                <a target="_blank" href="#">Leer términos y condiciones</a>
+                                <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/">Leer términos y condiciones</a>
                             </div>
                         </div>
+                        <p id="validationMessage" class="mt-2"></p>
                     </div>
                 </div>
             </div>
-
             <br>
-
-            <button type="submit" id="submitFormBtn" class="btn btn-primary">Submit</button>
+            <button type="submit" id="submitFormBtn" class="btn btn-primary">
+                Submit
+            </button>
         </form>
 
     </div>
@@ -149,57 +163,82 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
-        let registrationId = '';
+        let registrationId = "";
         let registrationData = [];
 
         $(document).ready(() => {
             // Add input event listeners to remove is-invalid class when user types
-            document.querySelectorAll('input').forEach(function (input) {
-                input.addEventListener('input', function () {
-                    if (input.classList.contains('is-invalid')) {
-                        input.classList.remove('is-invalid');
+            document.querySelectorAll("input").forEach(function (input) {
+                input.addEventListener("input", function () {
+                    if (input.classList.contains("is-invalid")) {
+                        input.classList.remove("is-invalid");
                     }
                 });
             });
 
-            $('#submitFormBtn').click((e) => {
+            $("#showFormBtn").click((e) => {
+
+                // Disable the checkbox for terms.
+                $("#agree_to_terms").prop("checked", false);
+                $("#validationMessage").text("");
+
+                $("input").each(function() {
+                   $(this).val('');
+                });
+
+                $("#successPanel").hide();
+                $("#PreRegistrationForm").show();
+            });
+
+            $("#submitFormBtn").click((e) => {
                 e.preventDefault();
 
-                var form = document.getElementById('PreRegistrationForm');
-                var inputs = form.querySelectorAll('input');
+                var form = document.getElementById("PreRegistrationForm");
+                var inputs = form.querySelectorAll("input");
 
                 // Remove previous validation styles
                 inputs.forEach(function (input) {
-                    input.classList.remove('is-invalid');
+                    input.classList.remove("is-invalid");
                 });
 
-                if (form.checkValidity()) {
+                if (form.checkValidity()) {  
                     var formData = new FormData(form);
                     var formObject = {};
                     formData.forEach((value, key) => {
                         formObject[key] = value;
                     });
+                    formObject["birthday"] = $("#birthday").val();
                     var json = JSON.stringify(formObject);
 
                     $.ajax({
                         url: `/pre_registration`,
-                        method: 'POST',
-                        contentType: 'application/json',
-                        dataType: 'json',
+                        method: "POST",
+                        contentType: "application/json",
+                        dataType: "json",
                         data: json,
                         success: async (data) => {
                             console.log(data);
                             alert("All Done. Thanks.")
                         },
-                        dataType: 'json'
+                        dataType: "json"
                     });
-                    console.log(json);
+
+                    // Setup the form and success form.
+                    $("#successPanel").show();
+                    $("#PreRegistrationForm").hide();
                 } else {
                     inputs.forEach(function (input) {
                         if (!input.checkValidity()) {
-                            input.classList.add('is-invalid');
+                            input.classList.add("is-invalid");
                         }
                     });
+
+                    if ($("#agree_to_terms").is(":checked")) {
+                       $("#validationMessage").text("");
+                    } else {
+                       $("#validationMessage").text("Please confirm the terms and conditions to continue.").css("color", "red");
+                    }
+
                     // Form is not valid, show validation errors
                     form.reportValidity();
                 }
