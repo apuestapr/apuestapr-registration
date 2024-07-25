@@ -188,6 +188,11 @@
                                             selected="selected"
                                         {% endif %}
                                         >UBS</option>
+                                        <option value="Joker"
+                                        {% if registration.referral_code == 'Joker' %}
+                                            selected="selected"
+                                        {% endif %}
+                                        >Joker</option>
                                     </select>
                                     <small class="form-text form-muted">
                                         Ingrese el código de la ubicación de registro, si corresponde
