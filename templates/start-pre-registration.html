@@ -218,14 +218,15 @@
                         data: json,
                         success: async (data) => {
                             console.log(data);
-                            alert("All Done. Thanks.")
+                            
+                            // Setup the form and success form.
+                            $("#successPanel").show();
+                            $("#PreRegistrationForm").hide();
                         },
                         dataType: "json"
                     });
 
-                    // Setup the form and success form.
-                    $("#successPanel").show();
-                    $("#PreRegistrationForm").hide();
+
                 } else {
                     inputs.forEach(function (input) {
                         if (!input.checkValidity()) {
