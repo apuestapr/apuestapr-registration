@@ -12,7 +12,7 @@ class PreRegistration(MongoModel):
     class Config:
         collection_name = 'pre-registration'
 
-    createdAt: datetime = Field(default_factory=datetime.datetime.now)
+    started_at: datetime = Field(default_factory=datetime.datetime.now)
     first_name: str = ''
     last_name: str = ''
     address_1: str = ''
@@ -21,7 +21,7 @@ class PreRegistration(MongoModel):
     postal_code: str = ''
     country: str = ''
     state_province: str = ''
-    birthdate: str = ''
+    birthday: str = ''
     phone_number: str = ''
     email: str = ''
 
@@ -42,9 +42,9 @@ class PreRegistration(MongoModel):
             'country': self.country,
             'postal_code': self.postal_code,
             'phone_number': self.phone_number,
-            'birthdate': self.birthdate,
-            'createdAt': self.createdAt.isoformat(),
-            'createdAt_short': self.createdAt.strftime('%m/%d/%Y') if self.createdAt else None,
+            'birthday': self.birthday,
+            'started_at': self.started_at.isoformat(),
+            'started_at_short': self.started_at.strftime('%m/%d/%Y') if self.started_at else None,
         }
 
 def serialize_documents(documents):

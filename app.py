@@ -21,6 +21,7 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from src.blueprints.pre_registration import pre_registration_bp
 from src.blueprints.registration import registration_bp
+from src.models.pre_registration import PreRegistration
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 
@@ -185,21 +186,24 @@ def finish_registration(registration_id):
    if request.method == 'POST':
       print(request.form)
 
+      # For the preRegistrationId in case we need to delete it.
+      preRegistrationId = request.form['preRegistrationId']
+      
       # Process the incoming data
-      registration.first_name = request.form['first_name']
-      registration.last_name = request.form['last_name']
-      registration.loyalty_card_number = request.form['loyalty_card_number']
-      registration.email = request.form['email']
-      registration.phone_number = request.form['phone_number']
-      registration.birthday = request.form['birthday']
-      registration.kyc_override = request.form.get('kyc_override', '')
-      registration.address_1 = request.form.get('address_1', '')
-      registration.address_2 = request.form.get('address_2', '')
-      registration.city = request.form.get('city', '')
-      registration.state_province = request.form.get('state_province', '')
-      registration.postal_code = request.form.get('postal_code', '')
-      registration.country = request.form.get('country', '')
-      registration.referral_code = request.form.get('referral_code', '')
+      registration.first_name = request.form['first_name'].strip()
+      registration.last_name = request.form['last_name'].strip()
+      registration.loyalty_card_number = request.form['loyalty_card_number'].strip()
+      registration.email = request.form['email'].strip()
+      registration.phone_number = request.form['phone_number'].strip()
+      registration.birthday = request.form['birthday'].strip()
+      registration.kyc_override = request.form.get('kyc_override', '').strip()
+      registration.address_1 = request.form.get('address_1', '').strip()
+      registration.address_2 = request.form.get('address_2', '').strip()
+      registration.city = request.form.get('city', '').strip()
+      registration.state_province = request.form.get('state_province', '').strip()
+      registration.postal_code = request.form.get('postal_code', '').strip()
+      registration.country = request.form.get('country', '').strip()
+      registration.referral_code = request.form.get('referral_code', '').strip()
 
       if request.form.get('agree_to_terms', None):
          registration.agree_to_terms = True
@@ -207,19 +211,19 @@ def finish_registration(registration_id):
          registration.agree_to_terms = False
 
       if registration.kyc_status != 'COMPLETE' and not registration.kyc_override:
-         errors.append('You must provide a reason for bypassing KYC')
-      if not registration.loyalty_card_number:
-         errors.append('Loyalty card number is required')
+         errors.append('Debe proporcionar una razón para omitir la verificación KYC.')
       if not registration.first_name:
-         errors.append('First name is required')
+         errors.append('Nombre de pila es obligatorio.')
       if not registration.last_name:
-         errors.append('Last name is required')
+         errors.append('Apellido es obligatorio.')
       if not registration.loyalty_card_number:
-         errors.append('Loyalty card number is required')
+         errors.append('Número de Tarjeta de Jugador es obligatorio.')
       if not registration.email:
-         errors.append('Email is required')
+         errors.append('Email es obligatorio.')
       if not registration.phone_number:
-         errors.append('Phone is required')
+         errors.append('El número de teléfono es obligatorio.')
+      if not registration.referral_code:
+         errors.append('El código de referencia es obligatorio.')
 
       if not registration.birthday:
          errors.append('Birthday is required')
@@ -227,14 +231,14 @@ def finish_registration(registration_id):
       bday = dparser.parse(registration.birthday).date()
 
       if calculateAge(bday) < 18:
-         errors.append('You must be at least 18 years of age to bet in Puerto Rico.')
+         errors.append('Debe tener al menos 18 años de edad para apostar en Puerto Rico.')
 
       if not registration.agree_to_terms:
-         errors.append('You must agree to the terms and conditions')
+         errors.append('Debe aceptar los términos y condiciones.')
 
       if not registration.address_1 or not registration.city or not registration.state_province or not registration.country or not registration.postal_code:
          print(registration)
-         errors.append('Address is required')
+         errors.append('Direccion es obligatorio')
       
       if len(errors) == 0:
          # Look for duplicate loyal card numbers
@@ -255,10 +259,12 @@ def finish_registration(registration_id):
          # Register with white hat
          
          if dupe_card_number:
-            errors.append('Someone has already been registered with this loyalty card number.')
+            # Someone has already been registered with this loyalty card number.
+            errors.append('Alguien ya ha sido registrado con este número de tarjeta de fidelidad.')
          elif dupe_email:
-            errors.append('Someone has already been registered with this email address.')
-         else:
+            # Someone has already been registered with this email address.
+            errors.append('Alguien ya ha sido registrado con esta dirección de correo electrónico.')
+         else:    
             if registration.whitehat_user_id == '' or not registration.whitehat_kyc_approved:
                try:
                   create_account(registration)
@@ -267,6 +273,18 @@ def finish_registration(registration_id):
             if len(errors) == 0:
                registration.complete = True
                registration.save()
+               
+               #
+               # if we have a value, then do we want to remove or update.
+               # this will mean that we have this updates.
+               #  request.form['preRegistrationId']
+               #
+               # if preRegistrationId: 
+               #    try:
+               #       PreRegistration.delete_one({"_id": ObjectId(preRegistrationId)})
+               #    except Exception as e:
+               #       print(f"Unable to delete preRegistrationId: {preRegistrationId}")
+
                success = True
    
    return render_template('register.html', user=session.get('user'), onfido_sdk_token=onfido_sdk_token, registration=registration, errors=errors, success=success)

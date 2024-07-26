@@ -34,19 +34,12 @@
             <div class="col-12">
                 <h1>Iniciar Preinscripción</h1>
                 <p>
-                    Para preparar la configuración de su cuenta, debe completar la
-                    siguiente información. Una vez completada, recibirá un código
-                    de referencia que podrá usar para que el personal de Apuesta
-                    busque su cuenta. Completar este paso ayudará a acelerar la
-                    verificación de sus documentos y le dará acceso a un juego.
-                    Tenga en cuenta que hasta que haya completado la verificación en
-                    persona, no podrá jugar.
+                    Para poder activar su cuenta, complete la información solicitada. Los datos
+                    personales tienen que coincidir con los de su identificación (licencia o pasaporte).
                 </p>
             </div>
         </div>
-
         <br>
-
         <div id="successPanel" class="alert alert-success" style="display: none;">
             <h1>
                 Registro Exitoso
@@ -63,19 +56,19 @@
         <form id="PreRegistrationForm">
             <div class="form-row">
                 <div class="form-group col-md-6 col-12">
-                    <label>Nombre de pila</label>
+                    <label>Nombre de pila *</label>
                     <input class="form-control" type="text" placeholder="Ingrese su nombre..." name="first_name"
                         value="" required />
                 </div>
                 <div class="form-group col-md-6 col-12">
-                    <label>Apellido</label>
+                    <label>Apellido *</label>
                     <input class="form-control" type="text" placeholder="Ingrese su apellido..." name="last_name"
                         value="" required />
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col-md-6">
-                    <label>Fecha de nacimiento</label>
+                    <label>Fecha de Nacimiento *</label>
                     <input class="form-control" id="birthday" placeholder="" type="date" name="birthday" value="" required />
                 </div>
                 <div class="form-group col-md-6">
@@ -87,7 +80,8 @@
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>
-                        Número de teléfono (incluido el código de país, "+1")
+                        Número de teléfono 
+                        <!-- (incluido el código de país, "+1") -->
                     </label>
                     <input class="form-control" placeholder="Ingrese su teléfono..." type="text"
                         name="phone_number" value="" required />
@@ -97,7 +91,7 @@
                 <legend>Direccíon</legend>
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label>Línea 1</label>
+                        <label>Línea 1 *</label>
                         <input class="form-control" placeholder="Ingrese su dirección, línea 1..." type="text"
                             name="address_1" value="" required />
                     </div>
@@ -110,13 +104,13 @@
                 </div>
                 <div class="row">
                     <div class="form-group col-md-8">
-                        <label>Ciudad</label>
+                        <label>Ciudad *</label>
                         <input class="form-control" placeholder="Ingrese su dirección, ciudad..." type="text"
                             name="city" value="" required />
 
                     </div>
                     <div class="form-group col-md-4">
-                        <label>Estado o Provincia</label>
+                        <label>Estado o Provincia *</label>
                         <input class="form-control" type="text"
                             placeholder="Ingrese su dirección, estado o provincia..." name="state_province" value=""
                             required />
@@ -124,12 +118,12 @@
                 </div>
                 <div class="row">
                     <div class="form-group col-md-6 col-12">
-                        <label>Código Postal</label>
+                        <label>Código Postal *</label>
                         <input class="form-control" type="text" placeholder="Ingrese su código.." name="postal_code"
                             value="" required />
                     </div>
                     <div class="form-group col-md-6">
-                        <label>País</label>
+                        <label>País *</label>
                         <input class="form-control" placeholder="Ingrese su País.." type="text" name="country" value=""
                             required />
                     </div>
@@ -217,7 +211,7 @@
                         dataType: "json",
                         data: json,
                         success: async (data) => {
-                            console.log(data);
+                            // console.log(data);
                             
                             // Setup the form and success form.
                             $("#successPanel").show();

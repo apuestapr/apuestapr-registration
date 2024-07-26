@@ -3,7 +3,7 @@
   <div class="row">
       <div class="col-12">
           <p>
-            Si este usuario se ha preinscrito, selecciónelo de la lista para actualizar el formulario.
+            Si este usuario se ha pre-registro, selecciónelo de la lista para actualizar el formulario.
           </p>
           <div class="form-group">
             <select class="form-control" id="preRegistrationId">
@@ -49,7 +49,6 @@
           $('input[name="first_name"]').val(record.first_name, '');
           $('input[name="last_name"]').val(record.last_name || '');
           $('input[name="email"]').val(record.email || '');
-          $('input[name="birthday"]').val(record.birthday || '');
           $('input[name="address_1"]').val(record.address_1 || '');
           $('input[name="address_2"]').val(record.address_2 || '');
           $('input[name="city"]').val(record.city || '');
@@ -57,6 +56,13 @@
           $('input[name="postal_code"]').val(record.postal_code || '');
           $('input[name="phone_number"]').val(record.phone_number || '');
           $('input[name="country"]').val(record.country || '');
+
+          // Format and update the birthday value.
+          try {
+            const date = new Date(record.birthday);
+            const formattedDate = date.toISOString().split('T')[0];
+            $('input[name="birthday"]').val(formattedDate);
+          } catch(err) {}
 
           // Store the reg Id for removal later.
           $('input[name="preRegistrationId"]').val(record._id);
@@ -66,6 +72,7 @@
         validateForm();
       });
 
+      // Set the button for preRegId button.
       $('#preRegistrationId').change(function() {
         var selectedValue = $(this).val();
         if (selectedValue) {
@@ -75,11 +82,11 @@
         }
       });
 
+      // Function to validate the form to add or remove 
+      // an error class.
       function validateForm() {
           var form = document.getElementById('RegistrationForm');
-          console.log(form);
           var inputs = form.querySelectorAll('input');
-          console.log(inputs);
 
           inputs.forEach(function (input) {
               if (!input.checkValidity()) {
@@ -97,24 +104,24 @@
               contentType: 'application/json',
               dataType: 'json',
               success: (data) => {
+                  // Set the data.
                   PreRegistrationData = data;
 
                   var select = $('#preRegistrationId');
                   select.empty();
                   select.append($('<option>', {
                       value: '',
-                      text: `Select one...`
+                      text: `Seleccione una opción...`
                     }));
 
                   $.each(data, function(index, option) {
-                    console.log(option);
-                      select.append($('<option>', {
+                      select.append($("<option>", {
                       value: option._id,
                       text: `${option.first_name} ${option.last_name} (${option.email || 'NA'}, started: ${option.started_at || 'No Idea When'})`
                       }));
                   });
               },
-              dataType: 'json'
+              dataType: "json"
           });
       }
 

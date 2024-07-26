@@ -37,7 +37,7 @@ def json_encoder(obj):
 @require_auth
 def list_pre_registrations():
    try:
-      documents = PreRegistration.find()
+      documents = PreRegistration.find(sort="-started_at")
       document_list = [doc.model_dump(by_alias=True) for doc in documents]
       return json.dumps(document_list, default=json_encoder), 200
    except Exception as e:
