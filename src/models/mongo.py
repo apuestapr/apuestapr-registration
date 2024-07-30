@@ -13,8 +13,6 @@ client = MongoClient(os.getenv('MONGO_CONNECTION_STRING'), server_api=ServerApi(
 # This will not recreate it if it already exists; just ensures that it's unique
 client['registrations']['registration'].create_index('loyalty_card_number', sparse=True)
 
-print('MONGO CLIENT:', client)
-
 def db():
     return client['registrations']
     

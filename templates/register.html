@@ -1,334 +1,332 @@
 <html>
-    <head>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
-        <script src="https://sdk.onfido.com/v12.3"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.1/underscore-min.js"></script>
-        <link href="https://sdk.onfido.com/v12.3/style.css" rel="stylesheet" />
-        <style type="text/css">
-            .navbar-brand img {
-                height: 50px;
-            }
-        </style>
-        <style>
-            .is-invalid {
-                border-color: #dc3545;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            {% include 'nav.html' %}
 
-            <div class="row">
-                <div class="col-12 pt-3">
-                    <h1>
-                        Registro de Cliente
-                    </h1>
-                    {% if success or registration.complete %}
-                        <div class="alert alert-success">
-                            <h4>Registro completo!</h4>
-                            <p>
-                                Para cambiar datos personales puede utilizar 
-                                el sistema back office de White Hat.
-                            </p>
-                            <small>
-                                User ID: {{registration.whitehat_user_id}}
-                            </small>
-                            <br />
-                            <small>
-                                Email: {{registration.email}}
-                            </small>
-                            <br />
-                            <br/>
-                            <a class="btn btn-primary" href="/register">
-                                Registrar Nuevo Cliente
-                            </a>
-                        </div>
-                    {% else %}
-                        {% if errors %}
-                            <div class="alert alert-danger">
-                                <h4>Error(es)</h4>
-                                <ul>
-                                    {% for error in errors %}
-                                        <li>{{error}}</li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        {% endif %}
-                        {% if registration.kyc_status == 'PENDING' %}
-                            <p>
-                              Por favor fotografíe la identificación del cliente.
-                            </p>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <script src="https://sdk.onfido.com/v12.3"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.1/underscore-min.js"></script>
+    <link href="https://sdk.onfido.com/v12.3/style.css" rel="stylesheet" />
+    <style type="text/css">
+        .navbar-brand img {
+            height: 50px;
+        }
+    </style>
+    <style>
+        .is-invalid {
+            border-color: #dc3545;
+        }
+    </style>
+</head>
 
-                            <div id="onfido-mount"></div>
+<body>
+    <div class="container">
+        {% include 'nav.html' %}
 
-                            <script type="text/javascript">
-                                console.log('SDK token is {{onfido_sdk_token}}');
-                                let preferredLanguage = 'en_US';
-
-                                {% if registration.preferred_language == 'es' %}
-                                    preferredLanguage = 'es_419';
-                                {% endif %}
-
-                                Onfido.init({
-                                    token: '{{onfido_sdk_token}}',
-                                    containerId: 'onfido-mount',
-                                    steps: ['welcome', 'document', 'complete'],
-                                    language: preferredLanguage,
-                                    
-                                    onComplete: function (data) {
-                                        console.log('Completed with data:', data);
-                                        const documentIds = Object.keys(data).map(k => {
-                                            return data[k].id;
-                                        });
-
-                                        $.ajax({
-                                            dataType: 'json',
-                                            contentType: 'application/json',
-                                            method: 'POST',
-                                            data: JSON.stringify({
-                                                'document_ids': documentIds,
-                                            }),
-                                            url: '/registration/{{registration.id}}/run-check',
-                                            success: (data) => {
-                                                window.location.reload()
-                                            }
-                                        })
-                                    }
-                                });
-                            </script>
-                        {% elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE' %}
-                            <div class="alert alert-info">
-                                La verificación KYC se está ejecutando. Por favor permanezca en esta 
-                                página. La página se actualizará en <span id="seconds-remaining">15</span>.
-                            </div>
-                            <script type="text/javascript">
-                                let secondsRemaining = 15;
-                                setInterval(function() {
-                                    secondsRemaining--;
-
-                                    if (secondsRemaining == 0) {
-                                        window.location.reload();
-                                    }
-                                    $('#seconds-remaining').html(secondsRemaining.toString());
-                                }, 1000);
-                            </script>
-                        {% elif registration.kyc_status in ['COMPLETE', 'FAILED'] %}
-                            <form method="POST" id="RegistrationForm">
-
-                                {% if registration.kyc_status == 'COMPLETE' %}
-                                    <p class="alert alert-success">
-                                        KYC se ejecutó exitosamente en este cliente. Haga que el cliente complete 
-                                        el resto de su información personal.
-                                    </p>
-                                {% elif registration.kyc_status == 'FAILED' %}
-                                    <div class="alert alert-warning">
-                                        <p>
-                                            <b>Advertencia!</b> KYC no se ejecutó exitosamente para este cliente. 
-                                            Si revisó manualmente la identificación del cliente, escriba una nota 
-                                            aquí explicando lo que revisó.
-                                        </p>
-                                        <textarea name="kyc_override">{{registration.kyc_override}}</textarea>
-                                        
-                                    </div>
-                                {% endif %}
-                                
-                                {% include 'pre-registration-form.html' %}
-
-                                <input type="text" hidden class="form-control" name="preRegistrationId"/>
-
-                                <div class="row">
-                                    <div class="form-group col-6">
-                                        <label>
-                                            Número de Tarjeta de Jugador *
-                                        </label>
-                                        <input type="text" class="form-control" placeholder="Ingrese su Número de Tarjeta de Jugador..." name="loyalty_card_number" value="{{registration.loyalty_card_number}}" required/>
-                                        <small class="form-text text-muted">
-                                            Elija una Tarjeta de Jugador disponible e ingrese el número aquí.
-                                        </small>
-
-                                    </div>
-                                    <div class="form-group col-6">
-                                        <label>
-                                            Código de Referencia *
-                                        </label>
-                                        <select name="referral_code" class="form-control" required>
-                                            <option value="">None</option>
-                                            <option value="ApuestaPR"
-                                            {% if registration.referral_code == 'ApuestaPR' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >ApuestaPR</option>
-                                            <option value="Guayanabo Mets Basketball"
-                                            {% if registration.referral_code == 'Guayanabo Mets Basketball' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >Guayanabo Mets Basketball</option>
-                                            <option value="Paseo Caribe"
-                                            {% if registration.referral_code == 'Paseo Caribe' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >Paseo Caribe</option>
-                                            <option value="Colmado y Agencia Hípica El Puente"
-                                            {% if registration.referral_code == 'Colmado y Agencia Hipica El Puente' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >Colmado y Agencia Hípica El Puente</option>
-                                            <option value="Los Palitos"
-                                            {% if registration.referral_code == 'Los Palitos' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >Los Palitos</option>
-                                            <option value="El Farito"
-                                            {% if registration.referral_code == 'El Farito' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >El Farito</option>
-                                            <option value="Las Picuas"
-                                            {% if registration.referral_code == 'Las Picuas' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >Las Picuas</option>
-                                            <option value="Flight Park"
-                                            {% if registration.referral_code == 'Flight Park' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >Flight Park</option>
-                                            <option value="Agencia 100"
-                                            {% if registration.referral_code == 'Agencia 100' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >Agencia #100</option>
-                                            <option value="24 Market Place"
-                                            {% if registration.referral_code == '24 Market Place' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >24 Market Place</option>
-                                            <option value="Las Cumbres"
-                                            {% if registration.referral_code == 'Las Cumbres' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >Las Cumbres</option>
-                                            <option value="UBS"
-                                            {% if registration.referral_code == 'UBS' %}
-                                                selected="selected"
-                                            {% endif %}
-                                            >UBS</option>
-                                        </select>
-                                        <small class="form-text form-muted">
-                                            Ingrese el código de la ubicación de registro, si corresponde
-                                        </small>
-                                    </div>
-                                </div>
-                          
-                                <div class="row">
-                                    <div class="form-group col-6">
-                                        <label>Nombre de pila *</label>
-                                        <input class="form-control" type="text" placeholder="Ingrese su nombre..." name="first_name" value="{{registration.first_name}}" required/>
-                                    </div>
-
-                                    <div class="form-group col-6">
-                                        <label>Apellido *</label>
-                                        <input class="form-control" placeholder="Ingrese su apellido..." type="text" name="last_name" value="{{registration.last_name}}" required/>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="form-group col-3">
-                                        <label>Fecha de Nacimiento *</label>
-                                        <input class="form-control" type="date" name="birthday" value="{{registration.birthday}}" required/>
-                                    </div>
-
-                                    <div class="form-group col-4">
-                                        <label>Email *</label>
-                                        <input class="form-control" type="email" placeholder="Ingrese su dirección de correo electrónico..." name="email" value="{{registration.email}}" required/>
-                                    </div>
-
-                                    <div class="form-group col-5">
-                                        <label>
-                                            Número de teléfono *
-                                        </label>
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text" id="basic-addon1">+1</span>
-                                            <input class="form-control" type="text" placeholder="Ingrese su teléfono..." name="phone_number" value="{{registration.phone_number}}" required/>
-                                        </div>
-                                        <!-- <small>
-                                            (incluido el código de país, "+1")
-                                        </small> -->
-                                    </div>
-                                </div>
-
-                                <fieldset>
-                                    <legend>Direccion de Casa</legend>
-
-                                    <div class="row">
-                                        <div class="form-group col-6">
-                                            <label>Línea 1 *</label>
-                                            <input class="form-control" type="text" placeholder="Ingrese su dirección, línea 1..." name="address_1" value="{{registration.address_1}}" required/>
-                                        </div>
-
-                                        <div class="form-group col-6">
-                                            <label>Línea 2 (opcional)</label>
-                                            <input class="form-control" placeholder="Ingrese su dirección, línea 2..." type="text" name="address_2" value="{{registration.address_2}}"/>
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-8">
-                                            <div class="form-group">
-                                                <label>Ciudad *</label>
-                                                <input class="form-control" placeholder="Ingrese su dirección, ciudad..." type="text" name="city" value="{{registration.city}}" required/>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="form-group">
-                                                <label>Estado o Provincia *</label>
-                                                <input class="form-control" type="text" placeholder="Ingrese su dirección, estado o provincia..." name="state_province" value="{{registration.state_province}}" required/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Código Postal *</label>
-                                                <input class="form-control" type="text" placeholder="Ingrese su código.." name="postal_code" value="{{registration.postal_code}}" required/>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>País *</label>
-                                                <input class="form-control" type="text" placeholder="Ingrese su País.."  name="country" value="{{registration.country}}" required/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="kform-check" style="border-radius: 10px; background-color: #EFEFEF; padding: 10px; border:1px solid #DFDFDF;">
-                                                <div class="form-group">
-                                                <input kclass="form-check-input" type="checkbox" name="agree_to_terms" {% if registration.agree_to_terms %}checked{% endif %}>
-                                                <label class="form-check-label" for="flexCheckDefault">
-                                                    Aceptar términos y condiciones
-                                                </label>
-                                                <div class="form-text">
-                                                    <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/">Leer términos y condiciones</a>
-                                                </div>
-                                            </div>
-                                            </div>
-                                        </div>
-                                    </div>    
-                                </fieldset>
-                                
-                                <br>
-
-                                <input type="submit" class="btn btn-lg btn-success" value="Registrar"/>
-
-                            </form>
-                        {% endif %}
-                    {% endif %}
+        <div class="row">
+            <div class="col-12 pt-3">
+                <h1>
+                    Registro de Cliente
+                </h1>
+                {% if success or registration.complete %}
+                <div class="alert alert-success">
+                    <h4>Registro completo!</h4>
+                    <p>
+                        Para cambiar datos personales puede utilizar
+                        el sistema back office de White Hat.
+                    </p>
+                    <small>
+                        User ID: {{registration.whitehat_user_id}}
+                    </small>
+                    <br />
+                    <small>
+                        Email: {{registration.email}}
+                    </small>
+                    <br />
+                    <br />
+                    <a class="btn btn-primary" href="/register">
+                        Registrar Nuevo Cliente
+                    </a>
                 </div>
+                {% else %}
+                {% if errors %}
+                <div class="alert alert-danger">
+                    <h4>Error(es)</h4>
+                    <ul>
+                        {% for error in errors %}
+                        <li>{{error}}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                {% if registration.kyc_status == 'PENDING' %}
+                <p>
+                    Por favor fotografíe la identificación del cliente.
+                </p>
+
+                <div id="onfido-mount"></div>
+
+                <script type="text/javascript">
+                    console.log('SDK token is {{onfido_sdk_token}}');
+                    let preferredLanguage = 'en_US';
+
+                    {% if registration.preferred_language == 'es' %}
+                    preferredLanguage = 'es_419';
+                    {% endif %}
+
+                    Onfido.init({
+                        token: '{{onfido_sdk_token}}',
+                        containerId: 'onfido-mount',
+                        steps: ['welcome', 'document', 'complete'],
+                        language: preferredLanguage,
+
+                        onComplete: function (data) {
+                            console.log('Completed with data:', data);
+                            const documentIds = Object.keys(data).map(k => {
+                                return data[k].id;
+                            });
+
+                            $.ajax({
+                                dataType: 'json',
+                                contentType: 'application/json',
+                                method: 'POST',
+                                data: JSON.stringify({
+                                    'document_ids': documentIds,
+                                }),
+                                url: '/registration/{{registration.id}}/run-check',
+                                success: (data) => {
+                                    window.location.reload()
+                                }
+                            })
+                        }
+                    });
+                </script>
+                {% elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE' %}
+                <div class="alert alert-info">
+                    La verificación KYC se está ejecutando. Por favor permanezca en esta
+                    página. La página se actualizará en <span id="seconds-remaining">15</span>.
+                </div>
+                <script type="text/javascript">
+                    let secondsRemaining = 15;
+                    setInterval(function () {
+                        secondsRemaining--;
+
+                        if (secondsRemaining == 0) {
+                            window.location.reload();
+                        }
+                        $('#seconds-remaining').html(secondsRemaining.toString());
+                    }, 1000);
+                </script>
+                {% elif registration.kyc_status in ['COMPLETE', 'FAILED'] %}
+                <form method="POST" id="RegistrationForm">
+
+                    {% if registration.kyc_status == 'COMPLETE' %}
+                    <p class="alert alert-success">
+                        KYC se ejecutó exitosamente en este cliente. Haga que el cliente complete
+                        el resto de su información personal.
+                    </p>
+                    {% elif registration.kyc_status == 'FAILED' %}
+                    <div class="alert alert-warning">
+                        <p>
+                            <b>Advertencia!</b> KYC no se ejecutó exitosamente para este cliente.
+                            Si revisó manualmente la identificación del cliente, escriba una nota
+                            aquí explicando lo que revisó.
+                        </p>
+                        <textarea name="kyc_override">{{registration.kyc_override}}</textarea>
+
+                    </div>
+                    {% endif %}
+
+                    {% include 'pre-registration-form.html' %}
+
+                    <input type="text" hidden class="form-control" name="preRegistrationId" />
+
+                    <div class="row">
+                        <div class="form-group col-6">
+                            <label>
+                                Número de Tarjeta de Jugador *
+                            </label>
+                            <input type="text" class="form-control"
+                                placeholder="Ingrese su Número de Tarjeta de Jugador..." name="loyalty_card_number"
+                                value="{{registration.loyalty_card_number}}" required />
+                            <small class="form-text text-muted">
+                                Elija una Tarjeta de Jugador disponible e ingrese el número aquí.
+                            </small>
+
+                        </div>
+                        <div class="form-group col-6">
+                            <label>
+                                Código de Referencia *
+                            </label>
+                            <select name="referral_code" class="form-control" required>
+                                <option value="">None</option>
+                                <option value="ApuestaPR" {% if registration.referral_code=='ApuestaPR' %}
+                                    selected="selected" {% endif %}>ApuestaPR</option>
+                                <option value="Guayanabo Mets Basketball" {% if
+                                    registration.referral_code=='Guayanabo Mets Basketball' %} selected="selected" {%
+                                    endif %}>Guayanabo Mets Basketball</option>
+                                <option value="Paseo Caribe" {% if registration.referral_code=='Paseo Caribe' %}
+                                    selected="selected" {% endif %}>Paseo Caribe</option>
+                                <option value="Colmado y Agencia Hípica El Puente" {% if
+                                    registration.referral_code=='Colmado y Agencia Hipica El Puente' %}
+                                    selected="selected" {% endif %}>Colmado y Agencia Hípica El Puente</option>
+                                <option value="Los Palitos" {% if registration.referral_code=='Los Palitos' %}
+                                    selected="selected" {% endif %}>Los Palitos</option>
+                                <option value="El Farito" {% if registration.referral_code=='El Farito' %}
+                                    selected="selected" {% endif %}>El Farito</option>
+                                <option value="Las Picuas" {% if registration.referral_code=='Las Picuas' %}
+                                    selected="selected" {% endif %}>Las Picuas</option>
+                                <option value="Flight Park" {% if registration.referral_code=='Flight Park' %}
+                                    selected="selected" {% endif %}>Flight Park</option>
+                                <option value="Agencia 100" {% if registration.referral_code=='Agencia 100' %}
+                                    selected="selected" {% endif %}>Agencia #100</option>
+                                <option value="24 Market Place" {% if registration.referral_code=='24 Market Place' %}
+                                    selected="selected" {% endif %}>24 Market Place</option>
+                                <option value="Las Cumbres" {% if registration.referral_code=='Las Cumbres' %}
+                                    selected="selected" {% endif %}>Las Cumbres</option>
+                                <option value="UBS" {% if registration.referral_code=='UBS' %} selected="selected" {%
+                                    endif %}>UBS</option>
+                            </select>
+                            <small class="form-text form-muted">
+                                Ingrese el código de la ubicación de registro, si corresponde
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-6">
+                            <label>Nombre de pila *</label>
+                            <input class="form-control" type="text" placeholder="Ingrese su nombre..." name="first_name"
+                                value="{{registration.first_name}}" required />
+                        </div>
+
+                        <div class="form-group col-6">
+                            <label>Apellido *</label>
+                            <input class="form-control" placeholder="Ingrese su apellido..." type="text"
+                                name="last_name" value="{{registration.last_name}}" required />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-3">
+                            <label>Fecha de Nacimiento *</label>
+                            <input class="form-control" type="date" name="birthday" value="{{registration.birthday}}"
+                                required />
+                        </div>
+
+                        <div class="form-group col-4">
+                            <label>Email *</label>
+                            <input class="form-control" type="email"
+                                placeholder="Ingrese su dirección de correo electrónico..." name="email"
+                                value="{{registration.email}}" required />
+                        </div>
+
+                        <script>
+                            // Prevent the use of a phone number with a +.
+                            $(document).ready(() => {
+                                document.getElementById('phone_number').addEventListener('input', function (event) {
+                                    this.value = this.value.replace(/\+/g, '');
+                                });
+                            })
+                        </script>
+
+                        <div class="form-group col-5">
+                            <label>
+                                Número de teléfono *
+                            </label>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon1">+1</span>
+                                <input class="form-control" id="phone_number" type="text"
+                                    placeholder="Ingrese su teléfono..." name="phone_number"
+                                    value="{{registration.phone_number}}" required />
+                            </div>
+                            <small style="color: green;">
+                                (No agregues un + al número de teléfono.)
+                            </small>
+                        </div>
+                    </div>
+
+                    <fieldset>
+                        <legend>Direccion de Casa</legend>
+
+                        <div class="row">
+                            <div class="form-group col-6">
+                                <label>Línea 1 *</label>
+                                <input class="form-control" type="text" placeholder="Ingrese su dirección, línea 1..."
+                                    name="address_1" value="{{registration.address_1}}" required />
+                            </div>
+
+                            <div class="form-group col-6">
+                                <label>Línea 2 (opcional)</label>
+                                <input class="form-control" placeholder="Ingrese su dirección, línea 2..." type="text"
+                                    name="address_2" value="{{registration.address_2}}" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-8">
+                                <div class="form-group">
+                                    <label>Ciudad *</label>
+                                    <input class="form-control" placeholder="Ingrese su dirección, ciudad..."
+                                        type="text" name="city" value="{{registration.city}}" required />
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-group">
+                                    <label>Estado o Provincia *</label>
+                                    <input class="form-control" type="text"
+                                        placeholder="Ingrese su dirección, estado o provincia..." name="state_province"
+                                        value="{{registration.state_province}}" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>Código Postal *</label>
+                                    <input class="form-control" type="text" placeholder="Ingrese su código.."
+                                        name="postal_code" value="{{registration.postal_code}}" required />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label>País *</label>
+                                    <input class="form-control" type="text" placeholder="Ingrese su País.."
+                                        name="country" value="{{registration.country}}" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="kform-check"
+                                    style="border-radius: 10px; background-color: #EFEFEF; padding: 10px; border:1px solid #DFDFDF;">
+                                    <div class="form-group">
+                                        <input kclass="form-check-input" type="checkbox" name="agree_to_terms" {% if
+                                            registration.agree_to_terms %}checked{% endif %}>
+                                        <label class="form-check-label" for="flexCheckDefault">
+                                            Aceptar términos y condiciones
+                                        </label>
+                                        <div class="form-text">
+                                            <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/">Leer
+                                                términos y condiciones</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <br>
+
+                    <input type="submit" class="btn btn-lg btn-success" value="Registrar" />
+
+                </form>
+                {% endif %}
+                {% endif %}
             </div>
         </div>
-    </body>
-</html>
+    </div>
+</body>
 
+</html>

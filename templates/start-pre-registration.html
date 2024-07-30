@@ -32,7 +32,7 @@
         {% include 'public-nav.html' %}
         <div class="row">
             <div class="col-12">
-                <h1>Iniciar Preinscripción</h1>
+                <h1>Pre-Registro</h1>
                 <p>
                     Para poder activar su cuenta, complete la información solicitada. Los datos
                     personales tienen que coincidir con los de su identificación (licencia o pasaporte).
@@ -45,7 +45,7 @@
                 Registro Exitoso
             </h1>
             <p>
-                El registro de este usuario está completo. Cuando llegue a presentar 
+                El registro de este usuario está completo. Cuando llegue a presentar
                 su documento, por favor informe al personal de Apuesta.
             </p>
             <button class="btn btn-success" id="showFormBtn">
@@ -69,7 +69,8 @@
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>Fecha de Nacimiento *</label>
-                    <input class="form-control" id="birthday" placeholder="" type="date" name="birthday" value="" required />
+                    <input class="form-control" id="birthday" placeholder="" type="date" name="birthday" value=""
+                        required />
                 </div>
                 <div class="form-group col-md-6">
                     <label>Email</label>
@@ -80,11 +81,13 @@
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>
-                        Número de teléfono 
-                        <!-- (incluido el código de país, "+1") -->
+                        Número de teléfono
                     </label>
-                    <input class="form-control" placeholder="Ingrese su teléfono..." type="text"
-                        name="phone_number" value="" required />
+                    <input class="form-control" id="phone_number" placeholder="Ingrese su teléfono..." type="tel" name="phone_number"
+                        value="" required />
+                    <small style="color: green;">
+                        (No agregues un + al número de teléfono.)
+                    </small>
                 </div>
             </div>
             <fieldset>
@@ -139,7 +142,8 @@
                                 Aceptar términos y condiciones
                             </label>
                             <div class="form-text">
-                                <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/">Leer términos y condiciones</a>
+                                <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/">Leer términos y
+                                    condiciones</a>
                             </div>
                         </div>
                         <p id="validationMessage" class="mt-2"></p>
@@ -161,6 +165,11 @@
         let registrationData = [];
 
         $(document).ready(() => {
+
+            document.getElementById('phone_number').addEventListener('input', function (event) {
+                this.value = this.value.replace(/\+/g, '');
+            });
+
             // Add input event listeners to remove is-invalid class when user types
             document.querySelectorAll("input").forEach(function (input) {
                 input.addEventListener("input", function () {
@@ -176,8 +185,8 @@
                 $("#agree_to_terms").prop("checked", false);
                 $("#validationMessage").text("");
 
-                $("input").each(function() {
-                   $(this).val('');
+                $("input").each(function () {
+                    $(this).val('');
                 });
 
                 $("#successPanel").hide();
@@ -195,7 +204,7 @@
                     input.classList.remove("is-invalid");
                 });
 
-                if (form.checkValidity()) {  
+                if (form.checkValidity()) {
                     var formData = new FormData(form);
                     var formObject = {};
                     formData.forEach((value, key) => {
@@ -212,7 +221,7 @@
                         data: json,
                         success: async (data) => {
                             // console.log(data);
-                            
+
                             // Setup the form and success form.
                             $("#successPanel").show();
                             $("#PreRegistrationForm").hide();
@@ -229,9 +238,9 @@
                     });
 
                     if ($("#agree_to_terms").is(":checked")) {
-                       $("#validationMessage").text("");
+                        $("#validationMessage").text("");
                     } else {
-                       $("#validationMessage").text("Please confirm the terms and conditions to continue.").css("color", "red");
+                        $("#validationMessage").text("Please confirm the terms and conditions to continue.").css("color", "red");
                     }
 
                     // Form is not valid, show validation errors
