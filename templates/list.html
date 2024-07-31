@@ -32,7 +32,7 @@
         {% include 'nav.html' %}
         <div class="row">
             <div class="col-12">
-                <h1>Lista de Preinscripciones</h1>
+                <h1>Lista de Pre-Registro</h1>
                 <p>
                     Aquí tienes una lista de todos los usuarios que han iniciado el
                     proceso de preinscripción. Cada uno es un usuario diferente. Cuando
@@ -65,7 +65,7 @@
                                 <th>Nombre Completo</th>
                                 <th>Email/Phone</th>
                                 <th>Dirección.</th>
-                                <th width="25%">&nbsp;</th>
+                                <!-- <th width="25%">&nbsp;</th> -->
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
@@ -97,11 +97,11 @@
                         <%= item.address_2 || 'NA' %>,<br>
                         <%= item.city || 'NA' %> <%= item.state_province || 'NA' %> <%= item.postal_code || 'NA' %>
                     </td>
-                    <td align="right">
+                    <!-- <td align="right">
                         <button type="button" class="btn btn-sm btn-outline" onclick="deleteRegistration('<%= item._id %>')">
                             <i class="fa fa-trash"></i>
                         </button>
-                    </td>
+                    </td> -->
                 </tr>
             <% }); %>
         </script>
