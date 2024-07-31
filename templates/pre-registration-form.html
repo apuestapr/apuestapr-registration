@@ -41,7 +41,7 @@
       $('#applySelectedPreRegistration').click((e) => {
         e.preventDefault();
 
-        const conf = confirm("¿Quieres usar esta preinscripción?");
+        const conf = confirm("¿Quieres usar esta pre-registro?");
         if (conf) {
           var selectedId = preRegistrationId.val();
           const record = _.find(PreRegistrationData, { _id: selectedId });
