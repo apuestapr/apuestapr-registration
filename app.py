@@ -4,13 +4,14 @@ load_dotenv()
 from flask import Flask, jsonify, render_template, request, abort, url_for, session, redirect
 from src.shufti import run_verification_request, handle_callback
 from src.onfido import run_verification_request as onfido_run_verification_request, update_check_status, generate_sdk_token, run_check
+from src.onfido import run_verification_request_new as onfido_run_verification_request_new
+
 from authlib.integrations.flask_client import OAuth
 from urllib.parse import quote_plus, urlencode
 from datetime import date
 import dateutil.parser as dparser
 import json
 from src.models.registration import Registration
-from src.models.pre_registration import PreRegistration, serialize_documents
 import pymongo.errors
 import os
 import sys 
@@ -21,7 +22,7 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from src.blueprints.pre_registration import pre_registration_bp
 from src.blueprints.registration import registration_bp
-from src.models.pre_registration import PreRegistration
+from src.blueprints.qr_code import qr_code_bp
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 
@@ -100,37 +101,6 @@ def home():
    return render_template('home.html', user=session.get('user'))
 
 # ---------------------------------------------------------------
-# Admin features for Registrations.
-
-@app.route('/admin')
-@require_auth
-def list_registrations():
-   return render_template('admin.html', user=session.get('user'))
-
-# ---------------------------------------------------------------
-# Setup the List Page that contains all the pre-registration 
-# records. This page is designed to be used by the staff 
-# to find and convert a Pre-Registration User for the KYC 
-# process.
-
-@app.route('/list')
-@require_auth
-def list():
-   return render_template('list.html', user=session.get('user'))
-
-# ---------------------------------------------------------------
-# This is the route for the pre-registration form that a 
-# public (non-authenticated) user will need to get started.
-
-@app.route('/start-pre-registration')
-def start_pre_registration():
-   return render_template('start-pre-registration.html')
-
-# ---------------------------------------------------------------
-# This is the route that starts the standard KYC process. This 
-# is the legacy process and have been replaced by the /list that 
-# lets staff find and start with more of the uses data 
-# predefined.
 
 @app.route('/register')
 @require_auth
@@ -172,7 +142,7 @@ def finish_registration(registration_id):
    errors = []
    onfido_sdk_token = ''
 
-   print(json.dumps(registration.onfido_reports))
+   print("DUMP", json.dumps(registration.onfido_reports))
    print(registration.kyc_status)
    
    if registration.kyc_status == 'PENDING':
@@ -273,21 +243,93 @@ def finish_registration(registration_id):
             if len(errors) == 0:
                registration.complete = True
                registration.save()
-               
-               #
-               # if we have a value, then do we want to remove or update.
-               # this will mean that we have this updates.
-               #  request.form['preRegistrationId']
-               #
-               # if preRegistrationId: 
-               #    try:
-               #       PreRegistration.delete_one({"_id": ObjectId(preRegistrationId)})
-               #    except Exception as e:
-               #       print(f"Unable to delete preRegistrationId: {preRegistrationId}")
-
+         
                success = True
    
    return render_template('register.html', user=session.get('user'), onfido_sdk_token=onfido_sdk_token, registration=registration, errors=errors, success=success)
+
+# ---------------------------------------------------------------
+@app.route('/pre_registration/validate/<string:registration_id>', methods=['POST'])
+@require_auth
+def validate_kyc_process(registration_id):
+   
+   registration = Registration.find_by_id(registration_id)
+   if not registration:
+      return 'Registration not found'
+
+   success = False
+   errors = []
+
+   first_name = request.json.get('first_name', '')
+   last_name = request.json.get('last_name', '')
+   email = request.json.get('email', '')
+   phone_number = request.json.get('phone_number', '')
+   address_1 = request.json.get('address_1', '')
+   city = request.json.get('city', '')
+   state_province = request.json.get('state_province', '')
+   postal_code = request.json.get('postal_code', '')
+   country = request.json.get('country', '')
+   birthday = request.json.get('birthday', '')
+   loyalty_card_number = request.json.get('loyalty_card_number', '')
+   referral_code = request.json.get('referral_code', '')
+   
+   if not first_name:
+      errors.append('Nombre de pila es obligatorio.')
+      
+   if not last_name:
+      errors.append('Apellido es obligatorio.')
+      
+   if not loyalty_card_number:
+      errors.append('Número de Tarjeta de Jugador es obligatorio.')
+      
+   if not email:
+      errors.append('Email es obligatorio.')
+      
+   if not phone_number:
+      errors.append('El número de teléfono es obligatorio.')
+      
+   if not referral_code:
+      errors.append('El código de referencia es obligatorio.')
+
+   # ----------------------------------------------------------------
+   # Validate the address, again.
+   
+   if not address_1 or not city or not state_province or not country or not postal_code:
+      errors.append('Direccion es obligatorio')
+         
+   # ----------------------------------------------------------------
+   # Lets make sure the dateof birth is valid.
+
+   if not birthday:
+      errors.append('Birthday is required')
+   else:
+      bday = dparser.parse(birthday).date()
+      if calculateAge(bday) < 18:
+         errors.append('Debe tener al menos 18 años de edad para apostar en Puerto Rico.')
+  
+   # ----------------------------------------------------------------
+   # Ok lets check that the email and the loyal_card_number
+   # have not been used already.
+   
+   dupe_card_number = Registration.find_one({ '_id': { '$ne': registration_id, }, 'loyal_card_number': loyalty_card_number })
+   dupe_email = Registration.find_one({ '_id': { '$ne': registration_id, }, 'email': email })
+       
+   print('is Dup')
+   print(dupe_card_number);
+     
+   if dupe_email:
+      errors.append('Alguien ya ha sido registrado con esta dirección de correo electrónico.')
+      
+   if dupe_card_number:
+      # Someone has already been registered with this loyalty card number.
+      errors.append('Alguien ya ha sido registrado con este número de tarjeta de fidelidad.')
+            
+   # ----------------------------------------------------------------
+   if len(errors) == 0:
+      success = True
+   
+   # Ok we return the validation information.
+   return jsonify({ 'success': success, 'errors': errors, 'registration_id': registration_id })
 
 # ---------------------------------------------------------------
 # This is the KYC callback once the process is done.
@@ -314,6 +356,10 @@ def init_kyc():
    registration.save()
    return json.dumps(registration.dict(), default=str)
 
+
+# TOD_ Move to New Version.
+
+
 # ---------------------------------------------------------------
 # This is a route that returns a single registration.
 # It is called by the register.html page.
@@ -334,29 +380,22 @@ def get_registration(registration_id):
 @app.route('/registration/<string:registration_id>/run-check', methods=['POST'])
 @require_auth
 def run_onfido_check(registration_id):
+   
+   # Load the registration person.
    registration = Registration.find_by_id(registration_id)
    if not registration:
       abort(404)
+   
+   # Get the document_ids from the post.
    document_ids = request.json['document_ids']
 
+   # Update the Registraiton with the new document ids.
    registration.onfido_document_ids = document_ids
    
+   # Now run the check.
    registration_with_check = run_check(registration)
-   return json.dumps(registration_with_check.dict(), default=str) 
-
-# ---------------------------------------------------------------
-# This route GET the registration status. No visible use 
-# in the current route pages. Might be used by Kambi?
-
-@app.route('/registration/<string:registration_id>/check-status', methods=['GET'])
-@require_auth
-def check_onfido_status(registration_id):
-   registration = Registration.find_by_id(registration_id)
-   if not registration:
-      abort(404)
    
-   updated = update_check_status(registration)
-   return json.dumps(updated.dict(), default=str)  
+   return json.dumps(registration_with_check.dict(), default=str) 
 
 # ---------------------------------------------------------------
 # This route get the Kambi OTC. Need more information.
@@ -419,8 +458,9 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
 # used to drive the list.html page that allows staff to manage
 # users who have setup their account information ahead of time.
 
-app.register_blueprint(pre_registration_bp, url_prefix='/pre_registration')
+app.register_blueprint(pre_registration_bp, url_prefix='/registration')
 app.register_blueprint(registration_bp, url_prefix='/registrations')
+app.register_blueprint(qr_code_bp, url_prefix='/qr_code')
 
 if __name__ == '__main__':
    app.run()

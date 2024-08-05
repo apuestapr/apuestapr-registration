@@ -1,0 +1,144 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.1/underscore-min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style type="text/css">
+        #kyc-content {
+            width: 100%;
+            height: 500px;
+        }
+
+        .navbar-brand img {
+            height: 50px;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        {% include 'public-nav.html' %}
+        <div class="row">
+            <div class="col-12">
+                <h1>
+                    Confirmación de Registro
+                </h1>
+            </div>
+        </div>
+        <br>
+
+        {% if status == 'missing' %}
+            <div id="successPanel" class="alert alert-success" style="display: none;">
+                <h1>
+                    Problem
+                </h1>
+                <p>
+                    We are unable to find this registration id.
+                </p>
+                <button class="btn btn-success" id="showFormBtn">
+                    Agregar otro
+                </button>
+            </div>
+        {% endif %}
+
+        {% if status == 'found' %}
+
+          <div id="successPanel" class="alert alert-success" style="display: none;">
+            <h1>
+                Registro Receipt
+            </h1>
+            <p>
+                Here is your registration record.
+            </p>
+            <button class="btn btn-success" id="showFormBtn">
+                Agregar otro
+            </button>
+          </div>
+
+          {% if registration.kyc_status == 'COMPLETE' %}
+            <div class="alert alert-success">
+                <h2>
+                    Completado!
+                </h2>
+                <p>
+                    Su registro ha sido <b>completado</b>. Sus documentos han sido verificados y debería tener una cuenta activa con Apuesta.
+                </p>
+                <p>
+                    Si tiene problemas con su cuenta, por favor contacte al Soporte de Apuesta para recibir asistencia.
+                </p>
+            </div>
+            <small>
+                Puede cerrar esta ventana. Ya no es necesaria. Para su referencia, su ID de registro es <b>{{ registration_id }}</b>,
+                empezó el {{ registration.started_at }} para {{ registration.first_name }} 
+                {{ registration.last_name }}.
+            </small>
+          {% endif %}
+
+          {% if registration.kyc_status == 'PENDING' %}
+            <div class="alert alert-info" style="background-color: #FFF; border: 1px solid #000; color: #000;">
+                <div class="row">
+                    <div class="col-md-6 col-12 text-center">
+                        <img src="/qr_code/generate/{{ registration_id }}" class="img-responsive">
+                    </div>
+                    <div class="col-md-6 col-12 text-center">
+                        <br>
+                        <p style="font-size: 18px">
+                            Esta es su referencia de registro. Por favor, muestre 
+                            este código QR cuando llegue a la ubicación de Apuesta para 
+                            completar la verificación de sus documentos.
+                        </p>
+                        <br>
+                        <br>
+                        <b>Ref Id:</b> {{ registration_id }}<br>
+                        <b>Comenzado El:</b> {{ registration.started_at }}<br>
+                        <b>Persona:</b> {{ registration.first_name }} {{ registration.last_name }}<br>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info" style="background-color: #FFF; border: 1px solid #000; color: #000;">
+                <p>
+                    Nota para el personal de Apuesta: Por favor, escanee este código QR 
+                    para acceder a la información de registro de esta persona y comenzar el 
+                    proceso de verificación de documentos.
+                </p>
+                {% if has_session %}
+                  <a class="btn btn-sm btn-info" href="/registration/review/{{ registration_id }}">Solo para pruebas. Haga clic para iniciar la revisión.</a>
+                {% endif %}
+
+                {% if has_session %}
+                  <br>
+                  <br>
+                  <small>
+                    <i>
+                      Esta opción para el personal solo se muestra ahora porque ha iniciado sesión.
+                    </i>
+                  </small>
+                {% endif %}
+            </div>
+
+          {% endif %}
+
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        let registrationId = "";
+        let registrationData = [];
+
+        $(document).ready(() => {
+
+          
+        });
+    </script>
+</body>
+
+</html>

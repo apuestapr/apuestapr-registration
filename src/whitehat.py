@@ -79,6 +79,7 @@ def get_player_id(registration: Registration):
     return response['playerid']
 
 def create_account(registration: Registration):
+    
     if not registration.whitehat_user_id:
         response = requests.post(API_URL + '/platform/usergateway/registeruser', json={
             'brand': 'liberman',

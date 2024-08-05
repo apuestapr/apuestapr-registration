@@ -1,0 +1,215 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <script src="https://sdk.onfido.com/v12.3"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.1/underscore-min.js"></script>
+    <link href="https://sdk.onfido.com/v12.3/style.css" rel="stylesheet" />
+    <style type="text/css">
+        .navbar-brand img {
+            height: 50px;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        {% include 'nav.html' %}
+
+        <div class="row">
+            <div class="col-12 pt-3"> 
+                <h1>
+                    Procesar Registro para: {{ registration.first_name }} {{ registration.last_name }}
+                </h1>
+
+                {% if success or registration.complete %}
+                    <div class="alert alert-success">
+                        <h4>Registro completo!</h4>
+                        <p>
+                            Para cambiar datos personales puede utilizar
+                            el sistema back office de White Hat.
+                        </p>
+                        <small>
+                            User ID: {{registration.whitehat_user_id}}
+                        </small>
+                        <br />
+                        <small>
+                            Email: {{registration.email}}
+                        </small>
+                        <br />
+                        <br />
+                        <a class="btn btn-primary" href="/register">
+                            Registrar Nuevo Cliente
+                        </a>
+                    </div>
+                {% else %}
+                    {% if errors %}
+                    <div class="alert alert-danger">
+                        <h4>Error(es)</h4>
+                        <ul>
+                            {% for error in errors %}
+                            <li>{{error}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    {% if registration.kyc_status == 'PENDING' %}
+
+                    <div class="alert alert-info">
+                        <p class="text-center">
+                            Por favor fotografíe la identificación del cliente.
+                        </p>
+                        <div class="row">
+                            <div id="onfido-mount" class="col-12" style="margin-bottom: 20px;"></div>
+                        </div>
+                    </div>
+
+                    <script type="text/javascript">
+                        console.log('SDK token is {{onfido_sdk_token}}');
+                        let preferredLanguage = 'en_US';
+
+                        {% if registration.preferred_language == 'es' %}
+                        preferredLanguage = 'es_419';
+                        {% endif %}
+
+                        Onfido.init({
+                            token: '{{onfido_sdk_token}}',
+                            containerId: 'onfido-mount',
+                            steps: ['welcome', 'document', 'complete'],
+                            language: preferredLanguage,
+
+                            onComplete: function (data) {
+                                console.log('Completed with data:', data);
+                                const documentIds = Object.keys(data).map(k => {
+                                    return data[k].id;
+                                });
+
+                                $.ajax({
+                                    dataType: 'json',
+                                    contentType: 'application/json',
+                                    method: 'POST',
+                                    data: JSON.stringify({
+                                        'document_ids': documentIds,
+                                    }),
+                                    url: '/registration/{{registration_id}}/run-check',
+                                    success: (data) => {
+                                        window.location.reload()
+                                    }
+                                })
+                            }
+                        });
+                    </script>
+                    {% elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE' %}
+
+                        <div class="alert alert-info">
+                            <h3>
+                                Procesando
+                            </h3>
+                            <p>
+                                La verificación KYC se está ejecutando. Por favor permanezca en esta
+                                página. La página se actualizará en <span id="seconds-remaining">15</span>.
+                            </p>
+                        </div>
+
+                        <script type="text/javascript">
+                            let secondsRemaining = 15;
+                            setInterval(function () {
+                                secondsRemaining--;
+
+                                if (secondsRemaining == 0) {
+                                    window.location.reload();
+                                }
+                                $('#seconds-remaining').html(secondsRemaining.toString());
+                            }, 1000);
+                        </script>
+
+                    {% elif registration.kyc_status in ['COMPLETE', 'FAILED'] %}
+                    <form method="POST" id="RegistrationForm">
+
+                        {% if registration.kyc_status == 'COMPLETE' %}
+
+                            {% if registration.whitehat_user_id == '' %}
+
+                                <div class="alert alert-success">
+                                    <h3>
+                                        KYC está completo.
+                                    </h3>
+                                    <p>
+                                        El último paso es crear la cuenta de usuario de Whitehat Players.
+                                    </p>
+                                </div>
+
+                                <input type="button" id="createAccountBtn" class="btn btn-block btn-success" value="Configurar Cuenta de Jugadores" />
+    
+                            {% else %}
+
+                                <div class="alert alert-success">
+                                    <h3>
+                                        Todo Completo
+                                    </h3>
+                                    <p>
+                                        Todo listo. Este usuario ha completado su KYC y su cuenta de juego ha 
+                                        sido creada. Puede cerrar esta ventana del navegador ahora.
+                                    </p>
+                                    
+                                    <input type="button" id="closeWindowBtn" class="btn btn-lg btn-success" value="Cerrar Ventana Actual" />
+                                </div>
+    
+                            {% endif %}
+
+                            <script type="text/javascript">
+                                $(document).ready(() => {
+                                
+                                    $('#closeWindowBtn').click((e) => {
+                                        window.close();
+                                    })
+
+                                    $("#createAccountBtn").click((e) => {
+
+                                        const conf = confirm("¿Quieres crear la cuenta ahora?");
+                                        if (conf) {
+                                            console.log('Sedning to API')
+                                            $.ajax({
+                                                url: `/registration/account-setup/{{ registration_id }}`,
+                                                method: "POST",
+                                                contentType: "application/json",
+                                                success: async (res) => {
+                                                    window.location.reload(true);
+                                                },
+                                                dataType: "json"
+                                            });
+                                        }
+
+                                    });
+
+                                });
+                            </script>
+
+                        {% elif registration.kyc_status == 'FAILED' %}
+
+                        <div class="alert alert-warning">
+                            <p>
+                                <b>Advertencia!</b> KYC no se ejecutó exitosamente para este cliente.
+                                Si revisó manualmente la identificación del cliente, escriba una nota
+                                aquí explicando lo que revisó.
+                            </p>
+
+                            <textarea name="kyc_override">{{registration.kyc_override}}</textarea>
+
+                        </div>
+                        {% endif %}
+                        <br>
+
+                    </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

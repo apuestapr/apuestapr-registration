@@ -44,10 +44,62 @@ def run_verification_request():
 
     registration.save()
 
-
     return registration
 
+# This is a new version that sends the data to the Onfido
+# using the values setup in the registation.
+def run_verification_request_new(registration):
     
+    registration.started_at = datetime.datetime.utcnow()
+    registration.save()
+    
+    # applicant_details = {
+    #     'first_name': registration.first_name or 'ApuestaPR',
+    #     'last_name': registration.last_name or 'Customer',
+    #     'dob': registration.birthday or '1984-01-01',
+    #     'address': {
+    #         'street': registration.address_1 or 'Second Street',
+    #         'town': registration.city or 'London',
+    #         'postcode': registration.postal_code or 'S2 2DF',
+    #         'country': registration.country or 'GBR'
+    #     },
+    #     'location': {
+    #         'ip_address': '127.0.0.1',
+    #         'country_of_residence': 'GBR'
+    #     }
+    # }
+    
+    applicant_details = {
+        'first_name': registration.first_name or 'ApuestaPR',
+        'last_name': registration.last_name or 'Customer',
+        'dob': '1984-01-01',
+        'address': {
+            'street': 'Second Street',
+            'town': 'London',
+            'postcode': 'S2 2DF',
+            'country': 'GBR'
+        },
+        'location': {
+            'ip_address': '127.0.0.1',
+            'country_of_residence': 'GBR'
+        }
+    }
+
+    print('App Details')
+    print(applicant_details);
+    
+    # Call the API to create an applicant.
+    response = api.applicant.create(applicant_details)
+
+    # Now store the id in the registration object.
+    registration.onfido_applicant_id = response['id']
+
+    # Save it.
+    registration.save()
+
+    # Return to the caller.
+    return registration
+
 
 def run_check(registration):
     if not registration.onfido_document_ids:
@@ -94,7 +146,7 @@ def update_check_status(registration):
         if done:
             # Get the reports
             reports = api.report.all(check_id=check['id'])['reports']
-            print('REPORTs', reports)
+            print('Received Reports:', reports)
             registration.onfido_reports = reports
 
             # Update the user information from the reports
@@ -114,8 +166,6 @@ def update_check_status(registration):
                     if new_bday:
                         registration.birthday = new_bday
                     
-        
-
         registration.save()
 
     return registration

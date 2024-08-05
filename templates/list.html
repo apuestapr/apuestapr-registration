@@ -32,25 +32,38 @@
         {% include 'nav.html' %}
         <div class="row">
             <div class="col-12">
-                <h1>Lista de Pre-Registro</h1>
+                <h1>Lista de Registros</h1>
                 <p>
-                    Aquí tienes una lista de todos los usuarios que han iniciado el
-                    proceso de preinscripción. Cada uno es un usuario diferente. Cuando
-                    un usuario haya completado el formulario, tendrás la opción de
-                    usar esa inscripción para iniciar el proceso de KYC para
-                    verificaciones en persona.
+                    Esta es una lista de todas las inscripciones en el sistema.
                 </p>
 
                 <div class="d-flex">
-                    <button id="reloadData" type="button" class="btn btn-sm btn-primary d-block">
-                        Actualizar la lista
-                    </button>
-
-                    <div id="spinner" class="ml-2 spinner-border text-primary" role="status">
-                        <span class="sr-only">Loading...</span>
-                    </div>
+                    <form id="filterForm">
+                        <div class="row">
+                            <div class="form-group col-4">
+                                <input class="form-control" type="text" placeholder="Search..." name="query" value=""
+                                    required />
+                            </div>
+                            <div class="form-group col-4">
+                                <select class="form-control" name="kyc_status" value="">
+                                    <option value="">Todo</option>
+                                    <option value="COMPLETE">Completed</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="WAITING_FOR_CHECK_RESPONSE">Waiting for Check</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <div id="spinner" style="float:left;" class="mr-2 spinner-border text-primary"
+                                    role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <button id="reloadData" type="button" class="btn btn-primary">
+                                    Actualizar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-
             </div>
         </div>
         <br>
@@ -63,9 +76,9 @@
                             <tr>
                                 <th>Fecha</th>
                                 <th>Nombre Completo</th>
-                                <th>Email/Phone</th>
-                                <th>Dirección.</th>
-                                <!-- <th width="25%">&nbsp;</th> -->
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th width="25%">&nbsp;</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
@@ -73,35 +86,37 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <script type="text/template" id="rowTemplate">
             <% _.each(data, function(item) { %>
                 <tr>
                     <td>
-                        <%= formatDate(item.createdAt, 'MM/DD/YY') %>
+                        <%= formatDate(item.started_at, 'MM/DD/YY') %>
                     </td>
                     <td>
-                        <%= item.first_name %> <%= item.last_name %>
+                        <%= item.first_name %>, <%= item.last_name %>
                         <br>
                         <small>(id: <%= item._id %>)</small>
                     </td>
                     <td>
-                        <b>Email:</b> <%= item.email || 'NA' %>
-                        <br>
-                        <b>Phone:</b> <%= item.phone_number || 'NA' %>
-                        <br>
-                        <b>DOB:</b> <%= item.birthday || 'NA' %>
+                        <%= item.email || 'NA' %>
                     </td>
-                    <td><%= item.address_1 || 'NA' %><br>
-                        <%= item.address_2 || 'NA' %>,<br>
-                        <%= item.city || 'NA' %> <%= item.state_province || 'NA' %> <%= item.postal_code || 'NA' %>
+                    <td>
+                        <%= item.kyc_status || 'NA' %>
                     </td>
-                    <!-- <td align="right">
-                        <button type="button" class="btn btn-sm btn-outline" onclick="deleteRegistration('<%= item._id %>')">
+                    <td align="right">
+                        <!-- <button type="button" class="btn btn-sm btn-outline" onclick="deleteRecord('<%= item._id %>')">
                             <i class="fa fa-trash"></i>
-                        </button>
-                    </td> -->
+                        </button> -->
+                        <a type="button" href="/registration/receipt/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-sm btn-info">
+                            Recibo
+                        </a>
+                        <a type="button" href="/registration/review/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-sm btn-info">
+                            Reseña
+                        </a>
+                    </td>
                 </tr>
             <% }); %>
         </script>
@@ -114,48 +129,13 @@
         let registrationId = '';
         let registrationData = [];
 
-        function startKYC(id) {
+        function deleteRecord(id) {
             const data = _.find(registrationData, { _id: id });
-            if (!data) return alert("Sorry, unable to find and remove.");
-            let result = confirm(`Do you want to process this pre-registration? (${data.first_name} ${data.last_name})\nThis will use this users information to setup the KYC process for document collection.`);
-            if (result) {
-                $.ajax({
-                    url: `/pre-registration/${data._id}/kyc_start`,
-                    method: 'POST',
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    dataType: 'json'
-                });
-            };
-        }
-        /*
-        function runKYC() {
-            $('#run-kyc').attr('disabled', 'disabled').html('Cargando...');
-            $.ajax({
-                url: '/kyc/init',
-                method: 'POST',
-                contentType: 'application/json',
-                dataType: 'json',
-                data: JSON.stringify({
-                    'preferred_language': $('#preferred-language').val(),
-                }),
-                success: (data) => {
-                    window.location.href = '/register/' + data.id;
-                    
-
-                },
-                dataType: 'json'
-            });
-        }
-        */
-
-        function deleteRegistration(id) {
-            const data = _.find(registrationData, { _id: id });
-            if (!data) return alert("Sorry, unable to find and remove.");
+            if (!data) return alert("Lo siento, no se pudo encontrar y eliminar.");
             let result = confirm(`¿Está seguro de que desea eliminar la preinscripción? (${data.name})\n\nEsto eliminará el registro y no se puede deshacer.`);
             if (result) {
                 $.ajax({
-                    url: `/pre_registration/${data._id}`,
+                    url: `/registration/${data._id}`,
                     method: 'DELETE',
                     contentType: 'application/json',
                     dataType: 'json',
@@ -170,25 +150,34 @@
         function renderTable(data) {
             const stats = document.getElementById('data-stats');
             if (stats) {
-                stats.innerHTML = `Found ${data.length} pre-registrations.`;
+                stats.innerHTML = `Found ${data.length} registrations.`;
             }
 
             const template = document.getElementById('rowTemplate').innerHTML;
             const compiledTemplate = _.template(template);
             const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = compiledTemplate({ data, formatDate });
+            tableBody.innerHTML = compiledTemplate({ data: data.data, formatDate });
         }
 
         const loadData = async () => {
             $('#spinner').show();
 
+            var form = document.getElementById("filterForm");
+            var inputs = form.querySelectorAll("input");
+            var formData = new FormData(form);
+            var formObject = {};
+            formData.forEach((value, key) => {
+                formObject[key] = value;
+            });
+
             await $.ajax({
-                url: `/pre_registration`,
+                url: `/registrations?query=${formObject.query}&kyc_status=${formObject.kyc_status}`,
                 method: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
                 success: (data) => {
                     registrationData = data;
+                    console.log(data);
                     setTimeout(() => {
                         $('#spinner').hide();
                     }, 1000);
@@ -214,15 +203,6 @@
 
             // Call the loader.
             loadAll();
-
-            $('#continue').click((e) => {
-                e.preventDefault();
-                if (!registrationId) {
-                    window.alert('Cannot continue without starting KYC');
-                    return;
-                }
-                window.location.href = '/register/' + registrationId;
-            })
         });
     </script>
 </body>

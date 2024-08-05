@@ -10,7 +10,7 @@ class Callback(BaseModel):
 
 
 class Registration(MongoModel):
-    started_at: datetime.datetime
+    started_at: datetime.datetime = None
     callbacks: typing.List[Callback] = []
     kyc_status: str = 'PENDING'
     first_name: str = ''
@@ -47,13 +47,19 @@ class Registration(MongoModel):
 
     def safe_serialize(self):
         return {
+            '_id': str(self.id),
             'first_name': self.first_name,
             'last_name': self.last_name,
+            'onfido_applicant_id': self.onfido_applicant_id,
+            'kyc_status': self.kyc_status,
+            'email': self.email,
+            'phone_number': self.phone_number,
             'preferred_language': self.preferred_language,
             'birthday': self.birthday,
             'account_id': self.whitehat_playerid,
             'loyalty_card_number': self.loyalty_card_number,
             'referral_code': self.referral_code,
+            'whitehat_user_id': self.whitehat_user_id
 
         }
 

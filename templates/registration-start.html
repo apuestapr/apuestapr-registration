@@ -207,18 +207,19 @@
                     formObject["birthday"] = $("#birthday").val();
                     var json = JSON.stringify(formObject);
 
+                    if ($("#agree_to_terms").is(":checked")) {
+                        formObject.agree_to_terms = true
+                    }
+
                     $.ajax({
-                        url: `/pre_registration`,
+                        url: `/registration/create`,
                         method: "POST",
                         contentType: "application/json",
                         dataType: "json",
                         data: json,
-                        success: async (data) => {
-                            // console.log(data);
-
-                            // Setup the form and success form.
-                            $("#successPanel").show();
-                            $("#PreRegistrationForm").hide();
+                        success: async (res) => {
+                            // console.log(res.data);
+                            window.location = `/registration/receipt/${res.data._id}`
                         },
                         dataType: "json"
                     });

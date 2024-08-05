@@ -4,7 +4,6 @@ import json
 from bson.objectid import ObjectId
 from datetime import datetime
 from functools import wraps
-
 # ---------------------------------------------------------------
 # Auth function to enforce a route.
 def require_auth(f):
@@ -75,33 +74,14 @@ def list_all_registrations():
       return jsonify({"error": str(e)}), 500
 
 # ---------------------------------------------------------------
-@registration_bp.route('', methods=['POST'])
-def create_all_registration():
-   try:
-      data = request.get_json()
-      if not data:
-        return jsonify({'msg': 'No data provided'}), 400
 
-      if not data:
-        return jsonify({'msg': 'No data provided'}), 400
-            
-      pre_reg = Registration(**data)
-      pre_reg.save()
-    
-      return jsonify({ 
-        'msg': 'New Pre-Registration Created', 
-        'data': pre_reg.safe_serialize() 
-      }), 200
-
-   except Exception as e:
-      return jsonify({"error": str(e)}), 500
-
-# ---------------------------------------------------------------
 @registration_bp.route('/<string:id>', methods=['GET'])
 @require_auth
 def get_all_registration(id):
     pre_reg = Registration.find_by_id(id)
     return json.dumps(pre_reg.dict(), default=str)  
+
+# ---------------------------------------------------------------
 
 @registration_bp.route('/<int:id>', methods=['PUT'])
 def update_all_registration(id):
