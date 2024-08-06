@@ -81,6 +81,30 @@ def get_player_id(registration: Registration):
 def create_account(registration: Registration):
     
     if not registration.whitehat_user_id:
+        
+        data = {
+            'brand': 'liberman',
+            'currency': 'USD',
+            'username': str(registration.id),
+            'password': str(uuid.uuid4()),
+            'firstname': registration.first_name,
+            'lastname': registration.last_name,
+            'dob': registration.birthday,
+            'geolocation': 'US',
+            'enabled': True,
+            'country': 'US',
+            'language':'en',
+            'state': registration.state_province,
+            'phone': registration.phone_number,
+            'address1': registration.address_1,
+            'town': registration.city,
+            'postalcode': registration.postal_code,
+            'email': registration.email,
+            'referral': registration.referral_code,
+        }
+        
+        print('Data for New User', data)
+        
         response = requests.post(API_URL + '/platform/usergateway/registeruser', json={
             'brand': 'liberman',
             'currency': 'USD',
@@ -102,7 +126,7 @@ def create_account(registration: Registration):
             'referral': registration.referral_code,
         })
 
-        print(response.text)
+        print('Response:', response.text)
 
         response.raise_for_status()
 
