@@ -79,7 +79,8 @@
                         Número de teléfono
                     </label>
                     <input class="form-control" id="phone_number" placeholder="Ingrese su teléfono..." type="tel" name="phone_number"
-                        value="" required />
+                        value="" required pattern="^[2-9]{1}[0-9]{2}[2-9]{1}[0-9]{2}[0-9]{4}$" />
+
                     <small style="color: green;">
                         (No agregues un + al número de teléfono.)
                     </small>
@@ -182,8 +183,12 @@
                     </div>
                     <div class="form-group col-md-6">
                         <label>País *</label>
-                        <input class="form-control" placeholder="Ingrese su País.." type="text" name="country" value=""
-                            required />
+                        <select class="form-control" id="country" name="country" required>
+                            <option value="US">United States</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <!-- <input class="form-control" placeholder="Ingrese su País.." type="text" name="country" value=""
+                            required /> -->
                     </div>
                 </div>
             </fieldset>
