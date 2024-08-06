@@ -82,6 +82,10 @@ def create_account(registration: Registration):
     
     if not registration.whitehat_user_id:
         
+        phone_number = registration.phone_number
+        if not phone_number.startswith("+1"):
+            phone_number = "+1" + phone_number
+    
         data = {
             'brand': 'liberman',
             'currency': 'USD',
@@ -95,7 +99,7 @@ def create_account(registration: Registration):
             'country': 'US',
             'language':'en',
             'state': registration.state_province,
-            'phone': registration.phone_number,
+            'phone': phone_number,
             'address1': registration.address_1,
             'town': registration.city,
             'postalcode': registration.postal_code,
