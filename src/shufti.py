@@ -3,16 +3,17 @@ from random import randint
 import uuid
 from src.models.registration import Registration, Callback
 import datetime
-
+import os
 
 url = 'https://api.shuftipro.com/'
+
 # Your Shufti Pro account Client ID
 client_id  = 'd8f258ab1770f452ad2f711aad30e7192ead1400a2d3c5148fd432b06d9b7a80'
+
 # Your Shufti Pro account Secret Key
 secret_key = '6jaYjSiF6l8E2p1ukRK7qBokewfQOmq5'
-# OR Access Token
-# access_token = 'YOUR-ACCESS-TOKEN';
 
+# OR Access Token 'access_token = 'YOUR-ACCESS-TOKEN'';
 
 """
 {
@@ -95,7 +96,6 @@ def handle_callback(callback_data):
 
     return registration
 
-
 def run_verification_request():
     registration = Registration(
         started_at=datetime.datetime.utcnow()
@@ -107,9 +107,13 @@ def run_verification_request():
 
     payload = {
         'reference': reference,
-        # 'callback_url': 'https://4650-144-121-19-34.ngrok-free.app/kyc/callback',
         'callback_url': 'https://apuestapr-registration.onrender.com/kyc/callback',
+        #
+        # Need to use this, or they will not allow the callback. 
+        # TODO: Need access to the onfideo
+        # 'callback_url': f'{os.getenv("RENDER_EXTERNAL_URL")}/kyc/callback',
         # 'country': 'PR',
+        #
         'language': 'ES',
         'verification_mode': 'any',
         'ttl': 60,

@@ -95,7 +95,7 @@
                                     data: JSON.stringify({
                                         'document_ids': documentIds,
                                     }),
-                                    url: '/registration/{{registration_id}}/run-check',
+                                    url: '/registration/run-check/{{registration_id}}',
                                     success: (data) => {
                                         window.location.reload()
                                     }

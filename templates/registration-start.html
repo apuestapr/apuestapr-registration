@@ -68,8 +68,9 @@
                 </div>
                 <div class="form-group col-md-6">
                     <label>Email</label>
-                    <input class="form-control" placeholder="Ingrese su dirección de correo electrónico..." type="email"
+                    <input class="form-control" id="emailAddress" placeholder="Ingrese su dirección de correo electrónico..." type="email"
                         name="email" value="" required />
+                    <span id="EmailError" style="display: none; color: red;">Esta dirección de correo electrónico ya ha sido utilizada por otra cuenta.</span>
                 </div>
             </div>
             <div class="form-row">
@@ -190,6 +191,7 @@
             $("#submitFormBtn").click((e) => {
                 e.preventDefault();
 
+                // Get the form and its inputs.l
                 var form = document.getElementById("PreRegistrationForm");
                 var inputs = form.querySelectorAll("input");
 
@@ -198,19 +200,7 @@
                     input.classList.remove("is-invalid");
                 });
 
-                if (form.checkValidity()) {
-                    var formData = new FormData(form);
-                    var formObject = {};
-                    formData.forEach((value, key) => {
-                        formObject[key] = value;
-                    });
-                    formObject["birthday"] = $("#birthday").val();
-                    var json = JSON.stringify(formObject);
-
-                    if ($("#agree_to_terms").is(":checked")) {
-                        formObject.agree_to_terms = true
-                    }
-
+                function createRegistration(json) {
                     $.ajax({
                         url: `/registration/create`,
                         method: "POST",
@@ -218,12 +208,51 @@
                         dataType: "json",
                         data: json,
                         success: async (res) => {
-                            // console.log(res.data);
                             window.location = `/registration/receipt/${res.data._id}`
                         },
                         dataType: "json"
                     });
+                }
 
+                function getJSON() {
+                    var formData = new FormData(form);
+                    var formObject = {};
+                    formData.forEach((value, key) => {
+                        formObject[key] = value;
+                    });
+                    formObject["birthday"] = $("#birthday").val();
+
+                    if ($("#agree_to_terms").is(":checked")) {
+                        formObject.agree_to_terms = true
+                    }
+
+                    return JSON.stringify(formObject);
+                }
+
+                // Ok validate the form, and it it passes, then 
+                // check the email is still unused an then create the 
+                // account.
+
+                if (form.checkValidity()) {
+                    const json = getJSON();
+                    const emailAddress = $("#emailAddress").val();
+                    $("#EmailError").hide();
+
+                    $.ajax({
+                        url: `/registration/email/${emailAddress}`,
+                        method: "GET",
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: async (res) => {
+                            const isEmailUsed = res.isEmailUsed;
+                            if (isEmailUsed === true) {
+                                $("#EmailError").show();
+                            } else {
+                                createRegistration(json);
+                            }
+                        },
+                        dataType: "json"
+                    });
 
                 } else {
                     inputs.forEach(function (input) {

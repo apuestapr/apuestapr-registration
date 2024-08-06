@@ -22,9 +22,9 @@ def generate_qr(registration_id):
     
     
     domain = os.getenv('RENDER_EXTERNAL_URL')
-    url = f'{domain}/registaration/review/{registration_id}'
+    url = f'{domain}/registration/review/{registration_id}'
     
-    print(url)
+    print('QR Registration URL/Value:', url)
     
     qr.add_data(url)
     qr.make(fit=True)

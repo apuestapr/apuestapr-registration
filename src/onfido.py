@@ -14,41 +14,39 @@ def generate_sdk_token(applicant_id: str):
 
     return response['token']
 
+# def run_verification_request():
+#     registration = Registration(
+#         started_at=datetime.datetime.utcnow()
+#     )
 
+#     registration.save()
+#     applicant_details = {
+#     'first_name': 'ApuestaPR',
+#     'last_name': 'Customer',
+#     'dob': '1984-01-01',
+#     'address': {
+#         'street': 'Second Street',
+#         'town': 'London',
+#         'postcode': 'S2 2DF',
+#         'country': 'GBR'
+#     },
+#     'location': {
+#         'ip_address': '127.0.0.1',
+#         'country_of_residence': 'GBR'
+#     }
+#     }
 
-def run_verification_request():
-    registration = Registration(
-        started_at=datetime.datetime.utcnow()
-    )
+#     response = api.applicant.create(applicant_details)
 
-    registration.save()
-    applicant_details = {
-    'first_name': 'ApuestaPR',
-    'last_name': 'Customer',
-    'dob': '1984-01-01',
-    'address': {
-        'street': 'Second Street',
-        'town': 'London',
-        'postcode': 'S2 2DF',
-        'country': 'GBR'
-    },
-    'location': {
-        'ip_address': '127.0.0.1',
-        'country_of_residence': 'GBR'
-    }
-    }
+#     registration.onfido_applicant_id = response['id']
 
-    response = api.applicant.create(applicant_details)
+#     registration.save()
 
-    registration.onfido_applicant_id = response['id']
-
-    registration.save()
-
-    return registration
+#     return registration
 
 # This is a new version that sends the data to the Onfido
 # using the values setup in the registation.
-def run_verification_request_new(registration):
+def run_verification_request(registration):
     
     registration.started_at = datetime.datetime.utcnow()
     registration.save()
@@ -72,7 +70,7 @@ def run_verification_request_new(registration):
     applicant_details = {
         'first_name': registration.first_name or 'ApuestaPR',
         'last_name': registration.last_name or 'Customer',
-        'dob': '1984-01-01',
+        'dob': registration.birthday or '1984-01-01',
         'address': {
             'street': 'Second Street',
             'town': 'London',
@@ -85,9 +83,6 @@ def run_verification_request_new(registration):
         }
     }
 
-    print('App Details')
-    print(applicant_details);
-    
     # Call the API to create an applicant.
     response = api.applicant.create(applicant_details)
 
