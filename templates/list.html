@@ -86,8 +86,9 @@
                                 <th>Nombre Completo</th>
                                 <th>Email</th>
                                 <th>Status</th>
-                                <th>WhId</th>
-                                <th width="25%">&nbsp;</th>
+                                <th>Ids</th>
+                                <th>Loyalty Num/Ref</th>
+                                <th width="15%">&nbsp;</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
@@ -119,6 +120,11 @@
                         WhUId: <%= item.whitehat_user_id || '--' %>
                         <br>
                         WhPId: <%= item.whitehat_player_id || '--' %>
+                    </td>
+                    <td width="15%">
+                        Loyalty Num: <%= item.loyalty_card_number || '--' %>
+                        <br>
+                        Ref: <%= item.referral_code || '--' %>
                     </td>
                     <td align="right">
                         <!-- <button type="button" class="btn btn-sm btn-outline" onclick="deleteRecord('<%= item._id %>')">
