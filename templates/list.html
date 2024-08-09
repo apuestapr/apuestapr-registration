@@ -104,6 +104,10 @@
                 <tr>
                     <td>
                         <%= formatDate(item.started_at, 'MM/DD/YY') %>
+                        <br>
+                        <small>
+                            <%= formatDate(item.started_at, 'hh:mm a') %>
+                        </small>
                     </td>
                     <td>
                         <%= item.first_name %>, <%= item.last_name %>
@@ -116,10 +120,14 @@
                     <td>
                         <%= item.kyc_status || 'NA' %>
                     </td>
-                    <td width="15%">
+                    <td width="20%">
                         WHG-UId: <%= item.whitehat_user_id || '--' %>
                         <br>
                         WHG-PId: <%= item.whitehat_playerid || '--' %>
+                        <br>
+                        <small>
+                        Last Updated:  <%= formatDate(item.last_updated, 'MM/DD/YY hh:mm a') %>
+                        </small>
                     </td>
                     <td width="15%">
                         Loyalty Num: <%= item.loyalty_card_number || '--' %>

@@ -106,7 +106,7 @@ class MongoModel(BaseModel):
 
 
     def save(self, include: Optional[Set[str]] = None, exclude: Optional[Set[str]] = None):
-        self.last_updated = datetime.utcnow()
+        self.last_updated = datetime.now()
         data = self.dict()
 
         if self.id is None:

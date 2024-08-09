@@ -48,7 +48,7 @@ def generate_sdk_token(applicant_id: str):
 # using the values setup in the registation.
 def run_verification_request(registration):
     
-    registration.started_at = datetime.datetime.utcnow()
+    registration.started_at = datetime.datetime.now()
     registration.save()
     
     # applicant_details = {
