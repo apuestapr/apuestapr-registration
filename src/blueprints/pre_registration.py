@@ -84,7 +84,7 @@ def create_pre_registration():
       pre_reg = Registration(**data)
       # Make the email lowercase.
       pre_reg.email = pre_reg.email.lower().strip()
-      pre_reg.started_at = datetime.datetime.utcnow()
+      pre_reg.started_at = datetime.datetime.now()
       
       pre_reg.save()
     

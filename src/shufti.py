@@ -98,7 +98,8 @@ def handle_callback(callback_data):
 
 def run_verification_request():
     registration = Registration(
-        started_at=datetime.datetime.utcnow()
+        # Was set to utcnow
+        started_at=datetime.datetime.now()
     )
 
     registration.save()
