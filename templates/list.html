@@ -156,7 +156,7 @@
             const template = document.getElementById('rowTemplate').innerHTML;
             const compiledTemplate = _.template(template);
             const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = compiledTemplate({ data: data.data, formatDate });
+            tableBody.innerHTML = compiledTemplate({ data: data, formatDate });
         }
 
         const loadData = async () => {
@@ -175,9 +175,10 @@
                 method: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
-                success: (data) => {
-                    registrationData = data;
-                    console.log(data);
+                success: (res) => {
+                    console.log(res);
+                    registrationData = res.data;
+                    console.log(res.data)
                     setTimeout(() => {
                         $('#spinner').hide();
                     }, 1000);

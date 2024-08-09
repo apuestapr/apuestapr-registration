@@ -39,7 +39,6 @@ def list_all_registrations():
 
       # Calculate the number of documents to skip
       skip = (page - 1) * page_size
-      
       # Setup the filters for the 'query' string.
       filter = {}
       if request.args.get('query'):
@@ -51,7 +50,7 @@ def list_all_registrations():
       
       # If we have a 'kyc_status' then add it to the filter.
       if request.args.get('kyc_status'):
-          filter['kyc_status'] = request.args.get('kys_status')    
+          filter['kyc_status'] = request.args.get('kyc_status')    
 
       sort = "-started_at"
       
