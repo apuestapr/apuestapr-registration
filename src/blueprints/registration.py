@@ -35,10 +35,11 @@ def list_all_registrations():
    try:
       # Get the default page and page_size.
       page = int(request.args.get('page', 1))
-      page_size = int(request.args.get('page_size', 20))
+      page_size = int(request.args.get('page_size', 100))
 
       # Calculate the number of documents to skip
       skip = (page - 1) * page_size
+      
       # Setup the filters for the 'query' string.
       filter = {}
       if request.args.get('query'):
@@ -54,6 +55,8 @@ def list_all_registrations():
 
       sort = "-started_at"
       
+      print('Query params', page_size, sort, skip, filter)
+      
       # Query the db.
       documents = Registration.find(filter=filter, skip=skip, limit=page_size, sort=sort)
       
@@ -64,7 +67,8 @@ def list_all_registrations():
           'data': document_list,
           'page': page,
           'page_size': page_size,
-          'filter': filter
+          'filter': filter,
+          'skip': skip
       }
       
       return json.dumps(result, default=json_encoder), 200

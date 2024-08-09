@@ -44,7 +44,7 @@
                                 <input class="form-control" type="text" placeholder="Search..." name="query" value=""
                                     required />
                             </div>
-                            <div class="form-group col-4">
+                            <div class="form-group col-2">
                                 <select class="form-control" name="kyc_status" value="">
                                     <option value="">Todo</option>
                                     <option value="COMPLETE">Completed</option>
@@ -52,13 +52,21 @@
                                     <option value="WAITING_FOR_CHECK_RESPONSE">Waiting for Check</option>
                                 </select>
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
                                 <div id="spinner" style="float:left;" class="mr-2 spinner-border text-primary"
                                     role="status">
                                     <span class="sr-only">Loading...</span>
                                 </div>
                                 <button id="reloadData" type="button" class="btn btn-primary">
                                     Actualizar
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <button id="previousButton" type="button" class="btn btn-primary">
+                                    &lt;
+                                </button>
+                                <button id="nextButton" type="button" class="btn btn-primary">
+                                    &gt;
                                 </button>
                             </div>
                         </div>
@@ -165,7 +173,23 @@
             tableBody.innerHTML = compiledTemplate({ data: data, formatDate });
         }
 
-        const loadData = async () => {
+        let currentPage = 1;
+
+        // Send the user to the previous page.
+        const nextPage = async() => {
+            currentPage++;
+            await loadData(currentPage)
+            renderTable(registrationData);
+        }
+
+        // Send the user to the next page.
+        const previousPage = async() => {
+            currentPage--;
+            await loadData(currentPage);
+            renderTable(registrationData);
+        }
+
+        const loadData = async (page) => {
             $('#spinner').show();
 
             var form = document.getElementById("filterForm");
@@ -176,15 +200,16 @@
                 formObject[key] = value;
             });
 
+            if (!page) page = 1;
+
             await $.ajax({
-                url: `/registrations?query=${formObject.query}&kyc_status=${formObject.kyc_status}`,
+                url: `/registrations?query=${formObject.query}&kyc_status=${formObject.kyc_status}&page_size=25&page=${page}`,
                 method: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
                 success: (res) => {
                     console.log(res);
                     registrationData = res.data;
-                    console.log(res.data)
                     setTimeout(() => {
                         $('#spinner').hide();
                     }, 1000);
@@ -206,6 +231,14 @@
 
             $('#reloadData').click(async (e) => {
                 loadAll();
+            })
+
+            $('#previousButton').click(async (e) => {
+                previousPage();
+            })
+
+            $('#nextButton').click(async (e) => {
+                nextPage();
             })
 
             // Call the loader.
