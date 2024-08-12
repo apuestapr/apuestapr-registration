@@ -131,6 +131,8 @@ def update_check_status(registration):
 
         if check['status'] == 'complete':
             registration.kyc_status = 'COMPLETE'
+            # Added this to fix the issue we had.
+            registration.complete = True
             done = True
 
             

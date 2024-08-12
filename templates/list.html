@@ -128,6 +128,15 @@
                         <small>
                         Last Updated:  <%= formatDate(item.last_updated, 'MM/DD/YY hh:mm a') %>
                         </small>
+                        <br>
+                        <small>
+                        Complete: 
+                        <% if (item.completed == true) { %>
+                            True
+                        <% } else { %>
+                            False
+                        <% } %>
+                        </small>
                     </td>
                     <td width="15%">
                         Loyalty Num: <%= item.loyalty_card_number || '--' %>
