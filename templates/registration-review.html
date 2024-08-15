@@ -296,10 +296,12 @@
         
                     // Format and update the birthday value.
                     try {
-                        const date = new Date({{ registration.birthday }});
+                        const date = new Date('{{ registration.birthday }}');
                         const formattedDate = date.toISOString().split('T')[0];
                         $('input[name="birthday"]').val(formattedDate);
-                    } catch(err) {}
+                    } catch(err) {
+                        console.log(err)
+                    }
                     
                     try {
                         $('#state_province').val('{{ registration.state_province }}').change();
