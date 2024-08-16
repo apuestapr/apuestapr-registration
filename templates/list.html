@@ -145,17 +145,17 @@
                         <br>
                         Lang: <%= item.preferred_language || '--' %>
                     </td>
-                    <td align="right">
+                    <td align="right" width="10%">
                         <!-- <button type="button" class="btn btn-sm btn-outline" onclick="deleteRecord('<%= item._id %>')">
                             <i class="fa fa-trash"></i>
                         </button> -->
-                        <a type="button" href="/registration/receipt/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-sm btn-info">
+                        <a type="button" href="/registration/receipt/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-block btn-sm btn-info">
                             Recibo
                         </a>
-                        <a type="button" href="/registration/review/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-sm btn-info">
+                        <a type="button" href="/registration/review/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-block btn-sm btn-info">
                             Reseña
                         </a>
-                        <a type="button" href="/registration/kyc/process/<%= item._id %>" class="btn btn-sm btn-info">
+                        <a type="button" title="Utilice esta opción para reabrir el proceso de KYC y configuración de cuenta." href="/registration/kyc/process/<%= item._id %>" class="btn btn-sm btn-block btn-info">
                             Proceso
                         </a>
                     </td>
