@@ -155,9 +155,11 @@
                         <a type="button" href="/registration/review/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-block btn-sm btn-info">
                             Reseña
                         </a>
+                        <% if (item.kyc_status == 'COMPLETE') { %>
                         <a type="button" title="Utilice esta opción para reabrir el proceso de KYC y configuración de cuenta." href="/registration/kyc/process/<%= item._id %>" class="btn btn-sm btn-block btn-info">
                             Proceso
                         </a>
+                        <% } %>
                     </td>
                 </tr>
             <% }); %>
