@@ -172,15 +172,22 @@
 
                                         const conf = confirm("¿Quieres crear la cuenta ahora?");
                                         if (conf) {
-                                            console.log('Sedning to API')
+                                            console.log('Sending to Registration to the API for account setup.')
                                             $.ajax({
                                                 url: `/registration/account-setup/{{ registration_id }}`,
                                                 method: "POST",
                                                 contentType: "application/json",
                                                 success: async (res) => {
-                                                    console.log('here', res.success);
-                                                    console.log('Errors', res.errors);
-                                                    // window.location.reload(true);
+                                                    if (res.success === true) {
+                                                        window.location.reload(true);
+                                                        return;
+                                                    }
+
+                                                    const errorStr = res.errors.join(', ');
+                                                    alert(`No se pudo crear una cuenta para este registro. Por favor, revise el mensaje de error. Es posible que ya exista una cuenta de White Hat Gaming.: ${errorStr}`)
+
+                                                    console.log('Success:', res.success);
+                                                    console.log('Errors:', res.errors);
                                                 },
                                                 dataType: "json"
                                             });
