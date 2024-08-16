@@ -178,7 +178,9 @@
                                                 method: "POST",
                                                 contentType: "application/json",
                                                 success: async (res) => {
-                                                    window.location.reload(true);
+                                                    console.log('here', res.success);
+                                                    console.log('Errors', res.errors);
+                                                    // window.location.reload(true);
                                                 },
                                                 dataType: "json"
                                             });
