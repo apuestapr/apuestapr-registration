@@ -137,6 +137,14 @@ def start_pre_registration():
    return render_template('registration-start.html')
 
 # ---------------------------------------------------------------
+# This is the route for the registration form that a 
+# public (non-authenticated) user will need to get started in ENGLISH.
+
+@pre_registration_bp.route('/start-en')
+def start_pre_registration_en():
+   return render_template('registration-start-en.html')
+
+# ---------------------------------------------------------------
 # This endpoint is public and allows for access to a receipt.
 
 @pre_registration_bp.route('/receipt/<string:registration_id>', methods=['GET'])

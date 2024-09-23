@@ -23,93 +23,92 @@
 
 <body>
     <div class="container">
-        {% include 'public-nav-preregistration-start-to-en.html' %}
+        {% include 'public-nav-preregistration-start-to-es.html' %}
         <div class="row">
             <div class="col-12">
-                <h1>Pre-Registro</h1>
+                <h1>Pre-Registration</h1>
                 <p>
-                    Para poder activar su cuenta, complete la información solicitada. Los datos
-                    personales tienen que coincidir con los de su identificación (licencia o pasaporte).
+                    In order to activate your account, please complete the requested information. 
+                    The personal must match your identification (license or passport).
                 </p>
             </div>
         </div>
         <br>
         <div id="successPanel" class="alert alert-success" style="display: none;">
             <h1>
-                Registro Exitoso
+                Successful Registration
             </h1>
             <p>
-                El registro de este usuario está completo. Cuando llegue a presentar
-                su documento, por favor informe al personal de Apuesta.
+                This user's registration is complete. When you arrive to present your document, please inform the Apuesta staff.
             </p>
             <button class="btn btn-success" id="showFormBtn">
-                Agregar otro
+                Add another one
             </button>
         </div>
 
         <form id="PreRegistrationForm">
             <div class="form-row">
                 <div class="form-group col-md-6 col-12">
-                    <label>Nombre de pila *</label>
-                    <input class="form-control" type="text" placeholder="Ingrese su nombre..." name="first_name"
+                    <label>First name *</label>
+                    <input class="form-control" type="text" placeholder="Enter your name..." name="first_name"
                         value="" required />
                 </div>
                 <div class="form-group col-md-6 col-12">
-                    <label>Apellido *</label>
-                    <input class="form-control" type="text" placeholder="Ingrese su apellido..." name="last_name"
+                    <label>Last name *</label>
+                    <input class="form-control" type="text" placeholder="Enter your last name..." name="last_name"
                         value="" required />
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col-md-6">
-                    <label>Fecha de Nacimiento *</label>
+                    <label>Date of Birth *</label>
                     <input class="form-control" id="birthday" placeholder="" type="date" name="birthday" value=""
                         required />
                 </div>
                 <div class="form-group col-md-6">
                     <label>Email</label>
-                    <input class="form-control" id="emailAddress" placeholder="Ingrese su dirección de correo electrónico..." type="email"
+                    <input class="form-control" id="emailAddress" placeholder="Enter your email address..." type="email"
                         name="email" value="" required />
-                    <span id="EmailError" style="display: none; color: red;">Esta dirección de correo electrónico ya ha sido utilizada por otra cuenta.</span>
+                    <span id="EmailError" style="display: none; color: red;">This e-mail address has already been used by another account.</span>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label>
-                        Número de teléfono
+                        Phone number
                     </label>
-                    <input class="form-control" id="phone_number" placeholder="Ingrese su teléfono..." type="tel" name="phone_number"
+                    <input class="form-control" id="phone_number" placeholder="Enter your phone number..." type="tel" name="phone_number"
                         value="" required pattern="^[2-9]{1}[0-9]{2}[2-9]{1}[0-9]{2}[0-9]{4}$" />
 
                     <small style="color: green;">
-                        (No agregues un + al número de teléfono.)
+                        (Do not add a + to the phone number)
                     </small>
                 </div>
             </div>
             <fieldset>
-                <legend>Direccíon</legend>
+                <legend>Address</legend>
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label>Línea 1 *</label>
-                        <input class="form-control" placeholder="Ingrese su dirección, línea 1..." type="text"
+                        <label>Line 1 *</label>
+                        <input class="form-control" placeholder="Enter your address, line 1..." type="text"
                             name="address_1" value="" required />
                     </div>
                     <div class="form-group col-md-6">
-                        <label>Línea 2</label>
-                        <input class="form-control" placeholder="Ingrese su dirección, línea 2..." type="text"
+                        <label>Line 2</label>
+                        <input class="form-control" placeholder="Enter your address, line 2..." type="text"
                             name="address_2" value="" />
 
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group col-md-8">
-                        <label>Ciudad *</label>
-                        <input class="form-control" placeholder="Ingrese su dirección, ciudad..." type="text"
+                        <label>City *</label>
+                        <input class="form-control" placeholder="Enter your address, city..." type="text"
                             name="city" value="" required />
 
                     </div>
                     <div class="form-group col-md-4">
-                        <label>Estado o Provincia *</label>
+                        <label>State or Province *</label>
 
                         <select class="form-control" name="state_province" required>
                             <option value="PR">Puerto Rico</option>
@@ -177,12 +176,12 @@
                 </div>
                 <div class="row">
                     <div class="form-group col-md-6 col-12">
-                        <label>Código Postal *</label>
-                        <input class="form-control" type="text" placeholder="Ingrese su código.." name="postal_code"
+                        <label>ZIP Code *</label>
+                        <input class="form-control" type="text" placeholder="Enter your code..." name="postal_code"
                             value="" required />
                     </div>
                     <div class="form-group col-md-6">
-                        <label>País *</label>
+                        <label>Country *</label>
                         <select class="form-control" id="country" name="country" required>
                             <option value="US">United States</option>
                             <option value="Other">Other</option>
@@ -199,11 +198,10 @@
                         <div class="form-group">
                             <input type="checkbox" id="agree_to_terms" name="agree_to_terms" required>
                             <label class="form-check-label" for="flexCheckDefault">
-                                Aceptar términos y condiciones
+                                Accept terms and conditions
                             </label>
                             <div class="form-text">
-                                <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/">Leer términos y
-                                    condiciones</a>
+                                <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/">Read terms and conditions</a>
                             </div>
                         </div>
                         <p id="validationMessage" class="mt-2"></p>
@@ -212,7 +210,7 @@
             </div>
             <br>
             <button type="submit" id="submitFormBtn" class="btn btn-primary">
-                Enviar
+                Submit
             </button>
         </form>
 
@@ -329,7 +327,7 @@
                     if ($("#agree_to_terms").is(":checked")) {
                         $("#validationMessage").text("");
                     } else {
-                        $("#validationMessage").text("Confirme los términos y condiciones para continuar.").css("color", "red");
+                        $("#validationMessage").text("Please confirm the terms and conditions to continue.").css("color", "red");
                     }
 
                     // Form is not valid, show validation errors

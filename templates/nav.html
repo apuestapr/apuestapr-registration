@@ -5,16 +5,16 @@
         </a>
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link btn" href="/registration/start">Registrar Nuevo Cliente</a>
+                <a class="nav-link btn" href="/registration/start">REGISTRAR NUEVO CLIENTE</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link btn" href="/registration/list">List</a>
+                <a class="nav-link btn" href="/registration/list">LISTA</a>
             </li>
         </ul>
-        <div class="d-flex">
-            Bienvenidos, {{user.userinfo.email}}. &nbsp;&nbsp;
-            <a href="/logout">
-                Cerrar sesión
+        <div>
+            BIENVENIDO, {{user.userinfo.name}}! &nbsp;&nbsp;
+            <a href="/logout" class="btn btn-danger">
+                CERRAR SESIÓN
             </a>
         </div>
     </div>

@@ -1,4 +1,4 @@
-#!/Users/stephansmith/Documents/Apuesta/apuestapr-registration/env/bin/python
+#!/Users/patrickpuertas/Documents/GitHub/apuestapr-registration/env/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
