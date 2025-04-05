@@ -147,7 +147,8 @@ class ShuftiService(KYCService):
         # Callback URL must use tunnel for Shufti server to reach it
         callback_url = f"{app_url}/kyc/shufti-callback"
         
-        # Redirect URL should also use tunnel URL
+        # For redirect URL, use both the tunnel URL and registration ID
+        # The redirect handler will determine the appropriate final redirect based on the device
         redirect_url = f"{app_url}/registration/kyc/status/{registration.id}"
         
         # Log the URLs for debugging

@@ -122,8 +122,42 @@
                     // Store our registration ID
                     const registrationId = "{{ registration._id }}";
 
+                    // Flag to indicate verification status
+                    let verificationComplete = false;
+
+                    // Listen for messages from iframe (if same origin allows)
+                    window.addEventListener("message", function (event) {
+                      // Check if the message is from Shufti
+                      if (
+                        event.data &&
+                        typeof event.data === "string" &&
+                        event.data.includes("shufti")
+                      ) {
+                        console.log(
+                          "Received message from Shufti iframe:",
+                          event.data
+                        );
+                        // Force a status check since the iframe may have completed
+                        checkVerificationStatus(true);
+                      }
+                    });
+
+                    // Listen for iframe load events which might indicate redirects
+                    document
+                      .getElementById("shufti-iframe")
+                      .addEventListener("load", function () {
+                        console.log(
+                          "Iframe loaded/reloaded, checking verification status"
+                        );
+                        // Check status when iframe loads (might indicate completion)
+                        checkVerificationStatus(true);
+                      });
+
                     // Function to check verification status via AJAX
-                    function checkVerificationStatus() {
+                    function checkVerificationStatus(immediate = false) {
+                      // If verification is already complete, don't check again
+                      if (verificationComplete) return;
+
                       $.ajax({
                         url: `/registration/kyc/check-status/${registrationId}`,
                         method: "GET",
@@ -135,9 +169,20 @@
                           if (
                             response.status === "COMPLETE" ||
                             response.status === "FAILED" ||
+                            response.status === "verification.accepted" ||
+                            response.status === "verification.declined" ||
                             response.status === "WAITING_FOR_CHECK_RESPONSE"
                           ) {
                             console.log("Terminal status reached, redirecting");
+                            // Set flag to prevent additional checks
+                            verificationComplete = true;
+
+                            // Clear polling interval
+                            if (window.statusCheckInterval) {
+                              clearInterval(window.statusCheckInterval);
+                            }
+
+                            // Redirect to status page
                             window.location.href = `/registration/kyc/status/${registrationId}`;
                           }
                         },
@@ -150,15 +195,20 @@
                       });
                     }
 
-                    // Check status every 5 seconds
-                    const intervalId = setInterval(
-                      checkVerificationStatus,
+                    // Check status immediately on page load
+                    checkVerificationStatus(true);
+
+                    // Then check status every 5 seconds
+                    window.statusCheckInterval = setInterval(
+                      () => checkVerificationStatus(),
                       5000
                     );
 
                     // Clear interval when page is unloaded
                     $(window).on("beforeunload", function () {
-                      clearInterval(intervalId);
+                      if (window.statusCheckInterval) {
+                        clearInterval(window.statusCheckInterval);
+                      }
                     });
                   });
                 </script>

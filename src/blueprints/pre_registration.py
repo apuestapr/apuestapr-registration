@@ -488,3 +488,64 @@ def check_kyc_status(registration_id):
             "success": False,
             "error": str(e)
         }), 500
+
+# New endpoint to handle Shufti Pro redirects after verification
+@pre_registration_bp.route('/kyc/status/<string:registration_id>', methods=['GET'])
+def kyc_status_redirect(registration_id):
+    """
+    Endpoint to handle redirects from Shufti Pro after verification.
+    This route checks the current verification status and renders the appropriate page.
+    
+    This route intentionally doesn't require authentication to handle redirects 
+    from Shufti Pro on mobile devices where the user might not be authenticated.
+    """
+    try:
+        # Find the registration by ID
+        registration = Registration.find_by_id(registration_id)
+        
+        if not registration:
+            return jsonify({
+                "success": False,
+                "error": "Registration not found"
+            }), 404
+            
+        # Use the KYC factory to update the status with the appropriate service
+        kyc_service = KYCFactory.get_service()
+        updated_registration = kyc_service.update_status(registration)
+        
+        # Check if there's a new webhook update we haven't processed yet
+        # This adds an extra check in case the webhook hasn't been fully processed yet
+        if updated_registration.kyc_status == 'PENDING':
+            # Look for recent callbacks with terminal status
+            if updated_registration.callbacks and len(updated_registration.callbacks) > 0:
+                # Check the most recent callback
+                recent_callback = updated_registration.callbacks[-1]
+                if recent_callback and 'body' in recent_callback and 'event' in recent_callback['body']:
+                    event = recent_callback['body']['event']
+                    # Update status if it's a terminal event
+                    if event == 'verification.accepted':
+                        updated_registration.kyc_status = 'COMPLETE'
+                        updated_registration.complete = True
+                        updated_registration.save()
+                    elif event == 'verification.declined':
+                        updated_registration.kyc_status = 'FAILED'
+                        updated_registration.save()
+        
+        # Get user from session if available, otherwise provide a default
+        user = session.get('user') if session.get('user') else None
+        
+        # Render the Shufti process template with the current status
+        return render_template(
+            'registration-process-shufti.html',
+            registration_id=registration_id,
+            user=user,
+            verification_url='',  # No verification URL needed for status page
+            registration=updated_registration.safe_serialize()
+        )
+        
+    except Exception as e:
+        print(f"Error handling KYC status redirect: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
