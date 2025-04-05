@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Shufti KYC Demo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #iframeContainer {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Shufti KYC Integration Demo</h1>
+    <button id="startKycBtn">Start KYC Process</button>
+
+    <div id="iframeContainer">
+      <iframe
+        id="kycIframe"
+        width="100%"
+        height="600"
+        frameborder="0"
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <script>
+      document
+        .getElementById("startKycBtn")
+        .addEventListener("click", async () => {
+          // Generate a reference ID (this could be generated more robustly in production)
+          const reference = "user" + Date.now();
+
+          try {
+            const response = await fetch("/start-kyc", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ reference }),
+            });
+            const data = await response.json();
+            if (data.verification_url) {
+              // Load the verification URL into the iframe
+              document.getElementById("kycIframe").src = data.verification_url;
+            } else {
+              alert("Error: " + data.error);
+            }
+          } catch (error) {
+            console.error("Error starting KYC:", error);
+          }
+        });
+    </script>
+  </body>
+</html>

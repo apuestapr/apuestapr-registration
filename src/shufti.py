@@ -108,7 +108,7 @@ def run_verification_request():
 
     payload = {
         'reference': reference,
-        'callback_url': 'https://apuestapr-registration.onrender.com/kyc/callback',
+        'callback_url': '576b-2600-4041-5514-0-553d-4f70-9be4-50a3.ngrok-free.app/kyc/callback',
         #
         # Need to use this, or they will not allow the callback. 
         # TODO: Need access to the onfideo

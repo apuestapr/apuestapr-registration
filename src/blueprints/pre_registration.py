@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template, abort, session, redirect
-from src.models.registration import Registration
+from src.models.registration import Registration, serialize_documents
 from src.shufti import run_verification_request, handle_callback
 from src.onfido import run_verification_request as onfido_run_verification_request, update_check_status, generate_sdk_token, run_check
 # from src.onfido import run_verification_request_new as onfido_run_verification_request_new
@@ -13,6 +13,10 @@ from bson.objectid import ObjectId
 from functools import wraps
 from src.models.registration import Registration
 import datetime
+
+# Import the KYC factory instead of specific provider functions
+from src.kyc_factory import KYCFactory
+from src.config import FeatureFlags
 
 # ---------------------------------------------------------------
 # Auth function to enforce a route.
@@ -273,18 +277,33 @@ def run_onfido_check(registration_id):
    # Load the registration person.
    registration = Registration.find_by_id(registration_id)
    if not registration:
-      abort(404)
+      return jsonify({
+         'success': False,
+         'errors': ['Registration not found']
+      }), 200
    
-   # Get the document_ids from the post.
-   document_ids = request.json['document_ids']
-
-   # Update the Registration with the new document ids.
-   registration.onfido_document_ids = document_ids
+   data = request.json
+   if not data or not data.get('document_ids'):
+      return jsonify({
+         'success': False,
+         'errors': ['No document IDs provided']
+      }), 200
    
-   # Now run the check.
-   registration_with_check = run_check(registration)
-   
-   return json.dumps(registration_with_check.dict(), default=str) 
+   document_ids = data.get('document_ids')
+   try:
+      # Use the KYC factory to process documents with the appropriate service
+      kyc_service = KYCFactory.get_service()
+      registration = kyc_service.process_documents(registration, document_ids)
+      
+      return jsonify({
+         'success': True
+      }), 200
+   except Exception as e:
+      print(e, file=sys.stderr)
+      return jsonify({
+         'success': False,
+         'errors': [str(e)]
+      }), 200
 
 # ---------------------------------------------------------------
 # This route GET the registration status. No visible use 
@@ -296,10 +315,12 @@ def check_onfido_status(registration_id):
    
    registration = Registration.find_by_id(registration_id)
    if not registration:
-      abort(404)
+      return "Registration not found", 404
    
-   updated = update_check_status(registration)
-   return json.dumps(updated.dict(), default=str)  
+   # Use the KYC factory to update the status with the appropriate service
+   kyc_service = KYCFactory.get_service()
+   updated = kyc_service.update_status(registration)
+   return json.dumps(updated.dict(), default=str)
 
 # ---------------------------------------------------------------
 
@@ -333,8 +354,9 @@ def init_kyc_new(registration_id):
    # so we do not get dups.
    registration.email = registration.email.lower().strip()
 
-   # Call Onfido to set the applicant Id.
-   registration = onfido_run_verification_request(registration)
+   # Initialize KYC verification using the appropriate service
+   kyc_service = KYCFactory.get_service()
+   registration = kyc_service.init_verification(registration)
    
    # Now store the user once we know we got here.
    registration.registered_by = session.get('user')['userinfo']['email']
@@ -351,15 +373,42 @@ def finish_registration_new(registration_id):
    if not registration:
       return 'Registration not found'
 
-   onfido_sdk_token = ''
-
+   # Get the KYC service based on the feature flag or registration's provider
+   kyc_service = KYCFactory.get_service()
+   
+   # Default values
+   client_token = ''
+   verification_url = ''
+   
    if registration.kyc_status == 'PENDING':
-      onfido_sdk_token = generate_sdk_token(registration.onfido_applicant_id)
+      # Generate the client token or verification URL for the appropriate provider
+      if FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
+         verification_url = kyc_service.generate_client_token(registration)
+      else:
+         # Legacy Onfido flow
+         client_token = kyc_service.generate_client_token(registration)
    elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE':
-      registration = update_check_status(registration)
-      print(registration.onfido_check_response)
+      # Update the verification status
+      registration = kyc_service.update_status(registration)
 
-   return render_template('registration-process.html', registration_id=registration_id, user=session.get('user'), onfido_sdk_token=onfido_sdk_token, registration=registration.safe_serialize())
+   # Determine which template to use based on the KYC provider
+   if FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
+      return render_template(
+         'registration-process-shufti.html',  # New template for Shufti iframe
+         registration_id=registration_id,
+         user=session.get('user'),
+         verification_url=verification_url,
+         registration=registration.safe_serialize()
+      )
+   else:
+      # Legacy Onfido template
+      return render_template(
+         'registration-process.html',
+         registration_id=registration_id,
+         user=session.get('user'),
+         onfido_sdk_token=client_token,
+         registration=registration.safe_serialize()
+      )
 
 # ---------------------------------------------------------------
 
@@ -407,3 +456,35 @@ def validate_email_only(email):
       'isEmailUsed': result is not None, 
       'email': email
    }), 200
+
+# ---------------------------------------------------------------
+# New endpoint to check KYC status for the iframe polling approach
+@pre_registration_bp.route('/kyc/check-status/<string:registration_id>', methods=['GET'])
+def check_kyc_status(registration_id):
+    """
+    Endpoint to check the status of a registration's KYC verification.
+    Used by the frontend to poll for status changes.
+    """
+    try:
+        # Find the registration by ID
+        registration = Registration.find_by_id(registration_id)
+        
+        if not registration:
+            return jsonify({
+                "success": False,
+                "error": "Registration not found"
+            }), 404
+            
+        # Return the current status
+        return jsonify({
+            "success": True,
+            "status": registration.kyc_status,
+            "complete": registration.complete
+        }), 200
+        
+    except Exception as e:
+        print(f"Error checking KYC status: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500

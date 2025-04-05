@@ -10,13 +10,19 @@ AUTH0_CLIENT_SECRET=9tm68j0gblYGrauYOMzJQXyOiQdprzgm-F4zdB5wHGJ5v0TOkQ1Oz9iEgV3h
 AUTH0_DOMAIN=apuestapr.us.auth0.com
 APP_SECRET_KEY=asdf1234
 
-APP_URL=https://localhost:5502
+APP_URL=576b-2600-4041-5514-0-553d-4f70-9be4-50a3.ngrok-free.app
 
 # MONGO_CONNECTION_STRING=mongodb+srv://mongo:oJkEEckjc0uO0R2Y@cluster1.qipqs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1
 MONGO_CONNECTION_STRING=mongodb+srv://mongo:oJkEEckjc0uO0R2Y@cluster0.nqnmk0a.mongodb.net/?retryWrites=true&w=majority
 
+# KYC Configuration
+KYC_PROVIDER=shufti
 ONFIDO_API_KEY=api_sandbox_us.2cuDp2NA5E-.GJnWsABbW8pTaNzR5LiCnOZPJ_Bc0zCz
 
+# Shufti Pro credentials (placeholder values, will need to be updated)
+SHUFTI_CLIENT_ID=7d153828f3c04cf2040d6d7368c5c6bbb1fc80d28e47bbd31b4bf396ace284d8
+SHUFTI_CLIENT_SECRET=yimj1cr72c7FlTO12JPRdrX8n4qJ47Ar
+SHUFTI_API_URL=https://api.shuftipro.com/
 
 WHITEHAT_API_URL=https://platform.lmg.gli.whg.tech
 

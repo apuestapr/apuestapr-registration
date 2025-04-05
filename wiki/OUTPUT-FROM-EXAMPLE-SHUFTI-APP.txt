@@ -1,0 +1,173 @@
+➜  try-out-shufti npm start
+
+> shufti-kyc-demo@1.0.0 start
+> node server.js
+
+Server listening on port 3000
+Received callback from Shufti: {
+  reference: 'user1743811535584',
+  event: 'request.pending',
+  verification_url: 'https://app.shuftipro.com/verification/process/iMpWaXYjs1KTsUWzc8t0rJYwMe7FG23IYiWMhRYI0C00zX8pW6iyUEQOaZoV1Ylp',
+  email: 'user@example.com',
+  country: 'US'
+}
+Received callback from Shufti: {
+  reference: 'user124-onsite-ocr',
+  event: 'request.pending',
+  verification_url: 'https://app.shuftipro.com/verification/process/yQXTRDD4D3Xt8s2Te7DOJ0EN5fbLdAiMLch9KUUpWhdDHdWkjT8OiTTirtndtIL6',
+  email: 'user@example.com',
+  country: 'US'
+}
+Received callback from Shufti: {
+  reference: 'user1743811535584',
+  event: 'verification.accepted',
+  email: 'user@example.com',
+  country: 'US',
+  verification_data: {
+    document: {
+      name: [Object],
+      dob: '1997-02-05',
+      expiry_date: '2027-02-05',
+      issue_date: '2021-02-16',
+      document_number: '35779984',
+      gender: 'M',
+      age: 28,
+      nationality: 'us',
+      selected_type: [Array],
+      supported_types: [Array]
+    }
+  },
+  verification_result: {
+    document: {
+      document: 1,
+      document_visibility: 1,
+      document_must_not_be_expired: 1,
+      document_proof: null,
+      selected_type: 1,
+      name: 1,
+      dob: 1,
+      age: 1,
+      issue_date: 1,
+      expiry_date: 1,
+      document_number: 1,
+      gender: 1,
+      nationality: 1
+    }
+  },
+  info: {
+    agent: {
+      is_desktop: true,
+      is_phone: false,
+      useragent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
+      device_name: 'Macintosh',
+      browser_name: 'Chrome 103.0.0.0',
+      platform_name: 'Mac OS 10.15.7'
+    },
+    geolocation: {
+      host: '2600:4041:5514:0:b932:ee9e:b082:5e2f',
+      ip: '2600:4041:5514:0:b932:ee9e:b082:5e2f',
+      rdns: '2600:4041:5514:0:b932:ee9e:b082:5e2f',
+      asn: '701',
+      isp: 'Verizon',
+      country_name: 'United States',
+      country_code: 'US',
+      region_name: 'New York',
+      region_code: 'NY',
+      city: 'Levittown',
+      postal_code: '11756',
+      continent_name: 'North America',
+      continent_code: 'NA',
+      latitude: '40.723999023438',
+      longitude: '-73.511001586914',
+      metro_code: '',
+      timezone: 'America/New_York',
+      ip_type: 'ipv6',
+      capital: 'Washington D.C.',
+      currency: 'USD'
+    }
+  },
+  additional_data: { document: { proof: [Object] } }
+}
+Received callback from Shufti: {
+  reference: 'user124-onsite-ocr',
+  event: 'verification.accepted',
+  email: 'user@example.com',
+  country: 'US',
+  verification_data: {
+    document: {
+      name: [Object],
+      dob: '1997-02-05',
+      expiry_date: '2027-02-05',
+      issue_date: '2021-02-16',
+      document_number: '35779984',
+      gender: 'M',
+      age: 28,
+      nationality: 'us',
+      selected_type: [Array],
+      supported_types: [Array]
+    }
+  },
+  verification_result: {
+    document: {
+      document: 1,
+      document_visibility: 1,
+      document_must_not_be_expired: 1,
+      document_proof: null,
+      selected_type: 1,
+      name: 1,
+      dob: 1,
+      age: 1,
+      issue_date: 1,
+      expiry_date: 1,
+      document_number: 1,
+      gender: 1,
+      nationality: 1
+    }
+  },
+  info: {
+    agent: {
+      is_desktop: true,
+      is_phone: false,
+      useragent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+      device_name: 'Macintosh',
+      browser_name: 'Chrome 127.0.0.0',
+      platform_name: 'Mac OS 10.15.7'
+    },
+    geolocation: {
+      host: '2600:4041:5514:0:b932:ee9e:b082:5e2f',
+      ip: '2600:4041:5514:0:b932:ee9e:b082:5e2f',
+      rdns: '2600:4041:5514:0:b932:ee9e:b082:5e2f',
+      asn: '701',
+      isp: 'Verizon',
+      country_name: 'United States',
+      country_code: 'US',
+      region_name: 'New York',
+      region_code: 'NY',
+      city: 'Levittown',
+      postal_code: '11756',
+      continent_name: 'North America',
+      continent_code: 'NA',
+      latitude: '40.723999023438',
+      longitude: '-73.511001586914',
+      metro_code: '',
+      timezone: 'America/New_York',
+      ip_type: 'ipv6',
+      capital: 'Washington D.C.',
+      currency: 'USD'
+    }
+  },
+  additional_data: { document: { proof: [Object] } }
+}
+Received callback from Shufti: {
+  reference: 'user123-onsite-ocr',
+  event: 'request.pending',
+  verification_url: 'https://app.shuftipro.com/verification/process/f12SF4a2xOtQA1e5ahK3D17up2Xs1gBQXQfvgvbPgMJbpaQtlONEYmAya7ynwFkZ',
+  email: 'user@example.com',
+  country: 'US'
+}
+Received callback from Shufti: {
+  reference: 'user123-onsite-ocr',
+  event: 'request.timeout',
+  email: 'user@example.com',
+  country: 'US'
+}

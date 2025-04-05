@@ -1,5 +1,14 @@
 from dotenv import load_dotenv
-load_dotenv()
+# Explicitly load from .flaskenv
+load_dotenv('.flaskenv')
+
+import os
+# Log the loaded environment variables for debugging
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.info(f"APP_URL loaded in app.py: {os.getenv('APP_URL')}")
+logger.info(f"KYC_PROVIDER loaded in app.py: {os.getenv('KYC_PROVIDER')}")
 
 from flask import Flask, jsonify, render_template, request, abort, url_for, session, redirect
 from src.shufti import handle_callback
@@ -15,7 +24,6 @@ import dateutil.parser as dparser
 import json
 from src.models.registration import Registration
 import pymongo.errors
-import os
 import sys 
 from functools import wraps
 from src.whitehat import create_account, get_player_id
@@ -25,10 +33,18 @@ from datetime import datetime
 from src.blueprints.pre_registration import pre_registration_bp
 from src.blueprints.registration import registration_bp
 from src.blueprints.qr_code import qr_code_bp
+from src.kyc_factory import KYCFactory
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 
 app.secret_key = os.getenv('APP_SECRET_KEY')
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 oauth = OAuth(app)
 
@@ -389,6 +405,37 @@ def exchange_loyalty_card_for_kiosk(loyalty_card_number: str):
 app.register_blueprint(pre_registration_bp, url_prefix='/registration')
 app.register_blueprint(registration_bp, url_prefix='/registrations')
 app.register_blueprint(qr_code_bp, url_prefix='/qr_code')
+
+# ---------------------------------------------------------------
+# Shufti Pro callback endpoint
+# This endpoint receives callbacks from Shufti Pro about verification status
+@app.route('/kyc/shufti-callback', methods=['POST'])
+def shufti_callback():
+    logger.info("Received callback from Shufti")
+    
+    # Log headers and body for debugging
+    if request.headers:
+        logger.info(f"Received callback from Shufti (headers): {dict(request.headers)}")
+    
+    # Get the callback data
+    data = request.json
+    if data:
+        logger.info(f"Received callback from Shufti (body): {data}")
+    else:
+        logger.error("No data received in Shufti callback")
+        return jsonify({"success": False, "error": "No data received"}), 400
+    
+    # Process the callback with our KYC service
+    kyc_service = KYCFactory.get_service()
+    registration = kyc_service.process_callback(data)
+    
+    if not registration:
+        logger.error("Failed to process Shufti callback - no registration found")
+        # Return 200 anyway to prevent Shufti from retrying
+        return jsonify({"success": False, "error": "Registration not found"}), 200
+    
+    logger.info(f"Successfully processed Shufti callback for registration {registration.id}")
+    return jsonify({"success": True}), 200
 
 if __name__ == '__main__':
    app.run()
