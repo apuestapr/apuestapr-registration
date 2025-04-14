@@ -6,7 +6,7 @@ import typing
 
 class Callback(BaseModel):
     timestamp: datetime.datetime
-    body: typing.Any
+    body: typing.Optional[typing.Any] = None
 
 
 class Registration(MongoModel):

@@ -592,13 +592,18 @@ def update_registration_fields(registration_id):
             if not hasattr(registration, 'callbacks') or registration.callbacks is None:
                 registration.callbacks = []
                 
-            # Add a reset entry to callbacks
-            registration.callbacks.append({
+            # Add a reset entry to callbacks following the Callback model structure
+            reset_data = {
                 'timestamp': datetime.datetime.now(),
-                'event': 'reset_verification',
-                'by': session.get('user', {}).get('userinfo', {}).get('email', 'unknown'),
-                'previous_status': registration.kyc_status
-            })
+                'body': {  # The body field contains the event details
+                    'event': 'reset_verification',
+                    'reference': registration.shufti_reference or '',
+                    'email': registration.email,
+                    'by': session.get('user', {}).get('userinfo', {}).get('email', 'unknown'),
+                    'previous_status': registration.kyc_status
+                }
+            }
+            registration.callbacks.append(reset_data)
         
         # Save the changes
         if updated_fields:
