@@ -549,3 +549,69 @@ def kyc_status_redirect(registration_id):
             "success": False,
             "error": str(e)
         }), 500
+
+# ---------------------------------------------------------------
+# Endpoint to update registration fields directly (for admin use)
+@pre_registration_bp.route('/db-update/<string:registration_id>', methods=['POST'])
+@require_auth
+def update_registration_fields(registration_id):
+    """
+    Updates specific fields in a registration document.
+    Only certain fields are allowed to be updated for security.
+    """
+    try:
+        # Find the registration by ID
+        registration = Registration.find_by_id(registration_id)
+        
+        if not registration:
+            return jsonify({
+                "success": False,
+                "error": "Registration not found"
+            }), 404
+        
+        # Get the data to update
+        data = request.json
+        if not data:
+            return jsonify({
+                "success": False,
+                "error": "No data provided"
+            }), 400
+        
+        # List of fields that are allowed to be updated
+        allowed_fields = ['kyc_status', 'shufti_reference']
+        updated_fields = []
+        
+        # Update only allowed fields
+        for field in allowed_fields:
+            if field in data:
+                setattr(registration, field, data[field])
+                updated_fields.append(field)
+        
+        # If we're resetting to PENDING, log the action
+        if 'kyc_status' in data and data['kyc_status'] == 'PENDING':
+            if not hasattr(registration, 'callbacks') or registration.callbacks is None:
+                registration.callbacks = []
+                
+            # Add a reset entry to callbacks
+            registration.callbacks.append({
+                'timestamp': datetime.datetime.now(),
+                'event': 'reset_verification',
+                'by': session.get('user', {}).get('userinfo', {}).get('email', 'unknown'),
+                'previous_status': registration.kyc_status
+            })
+        
+        # Save the changes
+        if updated_fields:
+            registration.save()
+            
+        return jsonify({
+            "success": True,
+            "message": f"Updated fields: {', '.join(updated_fields)}"
+        }), 200
+        
+    except Exception as e:
+        print(f"Error updating registration: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500

@@ -67,8 +67,55 @@
                     La verificación KYC ha fallado. Por favor, contacte al
                     soporte para obtener asistencia.
                   </p>
-                  <p><a href="/" class="btn btn-primary">Volver a Inicio</a></p>
+                  <div class="mt-3">
+                    <a href="/" class="btn btn-primary">Volver a Inicio</a>
+                    <a
+                      href="#"
+                      id="retryVerificationBtn"
+                      class="btn btn-warning ms-2"
+                      >Intentar Nuevamente</a
+                    >
+                  </div>
                 </div>
+
+                <script type="text/javascript">
+                  $(document).ready(function () {
+                    // Handle retry button click
+                    $("#retryVerificationBtn").click(function (e) {
+                      e.preventDefault();
+
+                      if (
+                        confirm("¿Desea intentar la verificación nuevamente?")
+                      ) {
+                        // Set the registration status back to PENDING via database update
+                        $.ajax({
+                          url: "/registration/db-update/{{ registration._id }}",
+                          method: "POST",
+                          contentType: "application/json",
+                          data: JSON.stringify({
+                            kyc_status: "PENDING",
+                            shufti_reference: "", // Clear reference to force new one
+                          }),
+                          success: function (response) {
+                            if (response.success) {
+                              // Redirect to the process page to start over
+                              window.location.href =
+                                "/registration/kyc/process/{{ registration._id }}";
+                            } else {
+                              alert("Error al reiniciar: " + response.error);
+                            }
+                          },
+                          error: function (err) {
+                            console.error("Error resetting verification:", err);
+                            alert(
+                              "Error al reiniciar la verificación. Por favor, inténtelo más tarde."
+                            );
+                          },
+                        });
+                      }
+                    });
+                  });
+                </script>
                 {% elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE'
                 %}
                 <div class="alert alert-info">

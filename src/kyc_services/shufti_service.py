@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional, List
 from src.kyc_factory import KYCService
 from src.models.registration import Registration
 from src.config import Config
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +37,14 @@ class ShuftiService(KYCService):
         Make an API call to Shufti Pro to get the verification URL.
         This URL will be used in an iframe for the user to complete KYC.
         """
-        if not registration.shufti_reference:
-            # If the reference doesn't exist, initialize it
+        # If the reference doesn't exist or if this is a retry of a failed verification,
+        # generate a new reference
+        if not registration.shufti_reference or registration.kyc_status == 'FAILED':
+            # If this is a retry, log that we're generating a new reference
+            if registration.shufti_reference and registration.kyc_status == 'FAILED':
+                logger.info(f"Regenerating reference for failed verification: {registration.id}")
+                
+            # Generate a new reference
             registration = self.init_verification(registration)
             
         # Build the payload for Shufti API
@@ -98,12 +105,35 @@ class ShuftiService(KYCService):
             
         # Find the registration with this reference
         registration = Registration.find_one({'shufti_reference': reference})
+        
+        # If not found by reference, try by email if available
+        if not registration and data.get('email'):
+            logger.info(f"Trying to find registration by email: {data.get('email')}")
+            email = data.get('email').lower()  # Normalize email to lowercase
+            registration = Registration.find_one({'email': email})
+            
+            # If found by email, update the reference
+            if registration:
+                logger.info(f"Found registration by email {email}, updating reference to: {reference}")
+                registration.shufti_reference = reference
+                registration.save()
+        
         if not registration:
             logger.error(f"No registration found with Shufti reference: {reference}")
             return None
             
         # Store the raw Shufti callback data for debugging/auditing
         registration.shufti_callback_payload = data
+        
+        # Add to callbacks array for history
+        if not hasattr(registration, 'callbacks'):
+            registration.callbacks = []
+            
+        # Store the callback data
+        registration.callbacks.append({
+            'timestamp': datetime.datetime.now(),
+            'body': data
+        })
         
         # Extract the event type
         event = data.get('event', '')
