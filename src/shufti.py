@@ -15,6 +15,8 @@ secret_key = '6jaYjSiF6l8E2p1ukRK7qBokewfQOmq5'
 
 # OR Access Token 'access_token = 'YOUR-ACCESS-TOKEN'';
 
+app_url = os.getenv('APP_URL', 'https://localhost:5502')
+
 """
 {
     "reference": "97ee6820-b593-4363-a545-87c18dc9c5f0",
@@ -108,7 +110,7 @@ def run_verification_request():
 
     payload = {
         'reference': reference,
-        'callback_url': '576b-2600-4041-5514-0-553d-4f70-9be4-50a3.ngrok-free.app/kyc/callback',
+        'callback_url': f'{os.getenv("APP_URL")}/kyc/callback', # TODO: Update the link that is being used here. It would cause a 500 status error code when run on Render otherwise...
         #
         # Need to use this, or they will not allow the callback. 
         # TODO: Need access to the onfideo
