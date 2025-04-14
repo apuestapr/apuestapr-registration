@@ -25,7 +25,8 @@
 
   <body>
     <div class="container">
-      {% include 'nav.html' %}
+      {% if user and user.userinfo %} {% include 'nav.html' %} {% else %} {%
+      include 'public-nav.html' %} {% endif %}
 
       <div class="container my-5">
         <div class="row">
