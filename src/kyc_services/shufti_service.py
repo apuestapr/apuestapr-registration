@@ -59,8 +59,10 @@ class ShuftiService(KYCService):
                 return ""
                 
             if 'verification_url' in response:
-                # Log the verification URL but don't store the response
-                logger.info(f"Got verification URL for registration {registration.id}")
+                # Store the response for debugging
+                registration.shufti_callback_payload = response
+                registration.save()
+                
                 return response['verification_url']
                 
             logger.error(f"Unexpected response from Shufti API: {response}")
@@ -120,11 +122,21 @@ class ShuftiService(KYCService):
             logger.error(f"No registration found with Shufti reference: {reference}")
             return None
             
-        # Extract the event type - Don't store callback data anymore
-        event = data.get('event', '')
+        # Store the raw Shufti callback data for debugging/auditing
+        registration.shufti_callback_payload = data
         
-        # Log the event type for debugging without storing it
-        logger.info(f"Processing Shufti callback event: {event} for registration: {registration.id}")
+        # Add to callbacks array for history
+        if not hasattr(registration, 'callbacks'):
+            registration.callbacks = []
+            
+        # Store the callback data
+        registration.callbacks.append({
+            'timestamp': datetime.datetime.now(),
+            'body': data
+        })
+        
+        # Extract the event type
+        event = data.get('event', '')
         
         # Map Shufti event types to our internal statuses
         # Following the mapping in wiki/SHUFTI-STATE-MAPPING.md
