@@ -3,38 +3,69 @@ import os
 from src.models.registration import Registration, Callback
 import datetime
 from onfido.regions import Region
-from src.config import Config
 
-api = onfido.Api(Config.ONFIDO_API_KEY, region=Region.US)
+api = onfido.Api(os.getenv('ONFIDO_API_KEY'), region = Region.US)
 
 def generate_sdk_token(applicant_id: str):
-    """
-    Generate an SDK token for the Onfido client.
-    
-    Args:
-        applicant_id: The applicant ID to generate the token for
-        
-    Returns:
-        str: The generated token
-    """
     response = api.sdk_token.generate({
         'applicant_id': applicant_id,
+        # 'referrer': 'http://localhost:5502/register/*'
     })
 
     return response['token']
 
+# def run_verification_request():
+#     registration = Registration(
+#         started_at=datetime.datetime.utcnow()
+#     )
+
+#     registration.save()
+#     applicant_details = {
+#     'first_name': 'ApuestaPR',
+#     'last_name': 'Customer',
+#     'dob': '1984-01-01',
+#     'address': {
+#         'street': 'Second Street',
+#         'town': 'London',
+#         'postcode': 'S2 2DF',
+#         'country': 'GBR'
+#     },
+#     'location': {
+#         'ip_address': '127.0.0.1',
+#         'country_of_residence': 'GBR'
+#     }
+#     }
+
+#     response = api.applicant.create(applicant_details)
+
+#     registration.onfido_applicant_id = response['id']
+
+#     registration.save()
+
+#     return registration
+
+# This is a new version that sends the data to the Onfido
+# using the values setup in the registation.
 def run_verification_request(registration):
-    """
-    Start a verification request for a registration.
     
-    Args:
-        registration: The registration to verify
-        
-    Returns:
-        Registration: The updated registration
-    """
     registration.started_at = datetime.datetime.now()
     registration.save()
+    
+    # applicant_details = {
+    #     'first_name': registration.first_name or 'ApuestaPR',
+    #     'last_name': registration.last_name or 'Customer',
+    #     'dob': registration.birthday or '1984-01-01',
+    #     'address': {
+    #         'street': registration.address_1 or 'Second Street',
+    #         'town': registration.city or 'London',
+    #         'postcode': registration.postal_code or 'S2 2DF',
+    #         'country': registration.country or 'GBR'
+    #     },
+    #     'location': {
+    #         'ip_address': '127.0.0.1',
+    #         'country_of_residence': 'GBR'
+    #     }
+    # }
     
     applicant_details = {
         'first_name': registration.first_name or 'ApuestaPR',
@@ -52,22 +83,20 @@ def run_verification_request(registration):
         }
     }
 
+    # Call the API to create an applicant.
     response = api.applicant.create(applicant_details)
+
+    # Now store the id in the registration object.
     registration.onfido_applicant_id = response['id']
+
+    # Save it.
     registration.save()
 
+    # Return to the caller.
     return registration
 
+
 def run_check(registration):
-    """
-    Run a check on a registration.
-    
-    Args:
-        registration: The registration to check
-        
-    Returns:
-        Registration: The updated registration
-    """
     if not registration.onfido_document_ids:
         raise Exception('No documents uploaded')
     
@@ -78,6 +107,7 @@ def run_check(registration):
         ],
         'document_ids': registration.onfido_document_ids,
         'applicant_provides_data': False,
+
     })
 
     registration.onfido_check_response = check_response
@@ -87,15 +117,6 @@ def run_check(registration):
     return registration
 
 def update_check_status(registration):
-    """
-    Update the status of a check.
-    
-    Args:
-        registration: The registration to update
-        
-    Returns:
-        Registration: The updated registration
-    """
     if not registration.onfido_check_response:
         raise Exception('No check data')
 
@@ -110,17 +131,25 @@ def update_check_status(registration):
 
         if check['status'] == 'complete':
             registration.kyc_status = 'COMPLETE'
+            # Added this to fix the issue we had.
             registration.complete = True
             done = True
+
+            
         elif check['status'] == 'reopened':
-            registration.kyc_status = 'FAILED'
+            registration.kyc_status == 'FAILED'
             done = True
 
         if done:
+            # Get the reports
             reports = api.report.all(check_id=check['id'])['reports']
+            print('Received Reports:', reports)
             registration.onfido_reports = reports
 
+            # Update the user information from the reports
             for r in reports:
+                print(r)
+
                 if r['name'] == 'document':
                     new_first_name = r['properties'].get('first_name')
                     if new_first_name:
