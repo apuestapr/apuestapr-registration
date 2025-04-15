@@ -513,23 +513,8 @@ def kyc_status_redirect(registration_id):
         kyc_service = KYCFactory.get_service()
         updated_registration = kyc_service.update_status(registration)
         
-        # Check if there's a new webhook update we haven't processed yet
-        # This adds an extra check in case the webhook hasn't been fully processed yet
-        if updated_registration.kyc_status == 'PENDING':
-            # Look for recent callbacks with terminal status
-            if updated_registration.callbacks and len(updated_registration.callbacks) > 0:
-                # Check the most recent callback
-                recent_callback = updated_registration.callbacks[-1]
-                if recent_callback and 'body' in recent_callback and 'event' in recent_callback['body']:
-                    event = recent_callback['body']['event']
-                    # Update status if it's a terminal event
-                    if event == 'verification.accepted':
-                        updated_registration.kyc_status = 'COMPLETE'
-                        updated_registration.complete = True
-                        updated_registration.save()
-                    elif event == 'verification.declined':
-                        updated_registration.kyc_status = 'FAILED'
-                        updated_registration.save()
+        # We no longer check callbacks since we're not storing them
+        # Instead, just rely on the current kyc_status value
         
         # Get user from session if available, otherwise provide a default
         user = session.get('user') if session.get('user') else None
@@ -587,23 +572,11 @@ def update_registration_fields(registration_id):
                 setattr(registration, field, data[field])
                 updated_fields.append(field)
         
-        # If we're resetting to PENDING, log the action
+        # If we're resetting to PENDING, log the action but don't add to callbacks
         if 'kyc_status' in data and data['kyc_status'] == 'PENDING':
-            if not hasattr(registration, 'callbacks') or registration.callbacks is None:
-                registration.callbacks = []
-                
-            # Add a reset entry to callbacks following the Callback model structure
-            reset_data = {
-                'timestamp': datetime.datetime.now(),
-                'body': {  # The body field contains the event details
-                    'event': 'reset_verification',
-                    'reference': registration.shufti_reference or '',
-                    'email': registration.email,
-                    'by': session.get('user', {}).get('userinfo', {}).get('email', 'unknown'),
-                    'previous_status': registration.kyc_status
-                }
-            }
-            registration.callbacks.append(reset_data)
+            # Log the reset action instead of storing it
+            user_email = session.get('user', {}).get('userinfo', {}).get('email', 'unknown')
+            print(f"Reset verification for registration {registration_id} by {user_email}")
         
         # Save the changes
         if updated_fields:
