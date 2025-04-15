@@ -5,11 +5,14 @@ from src.onfido import run_verification_request as onfido_run_verification_reque
 # from src.onfido import run_verification_request_new as onfido_run_verification_request_new
 from src.whitehat import create_account, get_player_id
 import dateutil.parser as dparser
-from datetime import date, datetime
+from datetime import date
+
 import json
 from bson.objectid import ObjectId
+# from datetime import datetime
 from functools import wraps
-import sys
+from src.models.registration import Registration
+import datetime
 
 # Import the KYC factory instead of specific provider functions
 from src.kyc_factory import KYCFactory
@@ -78,11 +81,14 @@ def create_pre_registration():
       data = request.get_json()
       if not data:
         return jsonify({'msg': 'No data provided'}), 400
+
+      if not data:
+        return jsonify({'msg': 'No data provided'}), 400
             
       pre_reg = Registration(**data)
       # Make the email lowercase.
       pre_reg.email = pre_reg.email.lower().strip()
-      pre_reg.started_at = datetime.now()
+      pre_reg.started_at = datetime.datetime.now()
       
       pre_reg.save()
     
@@ -101,6 +107,12 @@ def create_pre_registration():
 def get_pre_registration(id):
     pre_reg = Registration.find_by_id(id)
     return json.dumps(pre_reg.dict(), default=str)  
+
+@pre_registration_bp.route('/<int:id>', methods=['PUT'])
+def update_pre_registration(id):
+    return json.dumps({ 'msg': 'No Code set up for this route.'}, default=str)  
+
+# ---------------------------------------------------------------
 
 @pre_registration_bp.route('/delete/<string:id>', methods=['DELETE'])
 @require_auth
@@ -172,6 +184,7 @@ def pre_registration_prepare(registration_id):
 @pre_registration_bp.route('/validate/<string:registration_id>', methods=['POST'])
 @require_auth
 def validate_kyc_process(registration_id):
+   
    registration = Registration.find_by_id(registration_id)
    if not registration:
       return 'Registration not found'
@@ -209,12 +222,16 @@ def validate_kyc_process(registration_id):
       
    if not referral_code:
       errors.append('El código de referencia es obligatorio.')
+
+   # ----------------------------------------------------------------
+   # Validate the address, again.
    
-   # Validate the address
    if not address_1 or not city or not state_province or not country or not postal_code:
       errors.append('Direccion es obligatorio')
          
-   # Validate date of birth
+   # ----------------------------------------------------------------
+   # Lets make sure the dateof birth is valid.
+
    if not birthday:
       errors.append('Birthday is required')
    else:
@@ -222,24 +239,31 @@ def validate_kyc_process(registration_id):
       if calculateAge(bday) < 18:
          errors.append('Debe tener al menos 18 años de edad para apostar en Puerto Rico.')
   
-   # Check that the email and the loyal_card_number have not been used already
+   # ----------------------------------------------------------------
+   # Ok lets check that the email and the loyal_card_number
+   # have not been used already.
+   
    email = email.lower().strip()
    loyalty_card_number = loyalty_card_number.strip()
    object_id = ObjectId(registration_id)
    
-   # Query the MongoDB
-   dupe_card_number = Registration.find_one({ '_id': { '$ne': object_id, }, 'loyalty_card_number': loyalty_card_number })
+   # Query the MongoDB.
+   dupe_card_number = Registration.find_one({ '_id': { '$ne': object_id, }, 'loyal_card_number': loyalty_card_number })
    dupe_email = Registration.find_one({ '_id': { '$ne': object_id }, 'email': email })
    
    if dupe_email:
-      errors.append('Alguien ya ha sido registrado con esta dirección de correo electrónico.')
+      # Someone has already used this email address
+      errors.append('kAlguien ya ha sido registrado con esta dirección de correo electrónico.')
       
    if dupe_card_number:
+      # Someone has already been registered with this loyalty card number.
       errors.append('Alguien ya ha sido registrado con este número de tarjeta de fidelidad.')
             
+   # ----------------------------------------------------------------
    if len(errors) == 0:
       success = True
    
+   # Ok we return the validation information.
    return jsonify({ 'success': success, 'errors': errors, 'registration_id': registration_id })
 
 # ---------------------------------------------------------------
@@ -249,7 +273,8 @@ def validate_kyc_process(registration_id):
 @pre_registration_bp.route('/run-check/<string:registration_id>', methods=['POST'])
 @require_auth
 def run_onfido_check(registration_id):
-   # Load the registration
+   
+   # Load the registration person.
    registration = Registration.find_by_id(registration_id)
    if not registration:
       return jsonify({
@@ -287,6 +312,7 @@ def run_onfido_check(registration_id):
 @pre_registration_bp.route('/check-status/<string:registration_id>', methods=['GET'])
 @require_auth
 def check_onfido_status(registration_id):
+   
    registration = Registration.find_by_id(registration_id)
    if not registration:
       return "Registration not found", 404
@@ -301,15 +327,18 @@ def check_onfido_status(registration_id):
 @pre_registration_bp.route('/kyc/init/<string:registration_id>', methods=['PUT'])
 @require_auth
 def init_kyc_new(registration_id):
-   # First we get the registration Id
+   
+   # First we get the registration Id.
    registration = Registration.find_by_id(registration_id)
    if not registration:
       abort(404)
 
-   # Update registration fields
+   # Put the data into the fields for the processor.
    registration.preferred_language = request.json.get('preferred_language', '')
    registration.loyalty_card_number = request.json.get('loyalty_card_number', '')
    registration.referral_code = request.json.get('referral_code', '')
+   
+   # Update the fields from the confirmation.
    registration.first_name = request.json.get('first_name', '')
    registration.last_name = request.json.get('last_name', '')
    registration.address_1 = request.json.get('address_1', '')
@@ -321,19 +350,21 @@ def init_kyc_new(registration_id):
    registration.phone_number = request.json.get('phone_number', '')
    registration.email = request.json.get('email', '')
    
-   # Make the email lowercase
+   # Make the email lowercase. This keeps things tight
+   # so we do not get dups.
    registration.email = registration.email.lower().strip()
 
    # Initialize KYC verification using the appropriate service
    kyc_service = KYCFactory.get_service()
    registration = kyc_service.init_verification(registration)
    
-   # Store who registered this user
+   # Now store the user once we know we got here.
    registration.registered_by = session.get('user')['userinfo']['email']
    registration.save()
    
    return json.dumps(registration.dict(), default=str)
 
+# ---------------------------------------------------------------
 @pre_registration_bp.route('/kyc/process/<string:registration_id>', methods=['GET'])
 @require_auth
 def finish_registration_new(registration_id):
@@ -384,6 +415,7 @@ def finish_registration_new(registration_id):
 @pre_registration_bp.route('/account-setup/<string:registration_id>', methods=['POST'])
 @require_auth
 def account_setup(registration_id):
+   
    success = False
    registration = Registration.find_by_id(registration_id)
    if not registration:
@@ -393,10 +425,12 @@ def account_setup(registration_id):
    try:
       create_account(registration)
       success = True
+      
    except Exception as e:
       print(e)
       errors.append(str(e))
       
+   # Ok we return the validation information.
    return jsonify({ 'success': success, 'errors': errors, 'registration_id': registration_id })
 
 # ---------------------------------------------------------------
@@ -411,10 +445,11 @@ def list_registrations():
 
 @pre_registration_bp.route('/email/<string:email>', methods=['GET'])
 def validate_email_only(email):
-   # Clean the email string
+ 
+   # Clean the email string.
    email = email.lower().strip()
 
-   # Look for matching results
+   # Look for the of results.
    result = Registration.find_one({ 'email': email })    
 
    return jsonify({ 
@@ -559,7 +594,7 @@ def update_registration_fields(registration_id):
                 
             # Add a reset entry to callbacks following the Callback model structure
             reset_data = {
-                'timestamp': datetime.now(),
+                'timestamp': datetime.datetime.now(),
                 'body': {  # The body field contains the event details
                     'event': 'reset_verification',
                     'reference': registration.shufti_reference or '',
