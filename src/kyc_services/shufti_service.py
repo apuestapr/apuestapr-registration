@@ -208,19 +208,8 @@ class ShuftiService(KYCService):
             },
             "dob": registration.birthday if registration.birthday else "",
             "supported_types": ["id_card", "driving_license", "passport"],
-            "backside_proof_required": True,
+            "backside_proof_required": False,
         }
-        
-        # Add address verification if we have address data
-        if registration.address_1:
-            payload["address"] = {
-                "name": {
-                    "first_name": registration.first_name,
-                    "last_name": registration.last_name
-                },
-                "full_address": f"{registration.address_1}, {registration.city}, {registration.state_province} {registration.postal_code}",
-                "supported_types": ["id_card", "driving_license", "utility_bill"]
-            }
             
         return payload
     
