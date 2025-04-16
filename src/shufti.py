@@ -1,3 +1,23 @@
+"""
+DEPRECATED MODULE - DO NOT USE FOR NEW CODE
+
+This module is maintained only for backward compatibility.
+New code should use the service classes in src.kyc_services instead.
+
+Migration steps:
+1. Use KYCFactory.get_service() to get the appropriate service implementation
+2. Call methods on the service instance instead of using these functions
+
+Example:
+    from src.kyc_factory import KYCFactory
+    kyc_service = KYCFactory.get_service()
+    registration = kyc_service.init_verification(registration)
+    verification_url = kyc_service.generate_client_token(registration)
+"""
+
+import logging
+logging.warning("Using deprecated module src.shufti - Use src.kyc_services instead")
+
 import requests, base64, json, hashlib
 from random import randint
 import uuid
