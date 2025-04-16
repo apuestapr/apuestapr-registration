@@ -425,17 +425,21 @@ def shufti_callback():
         logger.error("No data received in Shufti callback")
         return jsonify({"success": False, "error": "No data received"}), 400
     
-    # Process the callback with our KYC service
-    kyc_service = KYCFactory.get_service()
-    registration = kyc_service.process_callback(data)
-    
-    if not registration:
-        logger.error("Failed to process Shufti callback - no registration found")
-        # Return 200 anyway to prevent Shufti from retrying
-        return jsonify({"success": False, "error": "Registration not found"}), 200
-    
-    logger.info(f"Successfully processed Shufti callback for registration {registration.id}")
-    return jsonify({"success": True}), 200
+    try:
+        # Process the callback with our KYC service
+        kyc_service = KYCFactory.get_service()
+        registration = kyc_service.process_callback(data)
+        
+        if not registration:
+            logger.error("Failed to process Shufti callback - no registration found")
+            # Return 200 anyway to prevent Shufti from retrying
+            return jsonify({"success": False, "error": "Registration not found"}), 200
+        
+        logger.info(f"Successfully processed Shufti callback for registration {registration.id}")
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        logger.exception(f"Error processing Shufti callback: {e}")
+        return jsonify({"success": False, "error": str(e)}), 200
 
 if __name__ == '__main__':
    app.run()

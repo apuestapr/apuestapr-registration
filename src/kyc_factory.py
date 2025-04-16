@@ -1,67 +1,33 @@
-from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any, List
-from src.config import FeatureFlags
-from src.models.registration import Registration
+import os
+import logging
+from typing import Optional
+from src.kyc_services.base import KYCService
 
-class KYCService(ABC):
-    """
-    Abstract base class for KYC services.
-    Both Onfido and Shufti Pro services will implement this interface.
-    """
-    
-    @abstractmethod
-    def init_verification(self, registration: Registration) -> Registration:
-        """
-        Initialize the KYC verification process for a registration.
-        Returns the updated registration object.
-        """
-        pass
-    
-    @abstractmethod
-    def generate_client_token(self, registration: Registration) -> str:
-        """
-        Generate a token or URL needed for the client-side KYC process.
-        """
-        pass
-    
-    @abstractmethod
-    def process_documents(self, registration: Registration, document_ids: List[str]) -> Registration:
-        """
-        Process document IDs (if applicable) and initiate the check process.
-        """
-        pass
-    
-    @abstractmethod
-    def update_status(self, registration: Registration) -> Registration:
-        """
-        Check for updates to the KYC verification status.
-        Returns the updated registration object.
-        """
-        pass
-    
-    @abstractmethod
-    def process_callback(self, data: Dict[str, Any], reference: Optional[str] = None) -> Optional[Registration]:
-        """
-        Process callback data from the KYC provider.
-        Returns the updated registration object if found.
-        """
-        pass
-
+logger = logging.getLogger(__name__)
 
 class KYCFactory:
     """
     Factory class for creating KYC service instances.
     """
+    
     @staticmethod
     def get_service() -> KYCService:
         """
-        Get the appropriate KYC service implementation based on configuration.
+        Get a KYC service instance based on the configured provider.
+        
+        Returns:
+            An instance of a KYCService implementation
         """
-        if FeatureFlags.is_shufti_enabled():
-            # Lazy import to avoid circular dependencies
-            from src.kyc_services.shufti_service import ShuftiService
+        provider = os.getenv('KYC_PROVIDER', 'onfido').lower()
+        logger.info(f"Using KYC provider: {provider}")
+        
+        if provider == 'onfido':
+            from src.kyc_services import OnfidoService
+            return OnfidoService()
+        elif provider == 'shufti':
+            from src.kyc_services import ShuftiService
             return ShuftiService()
         else:
-            # Default to Onfido
-            from src.kyc_services.onfido_service import OnfidoService
-            return OnfidoService() 
+            logger.warning(f"Unknown KYC provider: {provider}, defaulting to Onfido")
+            from src.kyc_services import OnfidoService
+            return OnfidoService()

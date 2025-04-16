@@ -1,13 +1,11 @@
-import os
 import uuid
-import requests
-import json
 import logging
+import datetime
 from typing import Dict, Any, Optional, List
-from src.kyc_factory import KYCService
+from src.kyc_services.base import KYCService
 from src.models.registration import Registration
 from src.config import Config
-import datetime
+from src.kyc_services.implementations import shufti_impl
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +50,7 @@ class ShuftiService(KYCService):
         
         # Make the API call to Shufti
         try:
-            response = self._call_shufti_api(payload)
+            response = shufti_impl.call_shufti_api(payload)
             
             if 'error' in response:
                 logger.error(f"Shufti API error: {response['error']}")
@@ -139,7 +137,6 @@ class ShuftiService(KYCService):
         event = data.get('event', '')
         
         # Map Shufti event types to our internal statuses
-        # Following the mapping in wiki/SHUFTI-STATE-MAPPING.md
         if event == 'verification.accepted':
             registration.kyc_status = 'COMPLETE'
             registration.complete = True
@@ -153,7 +150,6 @@ class ShuftiService(KYCService):
             registration.kyc_status = 'FAILED'
         elif event == 'verification.status.changed':
             # For status changes, we should check the new status if possible
-            # This would typically require an additional API call to Shufti
             # For now, we'll just log this event
             logger.info(f"Verification status changed for reference {reference}")
         elif event == 'request.deleted':
@@ -197,9 +193,6 @@ class ShuftiService(KYCService):
             "ttl": 60,  # Time to live in minutes
         }
         
-        # Log the full payload for debugging
-        logger.info(f"Shufti payload: {json.dumps(payload)}")
-        
         # Add document verification
         payload["document"] = {
             "name": {
@@ -212,41 +205,6 @@ class ShuftiService(KYCService):
         }
             
         return payload
-    
-    def _call_shufti_api(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Make an API call to Shufti Pro.
-        """
-        url = Config.SHUFTI_API_URL
-        if not url.endswith('/'):
-            url += '/'
-            
-        # Prepare auth and headers
-        auth = (Config.SHUFTI_CLIENT_ID, Config.SHUFTI_CLIENT_SECRET)
-        headers = {
-            'Content-Type': 'application/json',
-        }
-        
-        # Make the API call
-        try:
-            response = requests.post(
-                url,
-                auth=auth,
-                headers=headers,
-                data=json.dumps(payload),
-                timeout=30  # 30 second timeout
-            )
-            
-            # Parse and return the response
-            if response.status_code == 200:
-                return response.json()
-            else:
-                logger.error(f"Shufti API error: {response.status_code} - {response.text}")
-                return {"error": f"HTTP {response.status_code}: {response.text}"}
-                
-        except Exception as e:
-            logger.exception(f"Exception making Shufti API call: {e}")
-            return {"error": str(e)}
     
     def _get_initials(self, registration: Registration) -> str:
         """
@@ -263,4 +221,4 @@ class ShuftiService(KYCService):
         if not initials:
             initials = "usr"
             
-        return initials 
+        return initials
