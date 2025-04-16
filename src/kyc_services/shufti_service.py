@@ -195,11 +195,11 @@ class ShuftiService(KYCService):
         
         # Add document verification
         payload["document"] = {
-            "name": {
-                "first_name": registration.first_name,
-                "last_name": registration.last_name
-            },
-            "dob": registration.birthday if registration.birthday else "",
+            # "name": {
+            #     "first_name": registration.first_name,
+            #     "last_name": registration.last_name
+            # },
+            # "dob": registration.birthday if registration.birthday else "",
             "supported_types": ["id_card", "driving_license", "passport"],
             "backside_proof_required": False,
         }
