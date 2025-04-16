@@ -11,12 +11,10 @@ logger.info(f"APP_URL loaded in app.py: {os.getenv('APP_URL')}")
 logger.info(f"KYC_PROVIDER loaded in app.py: {os.getenv('KYC_PROVIDER')}")
 
 from flask import Flask, jsonify, render_template, request, abort, url_for, session, redirect
-from src.shufti import handle_callback
+# Remove old Shufti import
+# from src.shufti import handle_callback
 
-# from src.shufti import run_verification_request, handle_callback
-# from src.onfido import run_verification_request as onfido_run_verification_request, update_check_status, generate_sdk_token, run_check
-# from src.onfido import run_verification_request_new as onfido_run_verification_request_new
-
+# Remove commented imports
 from authlib.integrations.flask_client import OAuth
 from urllib.parse import quote_plus, urlencode
 from datetime import date
@@ -277,10 +275,19 @@ def register():
 @app.route('/kyc/callback', methods=['POST'])
 @require_auth
 def kyc_callback():
-   handle_callback(request.json)
-   return jsonify({
-      'status': 'ok'
-   })
+    """Legacy endpoint for Shufti callbacks"""
+    try:
+        data = request.json
+        logger.info(f"Received callback at /kyc/callback: {data}")
+        
+        # Process the callback with our KYC service
+        kyc_service = KYCFactory.get_service()
+        registration = kyc_service.process_callback(data)
+        
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        logger.exception(f"Error processing callback: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 # ---------------------------------------------------------------
 # This is the init process for the KYC process. This 
