@@ -33,7 +33,17 @@ from src.blueprints.registration import registration_bp
 from src.blueprints.qr_code import qr_code_bp
 from src.kyc_factory import KYCFactory
 
+class HttpsProxyFix(object):
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        # If we're behind a proxy like ngrok, ensure URLs use https
+        environ['wsgi.url_scheme'] = 'https'
+        return self.app(environ, start_response)
+
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
+app.wsgi_app = HttpsProxyFix(app.wsgi_app)  # Apply the middleware
 
 app.secret_key = os.getenv('APP_SECRET_KEY')
 

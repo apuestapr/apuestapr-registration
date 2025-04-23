@@ -30,6 +30,7 @@ def json_encoder(obj):
 # ---------------------------------------------------------------
 
 @registration_bp.route('/', methods=['GET'])
+@registration_bp.route('', methods=['GET'])
 # @require_auth
 def list_all_registrations():
    try:
@@ -71,7 +72,7 @@ def list_all_registrations():
           'skip': skip
       }
       
-      return json.dumps(result, default=json_encoder), 200
+      return json.dumps(result, default=json_encoder), 200, {'Content-Type': 'application/json'}
    except Exception as e:
       print(e)
       return jsonify({"error": str(e)}), 500

@@ -1,287 +1,326 @@
 <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
-        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
-        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://code.jquery.com/jquery-3.7.0.min.js"
+      integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+      crossorigin="anonymous"
+    ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.1/underscore-min.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
 
     <style type="text/css">
-        #kyc-content {
-            width: 100%;
-            height: 500px;
-        }
+      #kyc-content {
+        width: 100%;
+        height: 500px;
+      }
 
-        .navbar-brand img {
-            height: 50px;
-        }
+      .navbar-brand img {
+        height: 50px;
+      }
 
-        #spinner {
-            display: none;
-        }
+      #spinner {
+        display: none;
+      }
 
-        .btn-primary {
-            background-color: #013368;
-            border-color: #013368;
-        }
+      .btn-primary {
+        background-color: #013368;
+        border-color: #013368;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="container-fluid">
-        {% include 'nav.html' %}
-        <div class="row">
-            <div class="col-12">
-                <h1>LISTA DE REGISTROS</h1>
-                <p>
-                    Esta es una lista de todos los registros de ApuestaPR. Usted utiliza esta lista para buscar datos de clientes, filtrar por estado de registro y continuar el proceso de registro de clientes pendientes.
-                    <br/> <br/>
-                    Si tiene alguna sugerencia de mejora o error, envíe un correo electrónico a "<a href="mailto:tech@apuestapr?subject=Sugerencia%20de%20Mejora%20o%20Bug%20-%20Sistema%20ApuestaPR&body=%C2%BFDe%20qu%C3%A9%20quiosco%20est%C3%A1s%20hablando%3F%0A%0AInformaci%C3%B3n%20de%20contacto%3A%20%0A%0AExplique%20el%20motivo%20del%20contacto%3A">tech@apuestapr.com</a>" con las pruebas y le responderemos lo antes posible.
-                </p>
+      {% include 'nav.html' %}
+      <div class="row">
+        <div class="col-12">
+          <h1>LISTA DE REGISTROS</h1>
+          <p>
+            Esta es una lista de todos los registros de ApuestaPR. Usted utiliza
+            esta lista para buscar datos de clientes, filtrar por estado de
+            registro y continuar el proceso de registro de clientes pendientes.
+            <br />
+            <br />
+            Si tiene alguna sugerencia de mejora o error, envíe un correo
+            electrónico a "<a
+              href="mailto:tech@apuestapr?subject=Sugerencia%20de%20Mejora%20o%20Bug%20-%20Sistema%20ApuestaPR&body=%C2%BFDe%20qu%C3%A9%20quiosco%20est%C3%A1s%20hablando%3F%0A%0AInformaci%C3%B3n%20de%20contacto%3A%20%0A%0AExplique%20el%20motivo%20del%20contacto%3A"
+              >tech@apuestapr.com</a
+            >" con las pruebas y le responderemos lo antes posible.
+          </p>
 
-                <div class="d-flex">
-                    <form id="filterForm">
-                        <div class="row">
-                            <div class="form-group col-4">
-                                <input class="form-control" type="text" placeholder="Buscar..." name="query" value=""
-                                    required />
-                            </div>
-                            <div class="form-group col-4">
-                                <select class="form-control" name="kyc_status" value="">
-                                    <option value="">A REALIZAR</option>
-                                    <option value="COMPLETE">COMPLETO</option>
-                                    <option value="PENDING">PENDIENTE</option>
-                                    <option value="WAITING_FOR_CHECK_RESPONSE">EN ESPERA DE KYC</option>
-                                </select>
-                            </div>
-                            <div class="col-3">
-                                <button id="reloadData" type="button" class="btn btn-primary btn-info">
-                                    ACTUALIZAR
-                                </button>
-                            </div>
-                            <div class="col-4">
-                                <button id="previousButton" type="button" class="btn btn-primary btn-info">
-                                    &lt;
-                                </button>
-                                <button id="nextButton" type="button" class="btn btn-primary btn-info">
-                                    &gt;
-                                </button>
-                                <div id="spinner" style="float:left;" class="mr-2 spinner-border text-primary"
-                                    role="status">
-                                    <span class="sr-only">Cargando...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+          <div class="d-flex">
+            <form id="filterForm">
+              <div class="row">
+                <div class="form-group col-4">
+                  <input
+                    class="form-control"
+                    type="text"
+                    placeholder="Buscar..."
+                    name="query"
+                    value=""
+                    required
+                  />
                 </div>
-            </div>
-        </div>
-        <br>
-        <div class="row">
-            <div class="col-12">
-                <small id="data-stats"></small>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>FECHA</th>
-                                <th>NOMBRE COMPLETO</th>
-                                <th>EMAIL</th>
-                                <th>STATUS</th>
-                                <th>IDs</th>
-                                <th>INFORMACIONES</th>
-                                <th width="15%">ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
+                <div class="form-group col-4">
+                  <select class="form-control" name="kyc_status" value="">
+                    <option value="">A REALIZAR</option>
+                    <option value="COMPLETE">COMPLETO</option>
+                    <option value="PENDING">PENDIENTE</option>
+                    <option value="WAITING_FOR_CHECK_RESPONSE">
+                      EN ESPERA DE KYC
+                    </option>
+                  </select>
                 </div>
-            </div>
+                <div class="col-3">
+                  <button
+                    id="reloadData"
+                    type="button"
+                    class="btn btn-primary btn-info"
+                  >
+                    ACTUALIZAR
+                  </button>
+                </div>
+                <div class="col-4">
+                  <button
+                    id="previousButton"
+                    type="button"
+                    class="btn btn-primary btn-info"
+                  >
+                    &lt;
+                  </button>
+                  <button
+                    id="nextButton"
+                    type="button"
+                    class="btn btn-primary btn-info"
+                  >
+                    &gt;
+                  </button>
+                  <div
+                    id="spinner"
+                    style="float: left"
+                    class="mr-2 spinner-border text-primary"
+                    role="status"
+                  >
+                    <span class="sr-only">Cargando...</span>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
-
+      </div>
+      <br />
+      <div class="row">
+        <div class="col-12">
+          <small id="data-stats"></small>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>FECHA</th>
+                  <th>NOMBRE COMPLETO</th>
+                  <th>EMAIL</th>
+                  <th>STATUS</th>
+                  <th>IDs</th>
+                  <th>INFORMACIONES</th>
+                  <th width="15%">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script type="text/template" id="rowTemplate">
-            <% _.each(data, function(item) { %>
-                <tr>
-                    <td>
-                        <%= formatDate(item.started_at, 'MM/DD/YY') %>
-                        <br>
-                        <small>
-                            <%= formatDate(item.started_at, 'hh:mm A') %>
-                        </small>
-                    </td>
-                    <td>
-                        <%= item.first_name %>, <%= item.last_name %>
-                        <br>
-                        <small>(ID: <%= item._id %>)</small>
-                    </td>
-                    <td>
-                        <%= item.email || 'NA' %>
-                    </td>
-                    <td>
-                        <%= item.kyc_status || 'NA' %>
-                    </td>
-                    <td width="20%">
-                        WHG-uID: <%= item.whitehat_user_id || '--' %>
-                        <br>
-                        WHG-pID: <%= item.whitehat_playerid || '--' %>
-                        <br>
-                        <small>
-                        ACTUALIZADO:  <%= formatDate(item.last_updated, 'MM/DD/YY hh:mm A') %>
-                        </small>
-                        <br>
-                        <small>
-                        COMPLETO: 
-                        <% if (item.complete == true) { %>
-                            True
-                        <% } else { %>
-                            False
-                        <% } %>
-                        </small>
-                    </td>
-                    <td width="15%">
-                        LoyaltyID: <%= item.loyalty_card_number || '--' %>
-                        <br>
-                        Kiosk: <%= item.referral_code || '--' %>
-                        <br>
-                        <!-- LANG: <%= item.preferred_language || '--' %> -->
-                    </td>
-                    <td align="right" width="10%">
-                        <!-- <button type="button" class="btn btn-sm btn-outline" onclick="deleteRecord('<%= item._id %>')">
-                            <i class="fa fa-trash"></i>
-                        </button> -->
-                        <a type="button" href="/registration/receipt/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-block btn-primary btn-sm btn-info">
-                            RECIBO
-                        </a>
-                        <a type="button" href="/registration/review/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-block btn-primary btn-sm btn-info">
-                            RESEÑA
-                        </a>
-                        <% if (item.kyc_status == 'COMPLETE') { %>
-                        <a type="button" title="Utilice esta opción para reabrir el proceso de KYC y configuración de cuenta." href="/registration/kyc/process/<%= item._id %>" class="btn btn-sm btn-block btn-primary btn-info">
-                            PROCESO
-                        </a>
-                        <% } %>
-                    </td>
-                </tr>
-            <% }); %>
-        </script>
+      <% _.each(data, function(item) { %>
+          <tr>
+              <td>
+                  <%= formatDate(item.started_at, 'MM/DD/YY') %>
+                  <br>
+                  <small>
+                      <%= formatDate(item.started_at, 'hh:mm A') %>
+                  </small>
+              </td>
+              <td>
+                  <%= item.first_name %>, <%= item.last_name %>
+                  <br>
+                  <small>(ID: <%= item._id %>)</small>
+              </td>
+              <td>
+                  <%= item.email || 'NA' %>
+              </td>
+              <td>
+                  <%= item.kyc_status || 'NA' %>
+              </td>
+              <td width="20%">
+                  WHG-uID: <%= item.whitehat_user_id || '--' %>
+                  <br>
+                  WHG-pID: <%= item.whitehat_playerid || '--' %>
+                  <br>
+                  <small>
+                  ACTUALIZADO:  <%= formatDate(item.last_updated, 'MM/DD/YY hh:mm A') %>
+                  </small>
+                  <br>
+                  <small>
+                  COMPLETO:
+                  <% if (item.complete == true) { %>
+                      True
+                  <% } else { %>
+                      False
+                  <% } %>
+                  </small>
+              </td>
+              <td width="15%">
+                  LoyaltyID: <%= item.loyalty_card_number || '--' %>
+                  <br>
+                  Kiosk: <%= item.referral_code || '--' %>
+                  <br>
+                  <!-- LANG: <%= item.preferred_language || '--' %> -->
+              </td>
+              <td align="right" width="10%">
+                  <!-- <button type="button" class="btn btn-sm btn-outline" onclick="deleteRecord('<%= item._id %>')">
+                      <i class="fa fa-trash"></i>
+                  </button> -->
+                  <a type="button" href="/registration/receipt/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-block btn-primary btn-sm btn-info">
+                      RECIBO
+                  </a>
+                  <a type="button" href="/registration/review/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-block btn-primary btn-sm btn-info">
+                      RESEÑA
+                  </a>
+                  <% if (item.kyc_status == 'COMPLETE') { %>
+                  <a type="button" title="Utilice esta opción para reabrir el proceso de KYC y configuración de cuenta." href="/registration/kyc/process/<%= item._id %>" class="btn btn-sm btn-block btn-primary btn-info">
+                      PROCESO
+                  </a>
+                  <% } %>
+              </td>
+          </tr>
+      <% }); %>
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
     <script type="text/javascript">
-        let registrationId = '';
-        let registrationData = [];
+      let registrationId = "";
+      let registrationData = [];
 
-        function deleteRecord(id) {
-            const data = _.find(registrationData, { _id: id });
-            if (!data) return alert("Lo siento, no se pudo encontrar y eliminar.");
-            let result = confirm(`¿Está seguro de que desea eliminar la preinscripción? (${data.name})\n\nEsto eliminará el registro y no se puede deshacer.`);
-            if (result) {
-                $.ajax({
-                    url: `/registration/${data._id}`,
-                    method: 'DELETE',
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    success: async (data) => {
-                        await loadAll();
-                    },
-                    dataType: 'json'
-                });
-            };
+      function deleteRecord(id) {
+        const data = _.find(registrationData, { _id: id });
+        if (!data) return alert("Lo siento, no se pudo encontrar y eliminar.");
+        let result = confirm(
+          `¿Está seguro de que desea eliminar la preinscripción? (${data.name})\n\nEsto eliminará el registro y no se puede deshacer.`
+        );
+        if (result) {
+          $.ajax({
+            url: `/registration/${data._id}`,
+            method: "DELETE",
+            contentType: "application/json",
+            dataType: "json",
+            success: async (data) => {
+              await loadAll();
+            },
+            dataType: "json",
+          });
+        }
+      }
+
+      function renderTable(data) {
+        const stats = document.getElementById("data-stats");
+        if (stats) {
+          stats.innerHTML = `${data.length} Registros encontrados.`;
         }
 
-        function renderTable(data) {
-            const stats = document.getElementById('data-stats');
-            if (stats) {
-                stats.innerHTML = `${data.length} Registros encontrados.`;
-            }
+        const template = document.getElementById("rowTemplate").innerHTML;
+        const compiledTemplate = _.template(template);
+        const tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = compiledTemplate({ data: data, formatDate });
+      }
 
-            const template = document.getElementById('rowTemplate').innerHTML;
-            const compiledTemplate = _.template(template);
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = compiledTemplate({ data: data, formatDate });
-        }
+      let currentPage = 1;
 
-        let currentPage = 1;
+      // Send the user to the previous page.
+      const nextPage = async () => {
+        currentPage++;
+        await loadData(currentPage);
+        renderTable(registrationData);
+      };
 
-        // Send the user to the previous page.
-        const nextPage = async() => {
-            currentPage++;
-            await loadData(currentPage)
-            renderTable(registrationData);
-        }
+      // Send the user to the next page.
+      const previousPage = async () => {
+        currentPage--;
+        await loadData(currentPage);
+        renderTable(registrationData);
+      };
 
-        // Send the user to the next page.
-        const previousPage = async() => {
-            currentPage--;
-            await loadData(currentPage);
-            renderTable(registrationData);
-        }
+      const loadData = async (page) => {
+        $("#spinner").show();
 
-        const loadData = async (page) => {
-            $('#spinner').show();
-
-            var form = document.getElementById("filterForm");
-            var inputs = form.querySelectorAll("input");
-            var formData = new FormData(form);
-            var formObject = {};
-            formData.forEach((value, key) => {
-                formObject[key] = value;
-            });
-
-            if (!page) page = 1;
-
-            await $.ajax({
-                url: `/registrations?query=${formObject.query}&kyc_status=${formObject.kyc_status}&page_size=25&page=${page}`,
-                method: 'GET',
-                contentType: 'application/json',
-                dataType: 'json',
-                success: (res) => {
-                    console.log(res);
-                    registrationData = res.data;
-                    setTimeout(() => {
-                        $('#spinner').hide();
-                    }, 1000);
-                },
-                dataType: 'json'
-            });
-        }
-
-        const loadAll = async () => {
-            await loadData();
-            renderTable(registrationData);
-        }
-
-        function formatDate(date, format) {
-            return moment(date).format(format);
-        }
-
-        $(document).ready(() => {
-
-            $('#reloadData').click(async (e) => {
-                loadAll();
-            })
-
-            $('#previousButton').click(async (e) => {
-                previousPage();
-            })
-
-            $('#nextButton').click(async (e) => {
-                nextPage();
-            })
-
-            // Call the loader.
-            loadAll();
+        var form = document.getElementById("filterForm");
+        var inputs = form.querySelectorAll("input");
+        var formData = new FormData(form);
+        var formObject = {};
+        formData.forEach((value, key) => {
+          formObject[key] = value;
         });
-    </script>
-</body>
 
+        if (!page) page = 1;
+
+        await $.ajax({
+          url: `/registrations/?query=${formObject.query}&kyc_status=${formObject.kyc_status}&page_size=25&page=${page}`,
+          method: "GET",
+          contentType: "application/json",
+          dataType: "json",
+          success: (res) => {
+            console.log(res);
+            registrationData = res.data;
+            setTimeout(() => {
+              $("#spinner").hide();
+            }, 1000);
+          },
+          dataType: "json",
+        });
+      };
+
+      const loadAll = async () => {
+        await loadData();
+        renderTable(registrationData);
+      };
+
+      function formatDate(date, format) {
+        return moment(date).format(format);
+      }
+
+      $(document).ready(() => {
+        $("#reloadData").click(async (e) => {
+          loadAll();
+        });
+
+        $("#previousButton").click(async (e) => {
+          previousPage();
+        });
+
+        $("#nextButton").click(async (e) => {
+          nextPage();
+        });
+
+        // Call the loader.
+        loadAll();
+      });
+    </script>
+  </body>
 </html>
