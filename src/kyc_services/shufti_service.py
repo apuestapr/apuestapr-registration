@@ -187,7 +187,7 @@ class ShuftiService(KYCService):
             "callback_url": callback_url,
             "redirect_url": redirect_url,
             "email": registration.email,
-            "country": registration.country or "US",
+            # "country": registration.country or "US",
             "language": "EN" if registration.preferred_language == 'en' else "ES",
             "verification_mode": "any",
             "ttl": 60,  # Time to live in minutes
