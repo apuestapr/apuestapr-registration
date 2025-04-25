@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template, abort, session, redirect
-from src.models.registration import Registration
+from src.models.registration import Registration, serialize_documents
 from src.shufti import run_verification_request, handle_callback
 from src.onfido import run_verification_request as onfido_run_verification_request, update_check_status, generate_sdk_token, run_check
 # from src.onfido import run_verification_request_new as onfido_run_verification_request_new
@@ -13,6 +13,10 @@ from bson.objectid import ObjectId
 from functools import wraps
 from src.models.registration import Registration
 import datetime
+
+# Import the KYC factory instead of specific provider functions
+from src.kyc_factory import KYCFactory
+from src.config import FeatureFlags
 
 # ---------------------------------------------------------------
 # Auth function to enforce a route.
@@ -273,18 +277,33 @@ def run_onfido_check(registration_id):
    # Load the registration person.
    registration = Registration.find_by_id(registration_id)
    if not registration:
-      abort(404)
+      return jsonify({
+         'success': False,
+         'errors': ['Registration not found']
+      }), 200
    
-   # Get the document_ids from the post.
-   document_ids = request.json['document_ids']
-
-   # Update the Registration with the new document ids.
-   registration.onfido_document_ids = document_ids
+   data = request.json
+   if not data or not data.get('document_ids'):
+      return jsonify({
+         'success': False,
+         'errors': ['No document IDs provided']
+      }), 200
    
-   # Now run the check.
-   registration_with_check = run_check(registration)
-   
-   return json.dumps(registration_with_check.dict(), default=str) 
+   document_ids = data.get('document_ids')
+   try:
+      # Use the KYC factory to process documents with the appropriate service
+      kyc_service = KYCFactory.get_service()
+      registration = kyc_service.process_documents(registration, document_ids)
+      
+      return jsonify({
+         'success': True
+      }), 200
+   except Exception as e:
+      print(e, file=sys.stderr)
+      return jsonify({
+         'success': False,
+         'errors': [str(e)]
+      }), 200
 
 # ---------------------------------------------------------------
 # This route GET the registration status. No visible use 
@@ -296,10 +315,12 @@ def check_onfido_status(registration_id):
    
    registration = Registration.find_by_id(registration_id)
    if not registration:
-      abort(404)
+      return "Registration not found", 404
    
-   updated = update_check_status(registration)
-   return json.dumps(updated.dict(), default=str)  
+   # Use the KYC factory to update the status with the appropriate service
+   kyc_service = KYCFactory.get_service()
+   updated = kyc_service.update_status(registration)
+   return json.dumps(updated.dict(), default=str)
 
 # ---------------------------------------------------------------
 
@@ -333,8 +354,9 @@ def init_kyc_new(registration_id):
    # so we do not get dups.
    registration.email = registration.email.lower().strip()
 
-   # Call Onfido to set the applicant Id.
-   registration = onfido_run_verification_request(registration)
+   # Initialize KYC verification using the appropriate service
+   kyc_service = KYCFactory.get_service()
+   registration = kyc_service.init_verification(registration)
    
    # Now store the user once we know we got here.
    registration.registered_by = session.get('user')['userinfo']['email']
@@ -351,15 +373,42 @@ def finish_registration_new(registration_id):
    if not registration:
       return 'Registration not found'
 
-   onfido_sdk_token = ''
-
+   # Get the KYC service based on the feature flag or registration's provider
+   kyc_service = KYCFactory.get_service()
+   
+   # Default values
+   client_token = ''
+   verification_url = ''
+   
    if registration.kyc_status == 'PENDING':
-      onfido_sdk_token = generate_sdk_token(registration.onfido_applicant_id)
+      # Generate the client token or verification URL for the appropriate provider
+      if FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
+         verification_url = kyc_service.generate_client_token(registration)
+      else:
+         # Legacy Onfido flow
+         client_token = kyc_service.generate_client_token(registration)
    elif registration.kyc_status == 'WAITING_FOR_CHECK_RESPONSE':
-      registration = update_check_status(registration)
-      print(registration.onfido_check_response)
+      # Update the verification status
+      registration = kyc_service.update_status(registration)
 
-   return render_template('registration-process.html', registration_id=registration_id, user=session.get('user'), onfido_sdk_token=onfido_sdk_token, registration=registration.safe_serialize())
+   # Determine which template to use based on the KYC provider
+   if FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
+      return render_template(
+         'registration-process-shufti.html',  # New template for Shufti iframe
+         registration_id=registration_id,
+         user=session.get('user'),
+         verification_url=verification_url,
+         registration=registration.safe_serialize()
+      )
+   else:
+      # Legacy Onfido template
+      return render_template(
+         'registration-process.html',
+         registration_id=registration_id,
+         user=session.get('user'),
+         onfido_sdk_token=client_token,
+         registration=registration.safe_serialize()
+      )
 
 # ---------------------------------------------------------------
 
@@ -407,3 +456,167 @@ def validate_email_only(email):
       'isEmailUsed': result is not None, 
       'email': email
    }), 200
+
+# ---------------------------------------------------------------
+# New endpoint to check KYC status for the iframe polling approach
+@pre_registration_bp.route('/kyc/check-status/<string:registration_id>', methods=['GET'])
+def check_kyc_status(registration_id):
+    """
+    Endpoint to check the status of a registration's KYC verification.
+    Used by the frontend to poll for status changes.
+    """
+    try:
+        # Find the registration by ID
+        registration = Registration.find_by_id(registration_id)
+        
+        if not registration:
+            return jsonify({
+                "success": False,
+                "error": "Registration not found"
+            }), 404
+            
+        # Return the current status
+        return jsonify({
+            "success": True,
+            "status": registration.kyc_status,
+            "complete": registration.complete
+        }), 200
+        
+    except Exception as e:
+        print(f"Error checking KYC status: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# New endpoint to handle Shufti Pro redirects after verification
+@pre_registration_bp.route('/kyc/status/<string:registration_id>', methods=['GET'])
+def kyc_status_redirect(registration_id):
+    """
+    Endpoint to handle redirects from Shufti Pro after verification.
+    This route checks the current verification status and renders the appropriate page.
+    
+    This route intentionally doesn't require authentication to handle redirects 
+    from Shufti Pro on mobile devices where the user might not be authenticated.
+    """
+    try:
+        # Find the registration by ID
+        registration = Registration.find_by_id(registration_id)
+        
+        if not registration:
+            return jsonify({
+                "success": False,
+                "error": "Registration not found"
+            }), 404
+            
+        # Use the KYC factory to update the status with the appropriate service
+        kyc_service = KYCFactory.get_service()
+        updated_registration = kyc_service.update_status(registration)
+        
+        # Check if there's a new webhook update we haven't processed yet
+        # This adds an extra check in case the webhook hasn't been fully processed yet
+        if updated_registration.kyc_status == 'PENDING':
+            # Look for recent callbacks with terminal status
+            if updated_registration.callbacks and len(updated_registration.callbacks) > 0:
+                # Check the most recent callback
+                recent_callback = updated_registration.callbacks[-1]
+                if recent_callback and 'body' in recent_callback and 'event' in recent_callback['body']:
+                    event = recent_callback['body']['event']
+                    # Update status if it's a terminal event
+                    if event == 'verification.accepted':
+                        updated_registration.kyc_status = 'COMPLETE'
+                        updated_registration.complete = True
+                        updated_registration.save()
+                    elif event == 'verification.declined':
+                        updated_registration.kyc_status = 'FAILED'
+                        updated_registration.save()
+        
+        # Get user from session if available, otherwise provide a default
+        user = session.get('user') if session.get('user') else None
+        
+        # Render the Shufti process template with the current status
+        return render_template(
+            'registration-process-shufti.html',
+            registration_id=registration_id,
+            user=user,
+            verification_url='',  # No verification URL needed for status page
+            registration=updated_registration.safe_serialize()
+        )
+        
+    except Exception as e:
+        print(f"Error handling KYC status redirect: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# ---------------------------------------------------------------
+# Endpoint to update registration fields directly (for admin use)
+@pre_registration_bp.route('/db-update/<string:registration_id>', methods=['POST'])
+@require_auth
+def update_registration_fields(registration_id):
+    """
+    Updates specific fields in a registration document.
+    Only certain fields are allowed to be updated for security.
+    """
+    try:
+        # Find the registration by ID
+        registration = Registration.find_by_id(registration_id)
+        
+        if not registration:
+            return jsonify({
+                "success": False,
+                "error": "Registration not found"
+            }), 404
+        
+        # Get the data to update
+        data = request.json
+        if not data:
+            return jsonify({
+                "success": False,
+                "error": "No data provided"
+            }), 400
+        
+        # List of fields that are allowed to be updated
+        allowed_fields = ['kyc_status', 'shufti_reference']
+        updated_fields = []
+        
+        # Update only allowed fields
+        for field in allowed_fields:
+            if field in data:
+                setattr(registration, field, data[field])
+                updated_fields.append(field)
+        
+        # If we're resetting to PENDING, log the action
+        if 'kyc_status' in data and data['kyc_status'] == 'PENDING':
+            if not hasattr(registration, 'callbacks') or registration.callbacks is None:
+                registration.callbacks = []
+                
+            # Add a reset entry to callbacks following the Callback model structure
+            reset_data = {
+                'timestamp': datetime.datetime.now(),
+                'body': {  # The body field contains the event details
+                    'event': 'reset_verification',
+                    'reference': registration.shufti_reference or '',
+                    'email': registration.email,
+                    'by': session.get('user', {}).get('userinfo', {}).get('email', 'unknown'),
+                    'previous_status': registration.kyc_status
+                }
+            }
+            registration.callbacks.append(reset_data)
+        
+        # Save the changes
+        if updated_fields:
+            registration.save()
+            
+        return jsonify({
+            "success": True,
+            "message": f"Updated fields: {', '.join(updated_fields)}"
+        }), 200
+        
+    except Exception as e:
+        print(f"Error updating registration: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500

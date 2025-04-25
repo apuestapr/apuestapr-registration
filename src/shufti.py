@@ -1,3 +1,23 @@
+"""
+DEPRECATED MODULE - DO NOT USE FOR NEW CODE
+
+This module is maintained only for backward compatibility.
+New code should use the service classes in src.kyc_services instead.
+
+Migration steps:
+1. Use KYCFactory.get_service() to get the appropriate service implementation
+2. Call methods on the service instance instead of using these functions
+
+Example:
+    from src.kyc_factory import KYCFactory
+    kyc_service = KYCFactory.get_service()
+    registration = kyc_service.init_verification(registration)
+    verification_url = kyc_service.generate_client_token(registration)
+"""
+
+import logging
+logging.warning("Using deprecated module src.shufti - Use src.kyc_services instead")
+
 import requests, base64, json, hashlib
 from random import randint
 import uuid
@@ -14,6 +34,8 @@ client_id  = 'd8f258ab1770f452ad2f711aad30e7192ead1400a2d3c5148fd432b06d9b7a80'
 secret_key = '6jaYjSiF6l8E2p1ukRK7qBokewfQOmq5'
 
 # OR Access Token 'access_token = 'YOUR-ACCESS-TOKEN'';
+
+app_url = os.getenv('APP_URL', 'https://localhost:5502')
 
 """
 {
@@ -108,7 +130,7 @@ def run_verification_request():
 
     payload = {
         'reference': reference,
-        'callback_url': 'https://apuestapr-registration.onrender.com/kyc/callback',
+        'callback_url': f'{os.getenv("APP_URL")}/kyc/callback', # TODO: Update the link that is being used here. It would cause a 500 status error code when run on Render otherwise...
         #
         # Need to use this, or they will not allow the callback. 
         # TODO: Need access to the onfideo
