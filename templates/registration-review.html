@@ -103,7 +103,7 @@
                                 <label>
                                     Código de Referencia *
                                 </label>
-                                <select name="referral_code" class="form-control" required>
+                                                              <select name="referral_code" class="form-control" required>
                                     <option value="">None</option>
                                     <option value="ApuestaPR" {% if registration.referral_code=='ApuestaPR' %}
                                         selected="selected" {% endif %}>ApuestaPR</option>
@@ -121,8 +121,6 @@
                                         selected="selected" {% endif %}>El Farito</option>
                                     <option value="Las Picuas" {% if registration.referral_code=='Las Picuas' %}
                                         selected="selected" {% endif %}>Las Picuas</option>
-                                    <option value="Flight Park" {% if registration.referral_code=='Flight Park' %}
-                                        selected="selected" {% endif %}>Flight Park</option>
                                     <option value="Agencia 100" {% if registration.referral_code=='Agencia 100' %}
                                         selected="selected" {% endif %}>Agencia #100</option>
                                     <option value="24 Market Place" {% if registration.referral_code=='24 Market Place' %}
@@ -135,26 +133,22 @@
                                         endif %}>Joker</option>
                                     <option value="Wyndham" {% if registration.referral_code=='Wyndham' %} selected="selected" {%
                                         endif %}>Wyndham</option>
-                                    <option value="Lucky 15" {% if registration.referral_code=='Lucky 15' %} selected="selected" {%
-                                        endif %}>Lucky 15</option>
                                     <option value="Parada Rosa" {% if registration.referral_code=='Parada Rosa' %} selected="selected" {%
                                         endif %}>Parada Rosa</option>
                                     <option value="Colmado La Fe" {% if registration.referral_code=='Colmado La Fe' %} selected="selected" {%
                                         endif %}>Colmado La Fe</option>
-                                    <option value="Play to Play" {% if registration.referral_code=='Play to Play' %} selected="selected" {%
-                                        endif %}>Play to Play</option>
                                     <option value="Susos" {% if registration.referral_code=='Susos' %} selected="selected" {%
                                         endif %}>Susos</option>
                                     <option value="La Esquina del Sabor" {% if registration.referral_code=='La Esquina del Sabor' %} selected="selected" {%
                                         endif %}>La Esquina del Sabor</option>
-                                    <option value="Pantano del Coco" {% if registration.referral_code=='Pantano del Coco' %} selected="selected" {%
-                                        endif %}>Pantano del Coco</option>
-                                    <option value="Pepos" {% if registration.referral_code=='Pepos' %} selected="selected" {%
-                                        endif %}>Pepos</option>
-                                     <option value="Red Pub" {% if registration.referral_code=='Red Pub' %} selected="selected" {%
-                                        endif %}>Red Pub</option>
-                                    <option value="El Cine Mayaguez" {% if registration.referral_code=='El Cine Mayaguez' %} selected="selected" {%
+                                    <option value="Red Pub" {% if registration.referral_code=='Red Pub' %} selected="selected" {%
+                                    endif %}>Red Pub</option>
+                                     <option value="El Cine Mayaguez" {% if registration.referral_code=='El Cine Mayaguez' %} selected="selected" {%
                                     endif %}>El Cine Mayaguez</option>
+                                    <option value="El Conquistador" {% if registration.referral_code=='El Conquistador' %} selected="selected" {%
+                                    endif %}>El Conquistador</option>
+                                     <option value="TotalEnergies Villalba" {% if registration.referral_code=='TotalEnergies Villalba' %} selected="selected" {%
+                                    endif %}>TotalEnergies Villalba</option>
                                 </select>
                                 <small class="form-text form-muted">
                                     Ingrese el código de la ubicación de registro, si corresponde
