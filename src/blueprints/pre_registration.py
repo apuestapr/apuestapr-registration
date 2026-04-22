@@ -642,14 +642,28 @@ def update_registration_fields(registration_id):
         }), 500
 
 # ---------------------------------------------------------------
-# New endpoint to handle Didit.me webhooks
-@pre_registration_bp.route('/kyc/didit-callback', methods=['POST'])
+# New endpoint to handle Didit.me webhooks and redirects
+@pre_registration_bp.route('/kyc/didit-callback', methods=['GET', 'POST'])
 def didit_callback():
     """
-    Endpoint to receive webhooks from Didit.me
+    Endpoint to receive webhooks from Didit.me or user redirects
     """
     try:
-        # Get JSON data from the request
+        # If it's a GET request, it's the user's browser being redirected back
+        if request.method == 'GET':
+            # Didit usually appends session_id or similar to the query params
+            session_id = request.args.get('session_id') or request.args.get('id')
+            
+            if session_id:
+                registration = Registration.find_one({'didit_session_id': session_id})
+                if registration:
+                    # Redirect to the status check page
+                    return redirect(f"/registration/kyc/status/{registration.id}")
+            
+            # If we can't find it, just redirect to the home page or a safe spot
+            return redirect("/")
+
+        # If it's a POST request, it's the webhook from Didit server
         data = request.json
         if not data:
             return jsonify({"error": "No JSON data provided"}), 400
@@ -671,5 +685,5 @@ def didit_callback():
         }), 200
         
     except Exception as e:
-        print(f"Error processing Didit webhook: {e}")
+        print(f"Error processing Didit webhook/redirect: {e}")
         return jsonify({"error": str(e)}), 500

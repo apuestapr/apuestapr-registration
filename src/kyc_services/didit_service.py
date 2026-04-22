@@ -137,17 +137,20 @@ class DiditService(KYCService):
         Build the payload for Didit API request.
         """
         app_url = Config.APP_URL
-        callback_url = f"{app_url}/kyc/didit-callback"
+        
+        # Must include the /registration prefix because the blueprint is mounted there
+        callback_url = f"{app_url}/registration/kyc/didit-callback"
         
         workflow_id = Config.DIDIT_WORKFLOW_ID
         if not workflow_id:
             logger.error("Didit workflow_id not configured")
+            
+        redirect_url = f"{app_url}/registration/kyc/status/{registration.id}"
         
         payload = {
             "workflow_id": workflow_id,
             "callback": callback_url,
-            # We can include a redirect URL if Didit supports it in its API
-            # "redirect_url": f"{app_url}/registration/kyc/status/{registration.id}",
+            "redirect_url": redirect_url,
             "vendor_data": str(registration.id)  # Pass ID as metadata if supported
         }
         
