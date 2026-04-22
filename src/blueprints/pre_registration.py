@@ -441,6 +441,8 @@ def account_setup(registration_id):
    errors = []
    try:
       create_account(registration)
+      registration.complete = True
+      registration.save()
       success = True
       
    except Exception as e:
