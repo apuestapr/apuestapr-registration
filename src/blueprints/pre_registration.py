@@ -386,6 +386,14 @@ def finish_registration_new(registration_id):
          verification_url = kyc_service.generate_client_token(registration)
       elif FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
          verification_url = kyc_service.generate_client_token(registration)
+         
+         # Auto-fallback to Didit if Shufti fails to generate a token
+         if not verification_url:
+             print("Shufti failed to generate URL, falling back to Didit")
+             registration.kyc_provider = 'didit'
+             registration.save()
+             kyc_service = KYCFactory.get_service('didit')
+             verification_url = kyc_service.generate_client_token(registration)
       else:
          # Legacy Onfido flow
          client_token = kyc_service.generate_client_token(registration)
