@@ -650,18 +650,55 @@ def didit_callback():
     try:
         # If it's a GET request, it's the user's browser being redirected back
         if request.method == 'GET':
-            # Didit usually appends session_id or similar to the query params
-            session_id = request.args.get('session_id') or request.args.get('id')
+            # Didit appends verificationSessionId and status to the query params
+            session_id = request.args.get('verificationSessionId') or request.args.get('session_id') or request.args.get('id')
+            status = request.args.get('status', '').lower()
             
             if session_id:
                 registration = Registration.find_one({'didit_session_id': session_id})
                 if registration:
-                    # Redirect to the status check page
-                    return redirect(f"/registration/kyc/status/{registration.id}")
+                    # Update status immediately based on the redirect param
+                    if status in ['approved', 'accepted']:
+                        registration.kyc_status = 'COMPLETE'
+                        registration.complete = True
+                    elif status in ['declined', 'rejected', 'failed']:
+                        registration.kyc_status = 'FAILED'
+                    else:
+                        registration.kyc_status = 'WAITING_FOR_CHECK_RESPONSE'
+                    
+                    registration.save()
+                    
+                    # Tell the parent window to redirect to the status check page
+                    html_response = f"""
+                    <html><body>
+                    <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+                        Verificación completada. Redirigiendo...
+                    </div>
+                    <script>
+                        // Tell the parent window to navigate to the status page
+                        if (window.parent) {{
+                            window.parent.location.href = "/registration/kyc/status/{registration.id}";
+                        }}
+                    </script>
+                    </body></html>
+                    """
+                    return html_response, 200
             
-            # If we can't find it, just show a simple loading message
-            # The parent window's polling will pick up the webhook update shortly
-            return "Verificación completada. Redirigiendo...", 200
+            # If we can't find it, we output a script that tells the parent window to redirect
+            html_response = """
+            <html><body>
+            <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+                Verificación completada. Redirigiendo...
+            </div>
+            <script>
+                // Tell the parent window that we are done
+                if (window.parent) {
+                    window.parent.postMessage("didit-completed", "*");
+                }
+            </script>
+            </body></html>
+            """
+            return html_response, 200
 
         # If it's a POST request, it's the webhook from Didit server
         data = request.json

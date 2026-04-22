@@ -176,6 +176,28 @@
 
                     // Listen for messages from iframe (if same origin allows)
                     window.addEventListener("message", function (event) {
+                      // Check if the message is from Didit callback
+                      if (event.data === "didit-completed") {
+                        console.log("Received completion message from Didit iframe!");
+                        
+                        // Set status to WAITING_FOR_CHECK_RESPONSE so we don't load the iframe again
+                        $.ajax({
+                          url: `/registration/db-update/${registrationId}`,
+                          method: "POST",
+                          contentType: "application/json",
+                          data: JSON.stringify({
+                            kyc_status: "WAITING_FOR_CHECK_RESPONSE"
+                          }),
+                          success: function() {
+                            window.location.href = `/registration/kyc/status/${registrationId}`;
+                          },
+                          error: function() {
+                            // If it fails, redirect anyway
+                            window.location.href = `/registration/kyc/status/${registrationId}`;
+                          }
+                        });
+                      }
+                      
                       // Check if the message is from Shufti
                       if (
                         event.data &&
