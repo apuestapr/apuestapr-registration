@@ -2,7 +2,8 @@ import os
 import logging
 from dotenv import load_dotenv
 
-# Load environment variables from .flaskenv
+# Load .env first (contains credentials and config), then .flaskenv (Flask settings)
+load_dotenv('.env')
 load_dotenv('.flaskenv')
 
 # Set up logging

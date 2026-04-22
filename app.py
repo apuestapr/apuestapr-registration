@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
-# Explicitly load from .flaskenv
+# Load .env first (contains credentials and config), then .flaskenv (Flask settings)
+load_dotenv('.env')
 load_dotenv('.flaskenv')
 
 import os
