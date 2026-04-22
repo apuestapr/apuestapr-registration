@@ -34,7 +34,12 @@ from src.blueprints.registration import registration_bp
 from src.blueprints.qr_code import qr_code_bp
 from src.kyc_factory import KYCFactory
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
+
+# Fix for running behind a proxy like Render or Cloudflare
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 app.secret_key = os.getenv('APP_SECRET_KEY')
 

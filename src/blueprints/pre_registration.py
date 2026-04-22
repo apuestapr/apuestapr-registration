@@ -598,7 +598,7 @@ def update_registration_fields(registration_id):
             }), 400
         
         # List of fields that are allowed to be updated
-        allowed_fields = ['kyc_status', 'shufti_reference', 'kyc_provider']
+        allowed_fields = ['kyc_status', 'shufti_reference', 'kyc_provider', 'kyc_override']
         updated_fields = []
         
         # Update only allowed fields
@@ -660,8 +660,9 @@ def didit_callback():
                     # Redirect to the status check page
                     return redirect(f"/registration/kyc/status/{registration.id}")
             
-            # If we can't find it, just redirect to the home page or a safe spot
-            return redirect("/")
+            # If we can't find it, just show a simple loading message
+            # The parent window's polling will pick up the webhook update shortly
+            return "Verificación completada. Redirigiendo...", 200
 
         # If it's a POST request, it's the webhook from Didit server
         data = request.json
