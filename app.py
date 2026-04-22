@@ -83,9 +83,8 @@ def require_auth(f):
 
 @app.route('/login')
 def login():
-   app_url = os.getenv('APP_URL', 'https://register.apuestapr.com')
    return oauth.auth0.authorize_redirect(
-      redirect_uri=f"{app_url}/auth0/callback"
+      redirect_uri="https://register.apuestapr.com/auth0/callback"
    )
 
 # ---------------------------------------------------------------
@@ -104,13 +103,12 @@ def auth0_callback():
 @require_auth
 def logout():
     session.clear()
-    app_url = os.getenv('APP_URL', 'https://register.apuestapr.com')
     return redirect(
         "https://" + os.getenv("AUTH0_DOMAIN")
         + "/v2/logout?"
         + urlencode(
             {
-                "returnTo": f"{app_url}/",
+                "returnTo": "https://register.apuestapr.com/",
                 "client_id": os.getenv("AUTH0_CLIENT_ID"),
             },
             quote_via=quote_plus,

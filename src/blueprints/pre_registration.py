@@ -677,7 +677,7 @@ def didit_callback():
                     <script>
                         // Tell the parent window to navigate to the status page using the full URL
                         if (window.parent) {{
-                            window.parent.location.href = "{Config.APP_URL}/registration/kyc/status/{registration.id}";
+                            window.parent.location.href = "https://register.apuestapr.com/registration/kyc/status/{registration.id}";
                         }}
                     </script>
                     </body></html>
