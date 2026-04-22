@@ -38,6 +38,13 @@ class FeatureFlags:
         """
         return cls.KYC_PROVIDER.lower() == 'onfido'
 
+    @classmethod
+    def is_didit_enabled(cls):
+        """
+        Check if Didit should be used for KYC.
+        """
+        return cls.KYC_PROVIDER.lower() == 'didit'
+
 # API credentials and other configuration values
 class Config:
     """
@@ -53,4 +60,8 @@ class Config:
     # Shufti Pro settings
     SHUFTI_CLIENT_ID = os.getenv('SHUFTI_CLIENT_ID', '')
     SHUFTI_CLIENT_SECRET = os.getenv('SHUFTI_CLIENT_SECRET', '')
-    SHUFTI_API_URL = os.getenv('SHUFTI_API_URL', 'https://api.shuftipro.com/') 
+    SHUFTI_API_URL = os.getenv('SHUFTI_API_URL', 'https://api.shuftipro.com/')
+
+    # Didit.me settings
+    DIDIT_API_KEY = os.getenv('DIDIT_API_KEY', '')
+    DIDIT_WORKFLOW_ID = os.getenv('DIDIT_WORKFLOW_ID', '') 

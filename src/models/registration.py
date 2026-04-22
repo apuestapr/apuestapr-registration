@@ -48,6 +48,10 @@ class Registration(MongoModel):
     shufti_reference: str = ''
     shufti_callback_payload: typing.Any = None
 
+    # Didit specific fields
+    didit_session_id: str = ''
+    didit_callback_payload: typing.Any = None
+
     # Whitehat fields
     whitehat_user_id: str = ''
     whitehat_kyc_approved: bool = False
@@ -75,6 +79,8 @@ class Registration(MongoModel):
             data['onfido_applicant_id'] = self.onfido_applicant_id
         elif self.kyc_provider == 'shufti':
             data['shufti_reference'] = self.shufti_reference
+        elif self.kyc_provider == 'didit':
+            data['didit_session_id'] = self.didit_session_id
             
         return data
 

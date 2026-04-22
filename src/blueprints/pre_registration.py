@@ -374,7 +374,7 @@ def finish_registration_new(registration_id):
       return 'Registration not found'
 
    # Get the KYC service based on the feature flag or registration's provider
-   kyc_service = KYCFactory.get_service()
+   kyc_service = KYCFactory.get_service(registration.kyc_provider)
    
    # Default values
    client_token = ''
@@ -382,7 +382,9 @@ def finish_registration_new(registration_id):
    
    if registration.kyc_status == 'PENDING':
       # Generate the client token or verification URL for the appropriate provider
-      if FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
+      if registration.kyc_provider == 'didit':
+         verification_url = kyc_service.generate_client_token(registration)
+      elif FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
          verification_url = kyc_service.generate_client_token(registration)
       else:
          # Legacy Onfido flow
@@ -392,7 +394,15 @@ def finish_registration_new(registration_id):
       registration = kyc_service.update_status(registration)
 
    # Determine which template to use based on the KYC provider
-   if FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
+   if registration.kyc_provider == 'didit':
+      return render_template(
+         'registration-process-didit.html',
+         registration_id=registration_id,
+         user=session.get('user'),
+         verification_url=verification_url,
+         registration=registration.safe_serialize()
+      )
+   elif FeatureFlags.is_shufti_enabled() or registration.kyc_provider == 'shufti':
       return render_template(
          'registration-process-shufti.html',  # New template for Shufti iframe
          registration_id=registration_id,
@@ -510,7 +520,7 @@ def kyc_status_redirect(registration_id):
             }), 404
             
         # Use the KYC factory to update the status with the appropriate service
-        kyc_service = KYCFactory.get_service()
+        kyc_service = KYCFactory.get_service(registration.kyc_provider)
         updated_registration = kyc_service.update_status(registration)
         
         # Check if there's a new webhook update we haven't processed yet
@@ -534,9 +544,11 @@ def kyc_status_redirect(registration_id):
         # Get user from session if available, otherwise provide a default
         user = session.get('user') if session.get('user') else None
         
-        # Render the Shufti process template with the current status
+        template_name = 'registration-process-didit.html' if registration.kyc_provider == 'didit' else 'registration-process-shufti.html'
+        
+        # Render the process template with the current status
         return render_template(
-            'registration-process-shufti.html',
+            template_name,
             registration_id=registration_id,
             user=user,
             verification_url='',  # No verification URL needed for status page
@@ -578,7 +590,7 @@ def update_registration_fields(registration_id):
             }), 400
         
         # List of fields that are allowed to be updated
-        allowed_fields = ['kyc_status', 'shufti_reference']
+        allowed_fields = ['kyc_status', 'shufti_reference', 'kyc_provider']
         updated_fields = []
         
         # Update only allowed fields
@@ -620,3 +632,36 @@ def update_registration_fields(registration_id):
             "success": False,
             "error": str(e)
         }), 500
+
+# ---------------------------------------------------------------
+# New endpoint to handle Didit.me webhooks
+@pre_registration_bp.route('/kyc/didit-callback', methods=['POST'])
+def didit_callback():
+    """
+    Endpoint to receive webhooks from Didit.me
+    """
+    try:
+        # Get JSON data from the request
+        data = request.json
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+            
+        print(f"Received Didit webhook: {json.dumps(data)}")
+        
+        # Use KYC factory to get the Didit service
+        kyc_service = KYCFactory.get_service('didit')
+        
+        # We don't have reference in headers like Shufti, it should be in the payload
+        registration = kyc_service.process_callback(data)
+        
+        if not registration:
+            return jsonify({"error": "Could not process callback"}), 400
+            
+        return jsonify({
+            "message": "Callback processed successfully",
+            "status": registration.kyc_status
+        }), 200
+        
+    except Exception as e:
+        print(f"Error processing Didit webhook: {e}")
+        return jsonify({"error": str(e)}), 500

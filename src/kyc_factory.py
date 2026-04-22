@@ -11,14 +11,14 @@ class KYCFactory:
     """
     
     @staticmethod
-    def get_service() -> KYCService:
+    def get_service(provider_override: Optional[str] = None) -> KYCService:
         """
         Get a KYC service instance based on the configured provider.
         
         Returns:
             An instance of a KYCService implementation
         """
-        provider = os.getenv('KYC_PROVIDER', 'onfido').lower()
+        provider = (provider_override or os.getenv('KYC_PROVIDER', 'onfido')).lower()
         logger.info(f"Using KYC provider: {provider}")
         
         if provider == 'onfido':
@@ -27,6 +27,9 @@ class KYCFactory:
         elif provider == 'shufti':
             from src.kyc_services import ShuftiService
             return ShuftiService()
+        elif provider == 'didit':
+            from src.kyc_services import DiditService
+            return DiditService()
         else:
             logger.warning(f"Unknown KYC provider: {provider}, defaulting to Onfido")
             from src.kyc_services import OnfidoService
