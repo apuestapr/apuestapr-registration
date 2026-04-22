@@ -35,14 +35,24 @@ class ShuftiService(KYCService):
         Make an API call to Shufti Pro to get the verification URL.
         This URL will be used in an iframe for the user to complete KYC.
         """
+        # Check if we already have a valid verification URL for a pending request
+        if registration.shufti_reference and registration.kyc_status == 'PENDING':
+            if registration.shufti_callback_payload:
+                payload = registration.shufti_callback_payload
+                if isinstance(payload, dict) and 'verification_url' in payload:
+                    logger.info(f"Returning existing verification URL for {registration.shufti_reference}")
+                    return payload['verification_url']
+            
+            # If we have a reference but no URL, we must generate a new reference 
+            # because Shufti will reject a duplicate POST with the same reference.
+            logger.info(f"Generating new reference for pending request {registration.id} to avoid duplicate reference error")
+            registration = self.init_verification(registration)
+            
         # If the reference doesn't exist or if this is a retry of a failed verification,
         # generate a new reference
-        if not registration.shufti_reference or registration.kyc_status == 'FAILED':
-            # If this is a retry, log that we're generating a new reference
+        elif not registration.shufti_reference or registration.kyc_status == 'FAILED':
             if registration.shufti_reference and registration.kyc_status == 'FAILED':
                 logger.info(f"Regenerating reference for failed verification: {registration.id}")
-                
-            # Generate a new reference
             registration = self.init_verification(registration)
             
         # Build the payload for Shufti API
