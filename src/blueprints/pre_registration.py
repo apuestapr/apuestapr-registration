@@ -675,9 +675,9 @@ def didit_callback():
                         Verificación completada. Redirigiendo...
                     </div>
                     <script>
-                        // Tell the parent window to navigate to the status page
+                        // Tell the parent window to navigate to the status page using the full URL
                         if (window.parent) {{
-                            window.parent.location.href = "/registration/kyc/status/{registration.id}";
+                            window.parent.location.href = "{Config.APP_URL}/registration/kyc/status/{registration.id}";
                         }}
                     </script>
                     </body></html>
