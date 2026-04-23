@@ -148,6 +148,13 @@ def create_account(registration: Registration):
         
         registration.whitehat_kyc_approved = True
         registration.save()
+
+    if not registration.whitehat_playerid and registration.whitehat_user_id:
+        try:
+            registration.whitehat_playerid = str(get_player_id(registration))
+            registration.save()
+        except Exception as e:
+            print(f"Failed to fetch whitehat_playerid: {e}")
        
         # account_id = create_account_in_whg(registration)
         # manually_approve_kyc(account_id)
