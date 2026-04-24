@@ -149,8 +149,13 @@ def create_account(registration: Registration):
         registration.whitehat_kyc_approved = True
         registration.save()
 
+    import time
+    
     if not registration.whitehat_playerid and registration.whitehat_user_id:
         try:
+            # Add a delay to allow Whitehat's backend to process the KYC approval
+            # before we ask for the user details, which might trigger Kambi profile creation
+            time.sleep(5)
             registration.whitehat_playerid = str(get_player_id(registration))
             registration.save()
         except Exception as e:

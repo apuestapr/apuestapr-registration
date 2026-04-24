@@ -448,6 +448,8 @@ def account_setup(registration_id):
    except Exception as e:
       print(e)
       errors.append(str(e))
+      registration.kyc_override = str(e)
+      registration.save()
       
    # Ok we return the validation information.
    return jsonify({ 'success': success, 'errors': errors, 'registration_id': registration_id })
