@@ -1,221 +1,371 @@
 <html>
 
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.1/underscore-min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style type="text/css">
-        #kyc-content {
-            width: 100%;
-            height: 500px;
+        :root {
+            --brand-primary: #002D62;
+            --brand-secondary: #004080;
+            --bg-color: #f4f7f6;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --text-color: #2b2b2b;
+            --text-muted: #6c757d;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --shadow-color: rgba(0, 45, 98, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --success-bg: #d1e7dd;
+            --success-text: #0f5132;
         }
 
-        .navbar-brand img {
-            height: 50px;
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --brand-primary: #4da3ff;
+                --brand-secondary: #1a8cff;
+                --bg-color: #0f172a;
+                --bg-card: rgba(30, 41, 59, 0.85);
+                --text-color: #f8fafc;
+                --text-muted: #94a3b8;
+                --border-color: #334155;
+                --input-bg: #1e293b;
+                --shadow-color: rgba(0, 0, 0, 0.5);
+                --glass-border: rgba(255, 255, 255, 0.05);
+                --success-bg: #064e3b;
+                --success-text: #34d399;
+            }
         }
-        .is-invalid {
-            border-color: #dc3545;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
         }
+
+        .navbar-brand img { height: 50px; }
+        
+        /* Modern Card with Glassmorphism */
+        .modern-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px var(--shadow-color);
+            margin-top: 20px;
+            margin-bottom: 40px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modern-title {
+            color: var(--brand-primary);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 15px;
+        }
+
+        /* Form Controls */
+        .modern-label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .modern-input {
+            background-color: var(--input-bg);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .modern-input:focus {
+            outline: none;
+            background-color: var(--input-bg);
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 4px rgba(0, 45, 98, 0.1);
+            color: var(--text-color);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .modern-input:focus { box-shadow: 0 0 0 4px rgba(77, 163, 255, 0.2); }
+        }
+
+        .modern-input::placeholder { color: var(--text-muted); }
+        .is-invalid { border-color: #ef4444 !important; }
+
+        fieldset legend {
+            color: var(--brand-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        /* Buttons */
+        .btn-modern {
+            background-color: var(--brand-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .btn-modern:hover {
+            background-color: var(--brand-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow-color);
+            color: #ffffff;
+        }
+
+        /* Terms Box */
+        .terms-box {
+            border-radius: 14px;
+            background-color: var(--input-bg);
+            padding: 18px;
+            border: 1.5px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .terms-box:hover { border-color: var(--brand-primary); }
+
+        #successPanel {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border: none;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        
+        .header-text { color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; }
     </style>
 </head>
 
 <body>
     <div class="container">
         {% include 'public-nav-preregistration-start-to-en.html' %}
-        <div class="row">
-            <div class="col-12">
-                <h1>Pre-Registro</h1>
-                <p>
-                    Para poder activar su cuenta, complete la información solicitada. Los datos
-                    personales tienen que coincidir con los de su identificación (licencia o pasaporte).
-                </p>
-            </div>
-        </div>
-        <br>
-        <div id="successPanel" class="alert alert-success" style="display: none;">
-            <h1>
-                Registro Exitoso
-            </h1>
-            <p>
-                El registro de este usuario está completo. Cuando llegue a presentar
-                su documento, por favor informe al personal de Apuesta.
-            </p>
-            <button class="btn btn-success" id="showFormBtn">
-                Agregar otro
-            </button>
-        </div>
-
-        <form id="PreRegistrationForm">
-            <div class="form-row">
-                <div class="form-group col-md-6 col-12">
-                    <label>Nombre de pila *</label>
-                    <input class="form-control" type="text" placeholder="Ingrese su nombre..." name="first_name"
-                        value="" required />
-                </div>
-                <div class="form-group col-md-6 col-12">
-                    <label>Apellido *</label>
-                    <input class="form-control" type="text" placeholder="Ingrese su apellido..." name="last_name"
-                        value="" required />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label>Fecha de Nacimiento *</label>
-                    <input class="form-control" id="birthday" placeholder="" type="date" name="birthday" value=""
-                        required />
-                </div>
-                <div class="form-group col-md-6">
-                    <label>Email</label>
-                    <input class="form-control" id="emailAddress" placeholder="Ingrese su dirección de correo electrónico..." type="email"
-                        name="email" value="" required />
-                    <span id="EmailError" style="display: none; color: red;">Esta dirección de correo electrónico ya ha sido utilizada por otra cuenta.</span>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group col-md-6">
-                    <label>
-                        Número de teléfono
-                    </label>
-                    <input class="form-control" id="phone_number" placeholder="Ingrese su teléfono..." type="tel" name="phone_number"
-                        value="" required pattern="^[2-9]{1}[0-9]{2}[2-9]{1}[0-9]{2}[0-9]{4}$" />
-
-                    <small style="color: green;">
-                        (No agregues un + al número de teléfono.)
-                    </small>
-                </div>
-            </div>
-            <fieldset>
-                <legend>Direccíon</legend>
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label>Línea 1 *</label>
-                        <input class="form-control" placeholder="Ingrese su dirección, línea 1..." type="text"
-                            name="address_1" value="" required />
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                <div class="modern-card">
+                    <div class="text-center mb-5">
+                        <h1 class="modern-title">Pre-Registro</h1>
+                        <p class="header-text">
+                            Para poder activar su cuenta, complete la información solicitada. Los datos
+                            personales tienen que coincidir con los de su identificación (licencia o pasaporte).
+                        </p>
                     </div>
-                    <div class="form-group col-md-6">
-                        <label>Línea 2</label>
-                        <input class="form-control" placeholder="Ingrese su dirección, línea 2..." type="text"
-                            name="address_2" value="" />
 
+                    <div id="successPanel" style="display: none;" class="mb-4 text-center">
+                        <i class="fas fa-check-circle fa-4x mb-3" style="color: var(--success-text);"></i>
+                        <h2 class="font-weight-bold">Registro Exitoso</h2>
+                        <p class="lead">
+                            El registro de este usuario está completo. Cuando llegue a presentar
+                            su documento, por favor informe al personal de Apuesta.
+                        </p>
+                        <button class="btn btn-modern mt-3" id="showFormBtn" style="width: auto;">
+                            <i class="fas fa-user-plus mr-2"></i>Agregar otro
+                        </button>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="form-group col-md-8">
-                        <label>Ciudad *</label>
-                        <input class="form-control" placeholder="Ingrese su dirección, ciudad..." type="text"
-                            name="city" value="" required />
 
-                    </div>
-                    <div class="form-group col-md-4">
-                        <label>Estado o Provincia *</label>
-
-                        <select class="form-control" name="state_province" required>
-                            <option value="PR">Puerto Rico</option>
-                            <option value="AL">Alabama</option>
-                            <option value="AK">Alaska</option>
-                            <option value="AZ">Arizona</option>
-                            <option value="AR">Arkansas</option>
-                            <option value="CA">California</option>
-                            <option value="CO">Colorado</option>
-                            <option value="CT">Connecticut</option>
-                            <option value="DE">Delaware</option>
-                            <option value="FL">Florida</option>
-                            <option value="GA">Georgia</option>
-                            <option value="HI">Hawaii</option>
-                            <option value="ID">Idaho</option>
-                            <option value="IL">Illinois</option>
-                            <option value="IN">Indiana</option>
-                            <option value="IA">Iowa</option>
-                            <option value="KS">Kansas</option>
-                            <option value="KY">Kentucky</option>
-                            <option value="LA">Louisiana</option>
-                            <option value="ME">Maine</option>
-                            <option value="MD">Maryland</option>
-                            <option value="MA">Massachusetts</option>
-                            <option value="MI">Michigan</option>
-                            <option value="MN">Minnesota</option>
-                            <option value="MS">Mississippi</option>
-                            <option value="MO">Missouri</option>
-                            <option value="MT">Montana</option>
-                            <option value="NE">Nebraska</option>
-                            <option value="NV">Nevada</option>
-                            <option value="NH">New Hampshire</option>
-                            <option value="NJ">New Jersey</option>
-                            <option value="NM">New Mexico</option>
-                            <option value="NY">New York</option>
-                            <option value="NC">North Carolina</option>
-                            <option value="ND">North Dakota</option>
-                            <option value="OH">Ohio</option>
-                            <option value="OK">Oklahoma</option>
-                            <option value="OR">Oregon</option>
-                            <option value="PA">Pennsylvania</option>
-                            <option value="RI">Rhode Island</option>
-                            <option value="SC">South Carolina</option>
-                            <option value="SD">South Dakota</option>
-                            <option value="TN">Tennessee</option>
-                            <option value="TX">Texas</option>
-                            <option value="UT">Utah</option>
-                            <option value="VT">Vermont</option>
-                            <option value="VA">Virginia</option>
-                            <option value="WA">Washington</option>
-                            <option value="WV">West Virginia</option>
-                            <option value="WI">Wisconsin</option>
-                            <option value="WY">Wyoming</option>
-                            <option value="DC">District of Columbia</option>
-                            <option value="AS">American Samoa</option>
-                            <option value="GU">Guam</option>
-                            <option value="MP">Northern Mariana Islands</option>
-                            <option value="VI">U.S. Virgin Islands</option>
-                          </select>
-
-                        <!-- <input class="form-control" type="text"
-                            placeholder="Ingrese su dirección, estado o provincia..." name="state_province" value=""
-                            required /> -->
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="form-group col-md-6 col-12">
-                        <label>Código Postal *</label>
-                        <input class="form-control" type="text" placeholder="Ingrese su código.." name="postal_code"
-                            value="" required />
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label>País *</label>
-                        <select class="form-control" id="country" name="country" required>
-                            <option value="US">United States</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <!-- <input class="form-control" placeholder="Ingrese su País.." type="text" name="country" value=""
-                            required /> -->
-                    </div>
-                </div>
-            </fieldset>
-            <div class="row">
-                <div class="col-md-12">
-                    <div kclass="form-check"
-                        style="border-radius: 10px; background-color: #EFEFEF; padding: 10px; border:1px solid #DFDFDF;">
-                        <div class="form-group">
-                            <input type="checkbox" id="agree_to_terms" name="agree_to_terms" required>
-                            <label class="form-check-label" for="flexCheckDefault">
-                                Aceptar términos y condiciones
-                            </label>
-                            <div class="form-text">
-                                <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/">Leer términos y
-                                    condiciones</a>
+                    <form id="PreRegistrationForm">
+                        <div class="form-row">
+                            <div class="form-group col-md-6 col-12">
+                                <label class="modern-label">Nombre de pila *</label>
+                                <input class="form-control modern-input" type="text" placeholder="Ingrese su nombre..." name="first_name"
+                                    value="" required />
+                            </div>
+                            <div class="form-group col-md-6 col-12">
+                                <label class="modern-label">Apellido *</label>
+                                <input class="form-control modern-input" type="text" placeholder="Ingrese su apellido..." name="last_name"
+                                    value="" required />
                             </div>
                         </div>
-                        <p id="validationMessage" class="mt-2"></p>
-                    </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label class="modern-label">Fecha de Nacimiento *</label>
+                                <input class="form-control modern-input" id="birthday" placeholder="" type="date" name="birthday" value=""
+                                    required />
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="modern-label">Email</label>
+                                <input class="form-control modern-input" id="emailAddress" placeholder="Ingrese su correo electrónico..." type="email"
+                                    name="email" value="" required />
+                                <span id="EmailError" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 5px; display: block;">
+                                    <i class="fas fa-exclamation-circle"></i> Esta dirección de correo electrónico ya ha sido utilizada por otra cuenta.
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label class="modern-label">Número de teléfono</label>
+                                <input class="form-control modern-input" id="phone_number" placeholder="Ingrese su teléfono..." type="tel" name="phone_number"
+                                    value="" required pattern="^[2-9]{1}[0-9]{2}[2-9]{1}[0-9]{2}[0-9]{4}$" />
+
+                                <small style="color: var(--brand-primary); font-weight: 500; display: block; margin-top: 5px;">
+                                    <i class="fas fa-info-circle"></i> No agregues un + al número de teléfono.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <fieldset>
+                            <legend>Dirección</legend>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label class="modern-label">Línea 1 *</label>
+                                    <input class="form-control modern-input" placeholder="Ingrese su dirección, línea 1..." type="text"
+                                        name="address_1" value="" required />
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="modern-label">Línea 2</label>
+                                    <input class="form-control modern-input" placeholder="Apt, Suite, etc. (Opcional)" type="text"
+                                        name="address_2" value="" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-md-8">
+                                    <label class="modern-label">Ciudad *</label>
+                                    <input class="form-control modern-input" placeholder="Ingrese ciudad..." type="text"
+                                        name="city" value="" required />
+
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="modern-label">Estado o Provincia *</label>
+
+                                    <select class="form-control modern-input" name="state_province" required>
+                                        <option value="PR">Puerto Rico</option>
+                                        <option value="AL">Alabama</option>
+                                        <option value="AK">Alaska</option>
+                                        <option value="AZ">Arizona</option>
+                                        <option value="AR">Arkansas</option>
+                                        <option value="CA">California</option>
+                                        <option value="CO">Colorado</option>
+                                        <option value="CT">Connecticut</option>
+                                        <option value="DE">Delaware</option>
+                                        <option value="FL">Florida</option>
+                                        <option value="GA">Georgia</option>
+                                        <option value="HI">Hawaii</option>
+                                        <option value="ID">Idaho</option>
+                                        <option value="IL">Illinois</option>
+                                        <option value="IN">Indiana</option>
+                                        <option value="IA">Iowa</option>
+                                        <option value="KS">Kansas</option>
+                                        <option value="KY">Kentucky</option>
+                                        <option value="LA">Louisiana</option>
+                                        <option value="ME">Maine</option>
+                                        <option value="MD">Maryland</option>
+                                        <option value="MA">Massachusetts</option>
+                                        <option value="MI">Michigan</option>
+                                        <option value="MN">Minnesota</option>
+                                        <option value="MS">Mississippi</option>
+                                        <option value="MO">Missouri</option>
+                                        <option value="MT">Montana</option>
+                                        <option value="NE">Nebraska</option>
+                                        <option value="NV">Nevada</option>
+                                        <option value="NH">New Hampshire</option>
+                                        <option value="NJ">New Jersey</option>
+                                        <option value="NM">New Mexico</option>
+                                        <option value="NY">New York</option>
+                                        <option value="NC">North Carolina</option>
+                                        <option value="ND">North Dakota</option>
+                                        <option value="OH">Ohio</option>
+                                        <option value="OK">Oklahoma</option>
+                                        <option value="OR">Oregon</option>
+                                        <option value="PA">Pennsylvania</option>
+                                        <option value="RI">Rhode Island</option>
+                                        <option value="SC">South Carolina</option>
+                                        <option value="SD">South Dakota</option>
+                                        <option value="TN">Tennessee</option>
+                                        <option value="TX">Texas</option>
+                                        <option value="UT">Utah</option>
+                                        <option value="VT">Vermont</option>
+                                        <option value="VA">Virginia</option>
+                                        <option value="WA">Washington</option>
+                                        <option value="WV">West Virginia</option>
+                                        <option value="WI">Wisconsin</option>
+                                        <option value="WY">Wyoming</option>
+                                        <option value="DC">District of Columbia</option>
+                                        <option value="AS">American Samoa</option>
+                                        <option value="GU">Guam</option>
+                                        <option value="MP">Northern Mariana Islands</option>
+                                        <option value="VI">U.S. Virgin Islands</option>
+                                      </select>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="form-group col-md-6 col-12">
+                                    <label class="modern-label">Código Postal *</label>
+                                    <input class="form-control modern-input" type="text" placeholder="Ingrese su código.." name="postal_code"
+                                        value="" required />
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="modern-label">País *</label>
+                                    <select class="form-control modern-input" id="country" name="country" required>
+                                        <option value="US">United States</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <div class="terms-box">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="agree_to_terms" name="agree_to_terms" required>
+                                        <label class="custom-control-label modern-label" for="agree_to_terms" style="margin-bottom: 0;">
+                                            Aceptar términos y condiciones
+                                        </label>
+                                    </div>
+                                    <div class="ml-auto">
+                                        <a target="_blank" href="https://apuestapr.com/terminos-y-condiciones/" style="color: var(--brand-primary); font-weight: 500; text-decoration: none;">
+                                            <i class="fas fa-external-link-alt mr-1"></i> Leer términos
+                                        </a>
+                                    </div>
+                                </div>
+                                <p id="validationMessage" class="mt-2 text-danger" style="font-weight: 500; display: none;"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-5">
+                            <div class="col-12">
+                                <button type="submit" id="submitFormBtn" class="btn btn-modern">
+                                    <i class="fas fa-paper-plane mr-2"></i> Enviar Registro
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <br>
-            <button type="submit" id="submitFormBtn" class="btn btn-primary">
-                Enviar
-            </button>
-        </form>
-
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.16.1/dist/umd/popper.min.js"></script>
