@@ -68,7 +68,7 @@ print('PROXY:', whitehat_proxy)
 
 
 def get_player_id(registration: Registration):
-    response = requests.post(API_URL + '/platform/usergateway/getuserdetails', proxies=whitehat_proxy, json={
+    response = requests.post(API_URL + '/platform/usergateway/getuserdetails', json={
         'type': 'getuserdetails',
         'brand': 'liberman',
         'userId': int(registration.whitehat_user_id)
@@ -109,7 +109,7 @@ def create_account(registration: Registration):
         
         print('Pre: Data for New User', data)
         
-        response = requests.post(API_URL + '/platform/usergateway/registeruser', proxies=whitehat_proxy, json=data)
+        response = requests.post(API_URL + '/platform/usergateway/registeruser', json=data)
 
         print('Response:', response.text)
 
@@ -131,7 +131,7 @@ def create_account(registration: Registration):
             'reason': 'Successful KYC check by Onfido',
             'brand': 'liberman'
         }
-        response = requests.post(API_URL + '/platform/usergateway/set-kyc-approved', proxies=whitehat_proxy, json=body)
+        response = requests.post(API_URL + '/platform/usergateway/set-kyc-approved', json=body)
 
         body = response.json()
 
