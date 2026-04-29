@@ -1,8 +1,10 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.1/underscore-min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +17,7 @@
         .navbar-brand img {
             height: 50px;
         }
+
         .is-invalid {
             border-color: #dc3545;
         }
@@ -26,430 +29,423 @@
         {% include 'public-nav.html' %}
 
         {% if registration.kyc_status == 'COMPLETE' %}
-            <br>
-            <div class="row">
-                <div class="col-12">
-                    <div class="alert alert-success">
-                        <h4>
-                            Exito
-                        </h4>
-                        <p>
-                            Este registro ya ha sido completado.
-                        </p>
+        <br>
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h4>
+                        Exito
+                    </h4>
+                    <p>
+                        Este registro ya ha sido completado.
+                    </p>
 
-                        <p>
-                            
-                            Whitehat User Id: 
-                            {% if registration.whitehat_user_id  %}
-                              {{ registration.whitehat_user_id }}
-                            {% else %}
-                               Missing (Possible Error)
-                            {% endif %}
-                        </p>
-                    </div>
+                    <p>
+
+                        Whitehat User Id:
+                        {% if registration.whitehat_user_id %}
+                        {{ registration.whitehat_user_id }}
+                        {% else %}
+                        Missing (Possible Error)
+                        {% endif %}
+                    </p>
                 </div>
             </div>
+        </div>
         {% else %}
-            <div class="row">
-                <div class="col-12">
-                    <h1>Revisión Final de la Información de Pre-Registro</h1>
-                    <p>
-                        Personal de Apuesta, antes de que puedan comenzar la verificación final de documentos, 
-                        por favor revisen la información que el jugador ha proporcionado, ingresen su Número 
-                        de Tarjeta de Jugador, así como su Código de Referencia. Ambos son necesarios para continuar.
-                    </p>
-                    <p>
-                        Antes de comenzar este proceso, por favor confirme que el jugador está presente y 
-                        tiene una licencia válida o pasaporte listo para que usted lo revise y verifique con onFido.
-                    </p>
-                </div>
+        <div class="row">
+            <div class="col-12">
+                <h1>Revisión Final de la Información de Pre-Registro</h1>
+                <p>
+                    Personal de Apuesta, antes de que puedan comenzar la verificación final de documentos,
+                    por favor revisen la información que el jugador ha proporcionado, ingresen su Número
+                    de Tarjeta de Jugador, así como su Código de Referencia. Ambos son necesarios para continuar.
+                </p>
+                <p>
+                    Antes de comenzar este proceso, por favor confirme que el jugador está presente y
+                    tiene una licencia válida o pasaporte listo para que usted lo revise y verifique con onFido.
+                </p>
             </div>
+        </div>
 
-            <div id="error-list" class="alert alert-danger" style="display: none;"></div>
+        <div id="error-list" class="alert alert-danger" style="display: none;"></div>
 
-            <form id="PreRegistrationForm">
-                
-                <div class="alert alert-info" style="color: #000; border: 1px solid #DFDFDF; background-color: #FFF;">
-                    <div class="alert alert-info">
-                        <h4>
-                            Información Adicional de Apuesta
-                        </h4>
-                        <div class="form-row">
+        <form id="PreRegistrationForm">
 
-                            <div class="form-group col-md-4 col-12">
-                                <label>
-                                    Idioma Preferido *
-                                </label>
-                                <select class="form-control" name="preferred_language" value="{{registration['preferred_language']}}" required>
-                                    <option value="es">Español</option>
-                                    <option value="en">English</option>
-                                </select>
-                                <small class="form-text text-muted">
-                                    Seleccione el idioma preferido del cliente.
-                                </small>
-                            </div>
-
-                            <div class="form-group col-md-4 col-12">
-                                <label>
-                                    Número de Tarjeta de Jugador *
-                                </label>
-                                <input type="text" class="form-control" placeholder="Ingrese su Número de Tarjeta de Jugador..." name="loyalty_card_number" value="{{registration.loyalty_card_number}}" required />
-                                <small class="form-text text-muted">
-                                    Elija una Tarjeta de Jugador disponible e ingrese el número aquí.
-                                </small>
-                            </div>
-
-                            <div class="form-group col-md-4 col-12">
-                                <label>
-                                    Código de Referencia *
-                                </label>
-                                <select name="referral_code" class="form-control" required>
-                                    <option value="">None</option>
-                                    <option value="ApuestaPR" {% if registration.referral_code=='ApuestaPR' %}
-                                        selected="selected" {% endif %}>ApuestaPR</option>
-                                    <option value="Gary" {% if registration.referral_code=='Gary' %}
-                                        selected="selected" {% endif %}>Gary</option>
-                                    <option value="Guayanabo Mets Basketball" {% if
-                                        registration.referral_code=='Guayanabo Mets Basketball' %} selected="selected" {%
-                                        endif %}>Guayanabo Mets Basketball</option>
-                                    <option value="Colmado y Agencia Hípica El Puente" {% if
-                                        registration.referral_code=='Colmado y Agencia Hipica El Puente' %}
-                                        selected="selected" {% endif %}>Colmado y Agencia Hípica El Puente</option>
-                                    <option value="Los Palitos" {% if registration.referral_code=='Los Palitos' %}
-                                        selected="selected" {% endif %}>Los Palitos</option>
-                                    <option value="El Farito" {% if registration.referral_code=='El Farito' %}
-                                        selected="selected" {% endif %}>El Farito</option>
-                                    <option value="Las Picuas" {% if registration.referral_code=='Las Picuas' %}
-                                        selected="selected" {% endif %}>Las Picuas</option>
-                                    <option value="Agencia 100" {% if registration.referral_code=='Agencia 100' %}
-                                        selected="selected" {% endif %}>Agencia #100</option>
-                                    <option value="24 Market Place" {% if registration.referral_code=='24 Market Place' %}
-                                        selected="selected" {% endif %}>24 Market Place</option>
-                                    <option value="Las Cumbres" {% if registration.referral_code=='Las Cumbres' %}
-                                        selected="selected" {% endif %}>Las Cumbres</option>
-                                    <option value="UBS" {% if registration.referral_code=='UBS' %} selected="selected" {%
-                                        endif %}>UBS</option>
-                                    <option value="Joker" {% if registration.referral_code=='Joker' %} selected="selected" {%
-                                        endif %}>Joker</option>
-                                    <option value="Wyndham" {% if registration.referral_code=='Wyndham' %} selected="selected" {%
-                                        endif %}>Wyndham</option>
-                                    <option value="Parada Rosa" {% if registration.referral_code=='Parada Rosa' %} selected="selected" {%
-                                        endif %}>Parada Rosa</option>
-                                    <option value="Colmado La Fe" {% if registration.referral_code=='Colmado La Fe' %} selected="selected" {%
-                                        endif %}>Colmado La Fe</option>
-                                    <option value="Susos" {% if registration.referral_code=='Susos' %} selected="selected" {%
-                                        endif %}>Susos</option>
-                                    <option value="La Esquina del Sabor" {% if registration.referral_code=='La Esquina del Sabor' %} selected="selected" {%
-                                        endif %}>La Esquina del Sabor</option>
-                                    <option value="Red Pub" {% if registration.referral_code=='Red Pub' %} selected="selected" {%
-                                    endif %}>Red Pub</option>
-                                     <option value="El Cine Mayaguez" {% if registration.referral_code=='El Cine Mayaguez' %} selected="selected" {%
-                                    endif %}>El Cine Mayaguez</option>
-                                    <option value="El Conquistador" {% if registration.referral_code=='El Conquistador' %} selected="selected" {%
-                                    endif %}>El Conquistador</option>
-                                     <option value="TotalEnergies Villalba" {% if registration.referral_code=='TotalEnergies Villalba' %} selected="selected" {%
-                                    endif %}>TotalEnergies Villalba</option>
-                                </select>
-                                <small class="form-text form-muted">
-                                    Ingrese el código de la ubicación de registro, si corresponde
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    
+            <div class="alert alert-info" style="color: #000; border: 1px solid #DFDFDF; background-color: #FFF;">
+                <div class="alert alert-info">
+                    <h4>
+                        Información Adicional de Apuesta
+                    </h4>
                     <div class="form-row">
-                        <div class="form-group col-md-6 col-12">
-                            <label>Nombre de pila *</label>
-                            <input class="form-control" type="text" placeholder="Ingrese su nombre..." name="first_name"
-                                value="{{ registration.first_name }}" required />
-                        </div>
-                        <div class="form-group col-md-6 col-12">
-                            <label>Apellido *</label>
-                            <input class="form-control" type="text" placeholder="Ingrese su apellido..." name="last_name"
-                                value="{{ registration.last_name }}" required />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>Fecha de Nacimiento *</label>
-                            <input class="form-control" id="birthday" placeholder="" type="date" name="birthday" value="{{ registration.birthdate }}"
-                                required />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>Email</label>
-                            <input class="form-control" placeholder="Ingrese su dirección de correo electrónico..." type="email"
-                                name="email" value="{{ registration.email }}" required />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
+
+                        <div class="form-group col-md-4 col-12">
                             <label>
-                                Número de teléfono
+                                Idioma Preferido *
                             </label>
-                            <input class="form-control" id="phone_number" placeholder="Ingrese su teléfono..." type="tel" name="phone_number"
-                                value="{{ registration.phone_number }}" required pattern="^[2-9]{1}[0-9]{2}[2-9]{1}[0-9]{2}[0-9]{4}$" />
-                            <small style="color: green;">
-                                (No agregues un + al número de teléfono.)
+                            <select class="form-control" name="preferred_language"
+                                value="{{registration['preferred_language']}}" required>
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                Seleccione el idioma preferido del cliente.
+                            </small>
+                        </div>
+
+                        <div class="form-group col-md-4 col-12">
+                            <label>
+                                Número de Tarjeta de Jugador *
+                            </label>
+                            <input type="text" class="form-control"
+                                placeholder="Ingrese su Número de Tarjeta de Jugador..." name="loyalty_card_number"
+                                value="{{registration.loyalty_card_number}}" required />
+                            <small class="form-text text-muted">
+                                Elija una Tarjeta de Jugador disponible e ingrese el número aquí.
+                            </small>
+                        </div>
+
+                        <div class="form-group col-md-4 col-12">
+                            <label>
+                                Código de Referencia *
+                            </label>
+                            <select name="referral_code" class="form-control" required>
+                                <option value="">None</option>
+                                <option value="ApuestaPR" {% if registration.referral_code=='ApuestaPR' %}
+                                    selected="selected" {% endif %}>ApuestaPR</option>
+                                <option value="Los Palitos" {% if registration.referral_code=='Los Palitos' %}
+                                    selected="selected" {% endif %}>Los Palitos</option>
+                                <option value="El Farito" {% if registration.referral_code=='El Farito' %}
+                                    selected="selected" {% endif %}>El Farito</option>
+                                <option value="Agencia 100" {% if registration.referral_code=='Agencia 100' %}
+                                    selected="selected" {% endif %}>Agencia #100</option>
+                                <option value="24 Market Place" {% if registration.referral_code=='24 Market Place' %}
+                                    selected="selected" {% endif %}>24 Market Place</option>
+                                <option value="Las Cumbres" {% if registration.referral_code=='Las Cumbres' %}
+                                    selected="selected" {% endif %}>Las Cumbres</option>
+                                <option value="UBS" {% if registration.referral_code=='UBS' %} selected="selected" {%
+                                    endif %}>UBS</option>
+                                <option value="Joker" {% if registration.referral_code=='Joker' %} selected="selected"
+                                    {% endif %}>Joker</option>
+                                <option value="Wyndham" {% if registration.referral_code=='Wyndham' %}
+                                    selected="selected" {% endif %}>Wyndham</option>
+
+                                <option value="Susos" {% if registration.referral_code=='Susos' %} selected="selected"
+                                    {% endif %}>Susos</option>
+                                <option value="La Esquina del Sabor" {% if
+                                    registration.referral_code=='La Esquina del Sabor' %} selected="selected" {% endif
+                                    %}>La Esquina del Sabor</option>
+                                <option value="Red Pub" {% if registration.referral_code=='Red Pub' %}
+                                    selected="selected" {% endif %}>Red Pub</option>
+                                <option value="El Cine Mayaguez" {% if registration.referral_code=='El Cine Mayaguez' %}
+                                    selected="selected" {% endif %}>El Cine Mayaguez</option>
+                                <option value="El Conquistador" {% if registration.referral_code=='El Conquistador' %}
+                                    selected="selected" {% endif %}>El Conquistador</option>
+                                <option value="TotalEnergies Villalba" {% if
+                                    registration.referral_code=='TotalEnergies Villalba' %} selected="selected" {% endif
+                                    %}>TotalEnergies Villalba</option>
+                            </select>
+                            <small class="form-text form-muted">
+                                Ingrese el código de la ubicación de registro, si corresponde
                             </small>
                         </div>
                     </div>
-                    <fieldset>
-                        <legend>Direccíon</legend>
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label>Línea 1 *</label>
-                                <input class="form-control" placeholder="Ingrese su dirección, línea 1..." type="text"
-                                    name="address_1" value="{{ registration.address_1 }}" required />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label>Línea 2</label>
-                                <input class="form-control" placeholder="Ingrese su dirección, línea 2..." type="text"
-                                    name="address_2" value="{{ registration.address_2 }}" />
+                </div>
 
-                            </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 col-12">
+                        <label>Nombre de pila *</label>
+                        <input class="form-control" type="text" placeholder="Ingrese su nombre..." name="first_name"
+                            value="{{ registration.first_name }}" required />
+                    </div>
+                    <div class="form-group col-md-6 col-12">
+                        <label>Apellido *</label>
+                        <input class="form-control" type="text" placeholder="Ingrese su apellido..." name="last_name"
+                            value="{{ registration.last_name }}" required />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Fecha de Nacimiento *</label>
+                        <input class="form-control" id="birthday" placeholder="" type="date" name="birthday"
+                            value="{{ registration.birthdate }}" required />
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Email</label>
+                        <input class="form-control" placeholder="Ingrese su dirección de correo electrónico..."
+                            type="email" name="email" value="{{ registration.email }}" required />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>
+                            Número de teléfono
+                        </label>
+                        <input class="form-control" id="phone_number" placeholder="Ingrese su teléfono..." type="tel"
+                            name="phone_number" value="{{ registration.phone_number }}" required
+                            pattern="^[2-9]{1}[0-9]{2}[2-9]{1}[0-9]{2}[0-9]{4}$" />
+                        <small style="color: green;">
+                            (No agregues un + al número de teléfono.)
+                        </small>
+                    </div>
+                </div>
+                <fieldset>
+                    <legend>Direccíon</legend>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Línea 1 *</label>
+                            <input class="form-control" placeholder="Ingrese su dirección, línea 1..." type="text"
+                                name="address_1" value="{{ registration.address_1 }}" required />
                         </div>
-                        <div class="row">
-                            <div class="form-group col-md-8">
-                                <label>Ciudad *</label>
-                                <input class="form-control" placeholder="Ingrese su dirección, ciudad..." type="text"
-                                    name="city" value="{{ registration.city }}" required />
+                        <div class="form-group col-md-6">
+                            <label>Línea 2</label>
+                            <input class="form-control" placeholder="Ingrese su dirección, línea 2..." type="text"
+                                name="address_2" value="{{ registration.address_2 }}" />
 
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label>Estado o Provincia *</label>
-                                <select class="form-control" id="state_province" name="state_province" required>
-                                    <option value="PR">Puerto Rico</option>
-                                    <option value="AL">Alabama</option>
-                                    <option value="AK">Alaska</option>
-                                    <option value="AZ">Arizona</option>
-                                    <option value="AR">Arkansas</option>
-                                    <option value="CA">California</option>
-                                    <option value="CO">Colorado</option>
-                                    <option value="CT">Connecticut</option>
-                                    <option value="DE">Delaware</option>
-                                    <option value="FL">Florida</option>
-                                    <option value="GA">Georgia</option>
-                                    <option value="HI">Hawaii</option>
-                                    <option value="ID">Idaho</option>
-                                    <option value="IL">Illinois</option>
-                                    <option value="IN">Indiana</option>
-                                    <option value="IA">Iowa</option>
-                                    <option value="KS">Kansas</option>
-                                    <option value="KY">Kentucky</option>
-                                    <option value="LA">Louisiana</option>
-                                    <option value="ME">Maine</option>
-                                    <option value="MD">Maryland</option>
-                                    <option value="MA">Massachusetts</option>
-                                    <option value="MI">Michigan</option>
-                                    <option value="MN">Minnesota</option>
-                                    <option value="MS">Mississippi</option>
-                                    <option value="MO">Missouri</option>
-                                    <option value="MT">Montana</option>
-                                    <option value="NE">Nebraska</option>
-                                    <option value="NV">Nevada</option>
-                                    <option value="NH">New Hampshire</option>
-                                    <option value="NJ">New Jersey</option>
-                                    <option value="NM">New Mexico</option>
-                                    <option value="NY">New York</option>
-                                    <option value="NC">North Carolina</option>
-                                    <option value="ND">North Dakota</option>
-                                    <option value="OH">Ohio</option>
-                                    <option value="OK">Oklahoma</option>
-                                    <option value="OR">Oregon</option>
-                                    <option value="PA">Pennsylvania</option>
-                                    <option value="RI">Rhode Island</option>
-                                    <option value="SC">South Carolina</option>
-                                    <option value="SD">South Dakota</option>
-                                    <option value="TN">Tennessee</option>
-                                    <option value="TX">Texas</option>
-                                    <option value="UT">Utah</option>
-                                    <option value="VT">Vermont</option>
-                                    <option value="VA">Virginia</option>
-                                    <option value="WA">Washington</option>
-                                    <option value="WV">West Virginia</option>
-                                    <option value="WI">Wisconsin</option>
-                                    <option value="WY">Wyoming</option>
-                                    <option value="DC">District of Columbia</option>
-                                    <option value="AS">American Samoa</option>
-                                    <option value="GU">Guam</option>
-                                    <option value="MP">Northern Mariana Islands</option>
-                                    <option value="VI">U.S. Virgin Islands</option>
-                                  </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-8">
+                            <label>Ciudad *</label>
+                            <input class="form-control" placeholder="Ingrese su dirección, ciudad..." type="text"
+                                name="city" value="{{ registration.city }}" required />
 
-                                <!-- <input class="form-control" type="text"
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Estado o Provincia *</label>
+                            <select class="form-control" id="state_province" name="state_province" required>
+                                <option value="PR">Puerto Rico</option>
+                                <option value="AL">Alabama</option>
+                                <option value="AK">Alaska</option>
+                                <option value="AZ">Arizona</option>
+                                <option value="AR">Arkansas</option>
+                                <option value="CA">California</option>
+                                <option value="CO">Colorado</option>
+                                <option value="CT">Connecticut</option>
+                                <option value="DE">Delaware</option>
+                                <option value="FL">Florida</option>
+                                <option value="GA">Georgia</option>
+                                <option value="HI">Hawaii</option>
+                                <option value="ID">Idaho</option>
+                                <option value="IL">Illinois</option>
+                                <option value="IN">Indiana</option>
+                                <option value="IA">Iowa</option>
+                                <option value="KS">Kansas</option>
+                                <option value="KY">Kentucky</option>
+                                <option value="LA">Louisiana</option>
+                                <option value="ME">Maine</option>
+                                <option value="MD">Maryland</option>
+                                <option value="MA">Massachusetts</option>
+                                <option value="MI">Michigan</option>
+                                <option value="MN">Minnesota</option>
+                                <option value="MS">Mississippi</option>
+                                <option value="MO">Missouri</option>
+                                <option value="MT">Montana</option>
+                                <option value="NE">Nebraska</option>
+                                <option value="NV">Nevada</option>
+                                <option value="NH">New Hampshire</option>
+                                <option value="NJ">New Jersey</option>
+                                <option value="NM">New Mexico</option>
+                                <option value="NY">New York</option>
+                                <option value="NC">North Carolina</option>
+                                <option value="ND">North Dakota</option>
+                                <option value="OH">Ohio</option>
+                                <option value="OK">Oklahoma</option>
+                                <option value="OR">Oregon</option>
+                                <option value="PA">Pennsylvania</option>
+                                <option value="RI">Rhode Island</option>
+                                <option value="SC">South Carolina</option>
+                                <option value="SD">South Dakota</option>
+                                <option value="TN">Tennessee</option>
+                                <option value="TX">Texas</option>
+                                <option value="UT">Utah</option>
+                                <option value="VT">Vermont</option>
+                                <option value="VA">Virginia</option>
+                                <option value="WA">Washington</option>
+                                <option value="WV">West Virginia</option>
+                                <option value="WI">Wisconsin</option>
+                                <option value="WY">Wyoming</option>
+                                <option value="DC">District of Columbia</option>
+                                <option value="AS">American Samoa</option>
+                                <option value="GU">Guam</option>
+                                <option value="MP">Northern Mariana Islands</option>
+                                <option value="VI">U.S. Virgin Islands</option>
+                            </select>
+
+                            <!-- <input class="form-control" type="text"
                                     placeholder="Ingrese su dirección, estado o provincia..." name="state_province" value="{{ registration.state_province }}"
                                     required /> -->
-                            </div>
                         </div>
-                        <div class="row">
-                            <div class="form-group col-md-6 col-12">
-                                <label>Código Postal *</label>
-                                <input class="form-control" type="text" placeholder="Ingrese su código.." name="postal_code"
-                                    value="{{ registration.postal_code }}" required />
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label>País *</label>
-                                <select class="form-control" id="country" name="country" required>
-                                    <option value="US">United States</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                                <!-- <input class="form-control" placeholder="Ingrese su País.." type="text" name="country" value="{{ registration.country }}"
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6 col-12">
+                            <label>Código Postal *</label>
+                            <input class="form-control" type="text" placeholder="Ingrese su código.." name="postal_code"
+                                value="{{ registration.postal_code }}" required />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>País *</label>
+                            <select class="form-control" id="country" name="country" required>
+                                <option value="US">United States</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <!-- <input class="form-control" placeholder="Ingrese su País.." type="text" name="country" value="{{ registration.country }}"
                                     required /> -->
-                            </div>
                         </div>
-                    </fieldset>
-                </div>
-                <button type="submit" id="submitFormBtn" class="btn btn-primary btn-block">
-                    Start the KYC Document Process &gt;
-                </button>
-            </form>
+                    </div>
+                </fieldset>
+            </div>
+            <button type="submit" id="submitFormBtn" class="btn btn-primary btn-block">
+                Start the KYC Document Process &gt;
+            </button>
+        </form>
 
-            <script type="text/javascript">
-                let registrationId = "";
-                let registrationData = [];
-        
-                $(document).ready(() => {
-        
-                    // Format and update the birthday value.
-                    try {
-                        const date = new Date('{{ registration.birthday }}');
-                        const formattedDate = date.toISOString().split('T')[0];
-                        $('input[name="birthday"]').val(formattedDate);
-                    } catch(err) {
-                        console.log(err)
-                    }
-                    
-                    try {
-                        $('#state_province').val('{{ registration.state_province }}').change();
-                    } catch(err) {}
+        <script type="text/javascript">
+            let registrationId = "";
+            let registrationData = [];
 
-                    try {
-                        $('#country').val('{{ registration.country }}').change();
-                    } catch(err) {}
+            $(document).ready(() => {
 
-                    document.getElementById('phone_number').addEventListener('input', function (event) {
-                        this.value = this.value.replace(/\+/g, '');
-                    });
-        
-                    // Add input event listeners to remove is-invalid class when user types
-                    document.querySelectorAll("input").forEach(function (input) {
-                        input.addEventListener("input", function () {
-                            if (input.classList.contains("is-invalid")) {
-                                input.classList.remove("is-invalid");
-                            }
-                        });
-                    });
-        
-                    $("#showFormBtn").click((e) => {
-        
-                        // Disable the checkbox for terms.
-                        $("#validationMessage").text("");
-        
-                        $("input").each(function () {
-                            $(this).val('');
-                        });
-        
-                        $("#PreRegistrationForm").show();
-                    });
-        
-                    function createErrorList(errors) {
-                        const errorDiv = document.getElementById('error-list');
-        
-                        if (errors.length > 0) {
-                            $("#error-list").show();
-                        } else {
-                            $("#error-list").hide();
-                            return;
+                // Format and update the birthday value.
+                try {
+                    const date = new Date('{{ registration.birthday }}');
+                    const formattedDate = date.toISOString().split('T')[0];
+                    $('input[name="birthday"]').val(formattedDate);
+                } catch (err) {
+                    console.log(err)
+                }
+
+                try {
+                    $('#state_province').val('{{ registration.state_province }}').change();
+                } catch (err) { }
+
+                try {
+                    $('#country').val('{{ registration.country }}').change();
+                } catch (err) { }
+
+                document.getElementById('phone_number').addEventListener('input', function (event) {
+                    this.value = this.value.replace(/\+/g, '');
+                });
+
+                // Add input event listeners to remove is-invalid class when user types
+                document.querySelectorAll("input").forEach(function (input) {
+                    input.addEventListener("input", function () {
+                        if (input.classList.contains("is-invalid")) {
+                            input.classList.remove("is-invalid");
                         }
-        
-                        const ul = document.createElement('ul');
-                        errors.forEach(error => {
-                            const li = document.createElement('li');
-                            li.textContent = error;
-                            ul.appendChild(li); 
-                        });
-        
-                        // Append the ul element to the div
-                        if (errorDiv) {
-                            errorDiv.innerHTML = '';
-                            errorDiv.appendChild(ul);
-                        } else {
-                            console.error('No element found with ID "error-list"');
-                        }
+                    });
+                });
+
+                $("#showFormBtn").click((e) => {
+
+                    // Disable the checkbox for terms.
+                    $("#validationMessage").text("");
+
+                    $("input").each(function () {
+                        $(this).val('');
+                    });
+
+                    $("#PreRegistrationForm").show();
+                });
+
+                function createErrorList(errors) {
+                    const errorDiv = document.getElementById('error-list');
+
+                    if (errors.length > 0) {
+                        $("#error-list").show();
+                    } else {
+                        $("#error-list").hide();
+                        return;
                     }
-        
-                    var form = document.getElementById("PreRegistrationForm");
-        
-                    function getFormJSON() {
-                        var formData = new FormData(form);
-                        var formObject = {};
-                        formData.forEach((value, key) => {
-                            formObject[key] = value;
-                        });
-        
-                        formObject["birthday"] = $("#birthday").val();
-                        var json = JSON.stringify(formObject);
-                        return json;
+
+                    const ul = document.createElement('ul');
+                    errors.forEach(error => {
+                        const li = document.createElement('li');
+                        li.textContent = error;
+                        ul.appendChild(li);
+                    });
+
+                    // Append the ul element to the div
+                    if (errorDiv) {
+                        errorDiv.innerHTML = '';
+                        errorDiv.appendChild(ul);
+                    } else {
+                        console.error('No element found with ID "error-list"');
                     }
-        
-                    function startKYC(json) {
+                }
+
+                var form = document.getElementById("PreRegistrationForm");
+
+                function getFormJSON() {
+                    var formData = new FormData(form);
+                    var formObject = {};
+                    formData.forEach((value, key) => {
+                        formObject[key] = value;
+                    });
+
+                    formObject["birthday"] = $("#birthday").val();
+                    var json = JSON.stringify(formObject);
+                    return json;
+                }
+
+                function startKYC(json) {
+                    $.ajax({
+                        url: `/registration/kyc/init/{{ registration_id }}`,
+                        method: "PUT",
+                        contentType: "application/json",
+                        dataType: "json",
+                        data: json,
+                        success: async (data) => {
+                            // Ok if succuessful, send the user to the KYC live process.
+                            window.location.href = '/registration/kyc/process/{{ registration_id }}';
+                        },
+                        dataType: "json"
+                    });
+                }
+
+                $("#submitFormBtn").click((e) => {
+                    e.preventDefault();
+
+                    var inputs = form.querySelectorAll("input");
+                    inputs.forEach(function (input) {
+                        input.classList.remove("is-invalid");
+                    });
+
+                    // Data for the post.
+                    const json = getFormJSON();
+
+                    if (form.checkValidity()) {
+                        // if (1===1) {
+
                         $.ajax({
-                            url: `/registration/kyc/init/{{ registration_id }}`,
-                            method: "PUT",
+                            url: `/registration/validate/{{ registration_id }}`,
+                            method: "POST",
                             contentType: "application/json",
                             dataType: "json",
                             data: json,
                             success: async (data) => {
-                                // Ok if succuessful, send the user to the KYC live process.
-                                window.location.href = '/registration/kyc/process/{{ registration_id }}';
+                                console.log('Done', data)
+                                if (data.success === false) {
+                                    createErrorList(data.errors)
+                                } else {
+                                    startKYC(json);
+                                }
                             },
                             dataType: "json"
                         });
-                    }
-                    
-                    $("#submitFormBtn").click((e) => {
-                        e.preventDefault();
-        
-                        var inputs = form.querySelectorAll("input");
+                    } else {
                         inputs.forEach(function (input) {
-                            input.classList.remove("is-invalid");
+                            if (!input.checkValidity()) {
+                                input.classList.add("is-invalid");
+                            }
                         });
-        
-                        // Data for the post.
-                        const json = getFormJSON();
-        
-                        if (form.checkValidity()) {
-                        // if (1===1) {
-                            
-                            $.ajax({
-                                url: `/registration/validate/{{ registration_id }}`,
-                                method: "POST",
-                                contentType: "application/json",
-                                dataType: "json",
-                                data: json,
-                                success: async (data) => {
-                                    console.log('Done', data)
-                                    if (data.success === false) {
-                                        createErrorList(data.errors)
-                                    } else {
-                                        startKYC(json);
-                                    }
-                                },
-                                dataType: "json"
-                            });
-                        } else {
-                            inputs.forEach(function (input) {
-                                if (!input.checkValidity()) {
-                                    input.classList.add("is-invalid");
-                                }
-                            });
-        
-                            // Form is not valid, show validation errors
-                            form.reportValidity();
-                        }
-                    })
-                });
-            </script>
+
+                        // Form is not valid, show validation errors
+                        form.reportValidity();
+                    }
+                })
+            });
+        </script>
 
         {% endif %}
     </div>
