@@ -227,6 +227,232 @@
             .btn-process { background-color: rgba(52, 211, 153, 0.2); color: #34d399; }
             .btn-process:hover { background-color: #10b981; color: #fff; }
         }
+
+        /* Responsive Media Queries for Mobile/Tablet Devices */
+        @media (max-width: 991.98px) {
+            /* Hide the table header */
+            .modern-table thead {
+                display: none;
+            }
+
+            /* Container overrides on mobile */
+            .modern-table-container {
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                overflow: visible !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+
+            /* Transform table structure */
+            .modern-table, 
+            .modern-table tbody, 
+            .modern-table tr, 
+            .modern-table td {
+                display: block;
+                width: 100% !important;
+            }
+
+            /* Each table row becomes a modern card */
+            .modern-table tbody tr {
+                background: var(--bg-card);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid var(--glass-border);
+                border-radius: 20px;
+                padding: 20px;
+                box-shadow: 0 10px 30px var(--shadow-color);
+                margin-bottom: 20px;
+                position: relative;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .modern-table tbody tr:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 15px 35px var(--shadow-color);
+                background-color: var(--bg-card);
+            }
+
+            /* Cells formatting */
+            .modern-table tbody td {
+                border: none !important;
+                padding: 10px 0 !important;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                text-align: right;
+                font-size: 0.9rem;
+                word-break: break-all;
+            }
+
+            /* Label styling using data-label attribute */
+            .modern-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: var(--text-muted);
+                text-align: left;
+                margin-right: 15px;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+            }
+
+            /* Special styling for Date and Full Name */
+            .modern-table tbody td[data-label="Fecha"],
+            .modern-table tbody td[data-label="Nombre Completo"] {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+                padding-bottom: 12px !important;
+                border-bottom: 1px solid var(--border-color) !important;
+                margin-bottom: 8px;
+            }
+
+            .modern-table tbody td[data-label="Fecha"]::before,
+            .modern-table tbody td[data-label="Nombre Completo"]::before {
+                margin-bottom: 6px;
+            }
+
+            /* Badge status alignment spacing */
+            .modern-table tbody td[data-label="Status"] {
+                padding-bottom: 12px !important;
+                border-bottom: 1px solid var(--border-color) !important;
+                margin-bottom: 8px;
+            }
+
+            /* Email handling */
+            .modern-table tbody td[data-label="Email"] a {
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                display: inline-block;
+            }
+
+            /* Action Buttons column styling */
+            .modern-table tbody td[data-label="Acciones"] {
+                display: block;
+                text-align: center;
+                padding-top: 15px !important;
+                border-top: 1px solid var(--border-color) !important;
+                margin-top: 12px;
+            }
+
+            .modern-table tbody td[data-label="Acciones"]::before {
+                display: block;
+                margin-bottom: 12px;
+                text-align: center;
+                width: 100%;
+            }
+
+            /* Make action buttons grid/flex */
+            .modern-table tbody td[data-label="Acciones"] a.row-action-btn {
+                display: inline-flex;
+                width: calc(50% - 10px) !important;
+                margin: 5px !important;
+                justify-content: center;
+                align-items: center;
+                font-size: 0.85rem;
+                padding: 10px 12px !important;
+            }
+
+            /* If there are 3 buttons, make them span well on narrow screens */
+            @media (max-width: 575.98px) {
+                .modern-table tbody td[data-label="Acciones"] a.row-action-btn {
+                    display: flex;
+                    width: 100% !important;
+                    margin: 8px 0 !important;
+                }
+            }
+        }
+
+        /* Mobile specific enhancements for filters and headers */
+        @media (max-width: 767.98px) {
+            .container-fluid {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+            }
+            .modern-card {
+                padding: 20px 15px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .filter-actions-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .filter-actions-container #reloadData {
+                flex: 1 1 100%;
+                margin-right: 0 !important;
+                margin-bottom: 5px;
+            }
+            
+            .filter-actions-container #previousButton,
+            .filter-actions-container #nextButton {
+                flex: 1;
+            }
+            
+            .filter-actions-container #nextButton {
+                margin-right: 0 !important;
+            }
+
+            .filter-actions-container #spinner {
+                margin-left: auto;
+                margin-right: auto;
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        /* Navbar mobile styling overrides */
+        @media (max-width: 991.98px) {
+            .navbar {
+                padding: 10px 15px !important;
+            }
+            .navbar .container-fluid {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .navbar-brand {
+                margin-right: 0 !important;
+                margin-bottom: 12px;
+            }
+            .navbar-nav {
+                flex-direction: row !important;
+                justify-content: center;
+                width: 100%;
+                margin-bottom: 12px;
+            }
+            .navbar-nav .nav-item {
+                margin: 0 5px;
+            }
+            .navbar-nav .nav-link {
+                padding: 6px 12px !important;
+                font-size: 0.85rem;
+                background-color: var(--border-color);
+                border-radius: 8px;
+                color: var(--text-color) !important;
+            }
+            /* Styling welcome user text & logout btn */
+            .navbar div:last-child {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-size: 0.85rem;
+                gap: 8px;
+                margin-top: 5px;
+            }
+            .navbar div:last-child a.btn-danger {
+                padding: 5px 12px !important;
+                font-size: 0.8rem;
+                width: auto;
+            }
+        }
     </style>
 </head>
 
@@ -236,7 +462,7 @@
         
         <div class="row mt-3">
             <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3" style="gap: 12px;">
                     <h1 class="modern-title m-0">Lista de Registros</h1>
                     <span id="data-stats" class="badge badge-pill badge-secondary" style="font-size: 1rem; padding: 8px 15px; background-color: var(--bg-card); color: var(--text-color); border: 1px solid var(--border-color);"></span>
                 </div>
@@ -265,7 +491,7 @@
                                     <option value="WAITING_FOR_CHECK_RESPONSE">EN ESPERA DE KYC</option>
                                 </select>
                             </div>
-                            <div class="col-md-4 d-flex">
+                            <div class="col-md-4 d-flex filter-actions-container">
                                 <button id="reloadData" type="button" class="btn btn-modern flex-grow-1 mr-2">
                                     <i class="fas fa-sync-alt mr-2"></i> Actualizar
                                 </button>
@@ -310,24 +536,24 @@
     <script type="text/template" id="rowTemplate">
         <% _.each(data, function(item) { %>
             <tr>
-                <td>
+                <td data-label="Fecha">
                     <div style="font-weight: 600;"><%= formatDate(item.started_at, 'MM/DD/YY') %></div>
                     <small style="color: var(--text-muted);">
                         <i class="far fa-clock mr-1"></i><%= formatDate(item.started_at, 'hh:mm A') %>
                     </small>
                 </td>
-                <td>
+                <td data-label="Nombre Completo">
                     <div style="font-weight: 600;"><%= item.first_name %> <%= item.last_name %></div>
                     <small style="color: var(--text-muted);"><i class="fas fa-fingerprint mr-1"></i><%= item._id.substring(0, 8) %>...</small>
                 </td>
-                <td>
+                <td data-label="Email">
                     <% if (item.email) { %>
                         <a href="mailto:<%= item.email %>" style="color: var(--text-color);"><%= item.email %></a>
                     <% } else { %>
                         <span style="color: var(--text-muted);">--</span>
                     <% } %>
                 </td>
-                <td>
+                <td data-label="Status">
                     <% if (item.kyc_status == 'COMPLETE') { %>
                         <span class="modern-badge badge-complete"><i class="fas fa-check-circle mr-1"></i>COMPLETO</span>
                     <% } else if (item.kyc_status == 'WAITING_FOR_CHECK_RESPONSE') { %>
@@ -336,18 +562,18 @@
                         <span class="modern-badge badge-pending"><i class="fas fa-exclamation-circle mr-1"></i><%= item.kyc_status || 'PENDIENTE' %></span>
                     <% } %>
                 </td>
-                <td width="20%" style="font-size: 0.85rem;">
+                <td width="20%" style="font-size: 0.85rem;" data-label="IDs">
                     <div><span style="color: var(--text-muted); font-weight: 600;">uID:</span> <%= item.whitehat_user_id || '--' %></div>
                     <div><span style="color: var(--text-muted); font-weight: 600;">pID:</span> <%= item.whitehat_playerid || '--' %></div>
                     <div class="mt-1" style="color: var(--text-muted);">
                         <i class="fas fa-sync-alt mr-1" style="font-size: 0.7rem;"></i><%= formatDate(item.last_updated, 'MM/DD/YY hh:mm A') %>
                     </div>
                 </td>
-                <td width="15%" style="font-size: 0.85rem;">
+                <td width="15%" style="font-size: 0.85rem;" data-label="Información">
                     <div><span style="color: var(--text-muted); font-weight: 600;">Loyalty:</span> <%= item.loyalty_card_number || '--' %></div>
                     <div><span style="color: var(--text-muted); font-weight: 600;">Kiosk:</span> <%= item.referral_code || '--' %></div>
                 </td>
-                <td align="right">
+                <td align="right" data-label="Acciones">
                     <a type="button" href="/registration/receipt/<%= item._id %>" target="_blank_<%= item._id %>" class="btn btn-block row-action-btn btn-receipt">
                         <i class="fas fa-receipt mr-1"></i> Recibo
                     </a>
